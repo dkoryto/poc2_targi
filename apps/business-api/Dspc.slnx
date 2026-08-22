@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dspc.Api/Dspc.Api.csproj" />
+    <Project Path="src/Dspc.Application/Dspc.Application.csproj" />
+    <Project Path="src/Dspc.Domain/Dspc.Domain.csproj" />
+    <Project Path="src/Dspc.Infrastructure/Dspc.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dspc.Api.Tests/Dspc.Api.Tests.csproj" />
+    <Project Path="tests/Dspc.Domain.Tests/Dspc.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>Dspc.Domain</RootNamespace></PropertyGroup>
+</Project>
