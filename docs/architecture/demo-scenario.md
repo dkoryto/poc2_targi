@@ -139,3 +139,14 @@ Lot status Accepted → Blocked (NCR created). Trace-forward: consumed by WO-202
 ## Demo accounts (password `demo`)
 
 presenter (DemoPresenter), planner (ProductionPlanner), inbound (InboundCoordinator), quality (QualityInspector), director (OperationsDirector), auditor (Auditor), admin (Administrator), supplier.hydromech (SupplierUser, SUP-02), supplier.nordstal (SupplierUser, SUP-01), supplier.vistula (SupplierUser, SUP-03).
+
+## Corrections from the engine fixture (binding — `packages/contracts/examples/baseline.json` wins over the tables above)
+
+1. Material allocation order = **need date first** (frozen ops, then desired start = baseline start / release, then priority desc, due asc, code), not priority-first.
+2. Weekend-corrected baseline: WO-2026-018 WELD T0+32 06:00→T0+36 22:00, INT T0+37 06:00→T0+38 22:00, TEST T0+39; WO-2026-019 INT T0+39 06:00→T0+42 18:00, TEST T0+43 06:00–14:00.
+3. WO-2026-015 INT = T0+21 06:00–22:00, TEST = T0+22 06:00–14:00.
+4. WO-2026-014 TEST = 12 h (T0+14 06:00–18:00) ⇒ scenario lateness exactly 4 days.
+5. MCU-X7 on hand = 26. HTS-22: lot HTS-22-2607 = 600 kg (on hand 1000 kg). WO-015 also needs HTS-22×200 kg; WO-018 also needs ACT-40×4, MCU-X7×2.
+6. Predicted downtime = idle hours inside baseline windows of *material-waiting* operations only (knock-on windows excluded).
+7. Engine result for scenario 1: WO-2026-019 ELEC T0+8 06:00, INT **T0+9 14:00 → T0+11 10:00**, pulled forward 29 d; 8 operations moved; DOWNTIME_REDUCED 36→8.
+8. `materialComplete` in UI/KPIs comes from business-api reservations (WO-2026-019 = 100 %), not from the engine flag.

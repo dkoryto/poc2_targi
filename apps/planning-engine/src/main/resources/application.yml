@@ -1,0 +1,32 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: planning-engine
+  jackson:
+    default-property-inclusion: always
+  mvc:
+    problemdetails:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    url: /v3/api-docs
+    path: /swagger-ui.html
+dspc:
+  solver:
+    default-time-limit-ms: 2500
+    min-optimiser-budget-ms: 10
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

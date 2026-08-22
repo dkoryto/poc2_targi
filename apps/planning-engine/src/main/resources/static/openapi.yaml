@@ -1,0 +1,216 @@
+openapi: 3.0.3
+info:
+  title: DSPC Planning Engine
+  version: 1.0.0
+  description: >
+    Stateless, deterministic MRP / re-scheduling engine. Input is a fully materialised planning
+    problem (business-api already applied scenario changes). Same input must always give same output.
+servers:
+  - url: http://localhost:8081
+paths:
+  /api/v1/plan/solve:
+    post:
+      operationId: solvePlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlanningRequest' }
+      responses:
+        '200':
+          description: Solved (FEASIBLE) or best-effort plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanningResponse' }
+        '400': { description: Invalid request (Problem Details) }
+  /actuator/health:
+    get:
+      operationId: health
+      responses:
+        '200': { description: UP }
+components:
+  schemas:
+    PlanningRequest:
+      type: object
+      required: [scenarioId, horizonStart, horizonEnd, workCenters, orders, materials, weights]
+      properties:
+        scenarioId: { type: string }
+        baselineId: { type: string }
+        horizonStart: { type: string, format: date }
+        horizonEnd: { type: string, format: date }
+        timeLimitMs: { type: integer, default: 2500 }
+        workCenters:
+          type: array
+          items: { $ref: '#/components/schemas/WorkCenter' }
+        orders:
+          type: array
+          items: { $ref: '#/components/schemas/PlanOrder' }
+        materials:
+          type: array
+          items: { $ref: '#/components/schemas/MaterialAvailability' }
+        weights: { $ref: '#/components/schemas/ObjectiveWeights' }
+    WorkCenter:
+      type: object
+      required: [code, lineCode, hoursPerDay]
+      properties:
+        code: { type: string, example: WC-INT }
+        lineCode: { type: string, example: LINE-2 }
+        hoursPerDay: { type: number, example: 16 }
+        capacityFactor: { type: number, default: 1.0, description: "Scenario multiplier, 0.5 = half capacity" }
+        calendar:
+          type: array
+          description: Per-day overrides; days not listed use hoursPerDay on Mon-Fri, 0 on weekends
+          items:
+            type: object
+            required: [date, availableHours]
+            properties:
+              date: { type: string, format: date }
+              availableHours: { type: number }
+    PlanOrder:
+      type: object
+      required: [code, productCode, priority, quantity, dueDate, releaseDate, operations]
+      properties:
+        code: { type: string, example: WO-2026-014 }
+        productCode: { type: string }
+        priority: { type: integer, minimum: 1, maximum: 5, description: "5 = highest" }
+        quantity: { type: integer }
+        dueDate: { type: string, format: date }
+        releaseDate: { type: string, format: date, description: Earliest start }
+        frozen: { type: boolean, default: false, description: "Whole order locked to baseline" }
+        lineCode: { type: string, description: Preferred assembly line, may be reassigned unless frozen }
+        operations:
+          type: array
+          items: { $ref: '#/components/schemas/PlanOperation' }
+    PlanOperation:
+      type: object
+      required: [code, sequence, workCenterCode, durationHours]
+      properties:
+        code: { type: string, example: "WO-2026-014/30" }
+        sequence: { type: integer }
+        workCenterCode: { type: string }
+        durationHours: { type: number }
+        frozen: { type: boolean, default: false }
+        baselineStart: { type: string, format: date-time }
+        baselineEnd: { type: string, format: date-time }
+        materialRequirements:
+          type: array
+          items:
+            type: object
+            required: [partCode, quantity]
+            properties:
+              partCode: { type: string }
+              quantity: { type: number }
+    MaterialAvailability:
+      type: object
+      required: [partCode, onHand, reserved]
+      properties:
+        partCode: { type: string }
+        onHand: { type: number, description: Accepted, unblocked stock }
+        reserved: { type: number, description: Already reserved by orders outside this problem }
+        inbound:
+          type: array
+          items:
+            type: object
+            required: [quantity, eta]
+            properties:
+              quantity: { type: number }
+              eta: { type: string, format: date }
+              reference: { type: string, example: "PO-2026-0007/1" }
+              riskScore: { type: integer }
+    ObjectiveWeights:
+      type: object
+      properties:
+        latenessPerDayPerPriority: { type: number, default: 10 }
+        shortagePerUnit: { type: number, default: 5 }
+        downtimePerHour: { type: number, default: 20 }
+        deliveryBreachPerOrder: { type: number, default: 100 }
+        changePerMovedOperation: { type: number, default: 2 }
+        changeoverPerSwitch: { type: number, default: 8 }
+    PlanningResponse:
+      type: object
+      required: [status, solver, elapsedMs, objective, operations, orders, kpi, explanations]
+      properties:
+        status: { type: string, enum: [FEASIBLE, INFEASIBLE, FALLBACK] }
+        solver: { type: string, example: "dspc-heuristic/1.0" }
+        elapsedMs: { type: integer }
+        objective: { $ref: '#/components/schemas/ObjectiveBreakdown' }
+        operations:
+          type: array
+          items: { $ref: '#/components/schemas/ScheduledOperation' }
+        orders:
+          type: array
+          items: { $ref: '#/components/schemas/OrderResult' }
+        kpi: { $ref: '#/components/schemas/PlanKpi' }
+        explanations:
+          type: array
+          items: { $ref: '#/components/schemas/Explanation' }
+    ObjectiveBreakdown:
+      type: object
+      properties:
+        total: { type: number }
+        lateness: { type: number }
+        shortage: { type: number }
+        downtime: { type: number }
+        deliveryBreach: { type: number }
+        change: { type: number }
+        changeover: { type: number }
+    ScheduledOperation:
+      type: object
+      required: [orderCode, operationCode, workCenterCode, start, end, changed]
+      properties:
+        orderCode: { type: string }
+        operationCode: { type: string }
+        workCenterCode: { type: string }
+        lineCode: { type: string }
+        start: { type: string, format: date-time }
+        end: { type: string, format: date-time }
+        changed: { type: boolean, description: differs from baseline }
+        shiftDays: { type: number, description: "positive = later than baseline" }
+        waitingForMaterial: { type: boolean }
+    OrderResult:
+      type: object
+      required: [orderCode, plannedStart, plannedEnd, dueDate, latenessDays, materialComplete]
+      properties:
+        orderCode: { type: string }
+        lineCode: { type: string }
+        plannedStart: { type: string, format: date-time }
+        plannedEnd: { type: string, format: date-time }
+        dueDate: { type: string, format: date }
+        latenessDays: { type: integer }
+        materialComplete: { type: boolean }
+        shortages:
+          type: array
+          items:
+            type: object
+            properties:
+              partCode: { type: string }
+              quantity: { type: number }
+              availableOn: { type: string, format: date, nullable: true }
+    PlanKpi:
+      type: object
+      properties:
+        downtimeHours: { type: number, description: Idle hours on work centers caused by material waits inside horizon }
+        lateOrders: { type: integer }
+        totalLatenessDays: { type: integer }
+        movedOperations: { type: integer }
+        ordersWithShortage: { type: integer }
+        onTimeRate: { type: number, description: 0..1 }
+    Explanation:
+      type: object
+      required: [reasonCode, orderCode, params]
+      description: >
+        Localised by the UI. reasonCode values:
+        ORDER_DELAYED_MATERIAL_SHORTAGE {orderCode, partCode, missingQty, days, availableOn}
+        ORDER_PULLED_FORWARD {orderCode, lineCode, days, materialCompleteness, workCenters}
+        ORDER_MOVED_LINE {orderCode, fromLine, toLine}
+        DOWNTIME_REDUCED {fromHours, toHours}
+        ORDER_FROZEN_KEPT {orderCode}
+        ORDER_LATE_DUE {orderCode, days}
+        CAPACITY_REDUCED {workCenterCode, factor}
+        FALLBACK_USED {reason}
+      properties:
+        reasonCode: { type: string }
+        orderCode: { type: string }
+        params:
+          type: object
+          additionalProperties: true
