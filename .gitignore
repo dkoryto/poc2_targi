@@ -1,0 +1,26 @@
+# node
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+playwright-report/
+test-results/
+# dotnet
+bin/
+obj/
+*.user
+.vs/
+# java
+target/
+.mvn/wrapper/maven-wrapper.jar
+# env / local
+.env
+.env.local
+*.log
+.DS_Store
+.idea/
+.vscode/
+# generated runtime data
+infrastructure/data/
+storage/

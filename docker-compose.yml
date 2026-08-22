@@ -1,0 +1,111 @@
+name: dspc
+
+x-api-env: &api-env
+  ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Demo}
+  ASPNETCORE_URLS: http://+:5080
+  ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-dspc};Username=${POSTGRES_USER:-dspc};Password=${POSTGRES_PASSWORD:-dspc-demo-password}
+  Identity__Jwt__Key: ${JWT_KEY:-dspc-demo-jwt-signing-key-change-me-0123456789}
+  Identity__Jwt__Issuer: dspc
+  Identity__Jwt__Audience: dspc
+  Demo__Enabled: ${DEMO_ENABLED:-true}
+  Demo__ClockAnchor: ${DEMO_CLOCK_ANCHOR:-}
+  Storage__Provider: Minio
+  Storage__Minio__Endpoint: http://minio:9000
+  Storage__Minio__AccessKey: ${MINIO_ROOT_USER:-dspc-minio}
+  Storage__Minio__SecretKey: ${MINIO_ROOT_PASSWORD:-dspc-minio-demo-password}
+  Storage__Minio__Bucket: ${MINIO_BUCKET:-dspc-documents}
+  PlanningEngine__BaseUrl: http://planning-engine:8081
+  PlanningEngine__TimeoutMs: "3000"
+  LocalAi__Enabled: ${LOCAL_AI_ENABLED:-false}
+  LocalAi__BaseUrl: ${LOCAL_AI_BASE_URL:-http://host.docker.internal:8000/v1}
+  LocalAi__Model: ${LOCAL_AI_MODEL:-}
+  Cors__Origins: http://localhost:${WEB_PORT:-5173}
+  Seed__Path: /app/demo-data
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    profiles: [demo, dev]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dspc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dspc-demo-password}
+      POSTGRES_DB: ${POSTGRES_DB:-dspc}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dspc} -d ${POSTGRES_DB:-dspc}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    profiles: [demo, dev]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-dspc-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-dspc-minio-demo-password}
+    volumes:
+      - miniodata:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  planning-engine:
+    build:
+      context: ./apps/planning-engine
+    profiles: [demo, dev]
+    environment:
+      SERVER_PORT: "8081"
+      JAVA_TOOL_OPTIONS: -XX:TieredStopAtLevel=1 -Xss512k
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  business-api:
+    build:
+      context: .
+      dockerfile: apps/business-api/Dockerfile
+    profiles: [demo, dev]
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio: { condition: service_healthy }
+      planning-engine: { condition: service_started }
+    ports:
+      - "127.0.0.1:${API_PORT:-5080}:5080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5080/health/ready >/dev/null 2>&1 || curl -fs http://localhost:5080/health/ready >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+  web:
+    build:
+      context: ./apps/web
+    profiles: [demo]
+    depends_on:
+      business-api: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5173}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  miniodata:
