@@ -55,7 +55,7 @@ Dokumentacja: [przegląd i decyzje](docs/architecture/overview.md) · [ADR](docs
 
 ## Praca deweloperska
 
-Polecenia per aplikacja i uruchamianie pojedynczych testów: [`CLAUDE.md`](CLAUDE.md) oraz README w `apps/*`. Profil `dev` (`docker compose --profile dev up`) uruchamia tylko Postgres, MinIO, silnik i API — frontend z `pnpm dev` (proxy na :5080).
+Polecenia per aplikacja i uruchamianie pojedynczych testów: [`DEVELOPMENT.md`](DEVELOPMENT.md) oraz README w `apps/*`. Profil `dev` (`docker compose --profile dev up`) uruchamia tylko Postgres, MinIO, silnik i API — frontend z `pnpm dev` (proxy na :5080).
 
 ## Testy
 
