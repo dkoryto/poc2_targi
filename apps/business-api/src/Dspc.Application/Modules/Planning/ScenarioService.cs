@@ -290,7 +290,10 @@ public sealed class ScenarioService(
         foreach (var o in after.Orders.Where(o => o.Shortages.Count > 0).OrderBy(o => o.OrderCode, StringComparer.Ordinal))
         {
             var s = o.Shortages[0];
-            list.Add(new ConsequenceDto("warn", "explain.ORDER_DELAYED_MATERIAL_SHORTAGE",
+            // An order can be short of material without ending up late (slack absorbed the wait).
+            // Saying "moved by 0 days" there reads as noise, so use a shortage-only wording.
+            var delayed = o.LatenessDays > 0;
+            list.Add(new ConsequenceDto("warn", delayed ? "explain.ORDER_DELAYED_MATERIAL_SHORTAGE" : "explain.ORDER_MATERIAL_SHORTAGE",
                 new Dictionary<string, object?>
                 {
                     ["orderCode"] = o.OrderCode, ["partCode"] = s.PartCode, ["missingQty"] = s.Quantity,

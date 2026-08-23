@@ -266,7 +266,8 @@
     "ORDER_LATE_DUE": "Order {{orderCode}} will miss its due date by {{days}} days.",
     "CAPACITY_REDUCED": "Work center {{workCenterCode}} availability reduced to {{factor}} of capacity.",
     "FALLBACK_USED": "Fallback heuristic used: {{reason}}.",
-    "NO_CHANGE": "No plan changes required."
+    "NO_CHANGE": "No plan changes required.",
+    "ORDER_MATERIAL_SHORTAGE": "Order {{orderCode}} is short {{missingQty}} pcs of {{partCode}} (available {{availableOn}}) but still meets its due date."
   },
   "dashboard": {
     "title": "Control Room",

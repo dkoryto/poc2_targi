@@ -268,7 +268,8 @@
     "ORDER_LATE_DUE": "Zlecenie {{orderCode}} przekroczy termin o {{days}} dni.",
     "CAPACITY_REDUCED": "Dostępność gniazda {{workCenterCode}} ograniczono do {{factor}} pojemności.",
     "FALLBACK_USED": "Użyto heurystyki zapasowej: {{reason}}.",
-    "NO_CHANGE": "Plan nie wymaga zmian."
+    "NO_CHANGE": "Plan nie wymaga zmian.",
+    "ORDER_MATERIAL_SHORTAGE": "Zlecenie {{orderCode}} ma niedobór {{missingQty}} szt. {{partCode}} (dostępne {{availableOn}}), ale zachowuje termin."
   },
   "dashboard": {
     "title": "Control Room",
