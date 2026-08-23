@@ -86,12 +86,15 @@
 .spacer {
   flex: 1;
 }
+/*
+ * The controls keep their size; the brand is what gives way when the bar is narrow
+ * (it already truncates). Without this the last control was clipped off the edge.
+ */
 .topGroup {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 .siteSelect {
   background: var(--bg-0);

@@ -71,6 +71,31 @@ Rules when adding a screen:
   `scoped` is false and `?siteCode=` is omitted entirely, so a single-plant backend behaves exactly as before.
 - Label any record that may belong to another plant with `<SiteChip code={…} />`.
 
+## Responsive primitives
+
+Breakpoints and the absolute rules live in `docs/architecture/responsive.md`
+(`mobile < 768`, `tablet 768–1199`, `desktop ≥ 1200`, `wall ≥ 1600`). Import everything
+below from `@/components/ui`.
+
+| Primitive | Props | What it does |
+|---|---|---|
+| `useIsMobile()` / `useIsCompact()` / `useMediaQuery(q)` | — | `< 768` / `< 1200` / arbitrary query. jsdom-safe (returns `false` without `matchMedia`). |
+| `DataTable` | `responsive?: 'cards' \| 'scroll'` (default `'cards'`), `Column.card?: 'title' \| 'meta' \| 'hidden'` | Below `md` renders one card per row instead of a table, so no column falls off the edge. `card: 'title'` picks the heading (defaults to the first column), `'meta'` sits next to it unlabelled, `'hidden'` is dropped. Sorting moves into a `<select>` (`data-testid="card-sort"`); loading/empty/error states are unchanged. `'scroll'` keeps the table. |
+| `Sheet` | `open`, `onClose`, `title`, `children`, `actions?`, `footer?`, `side?`, `wide?` | Side panel on desktop, full-width bottom sheet on mobile. Traps focus, closes on Escape / backdrop / swipe down. |
+| `Drawer` | unchanged (`open`, `onClose`, `title`, `children`, `wide?`, `actions?`) | Now a thin wrapper over `Sheet`, so every existing drawer became a focus-trapped bottom sheet on mobile for free. |
+| `ScrollArea` | `label` (required), `axis?: 'x' \| 'both'`, `className?` | Wide content scrolls **inside** this, never on the page. Edge shadows, keyboard focusable. |
+| `OverflowMenu` / `OverflowItem` | `children`, `label?` / `label`, `children` | The "⋯" menu. Renders only below `lg`; put controls that do not fit inside it rather than hiding them. |
+| `FilterBar` | `children`, `activeCount?`, `onClear?`, `clearLabel?` | Inline filters on desktop; below `md` they collapse behind a "Filtry" button carrying the active-filter count. |
+
+Rules worth repeating when adding a screen:
+
+- Never let the page scroll sideways — put wide content in `ScrollArea` and keep
+  `min-width: 0` on flex/grid children.
+- Nothing may disappear at a small width; move it into `OverflowMenu`.
+- Labels wrap rather than truncate; touch targets are at least 44 px.
+- Use `100dvh` (not `vh`) and the `--safe-*` inset tokens for anything pinned to an edge.
+- `[hidden]` is forced to `display: none` globally — an author `display` used to beat it.
+
 ## i18n rules
 
 - All user-visible text via `t()`; keys grouped by module. Plurals use i18next `_one/_few/_many/_other`.
@@ -86,6 +111,11 @@ Rules when adding a screen:
 `/planning` (presets + custom builder → `/planning/scenarios/:id` with Before/After/Compare Gantt, KPI deltas, explanations, approve/reject/save), `/trace` (search, `/trace/serials/:serial` genealogy tree + trace-back + audit, `/trace/lots`, `/trace/lots/:lot` trace-forward + block + inspection), `/passports` + `/passports/:serial` (DQP-01 completeness, versions, QR, generate), `/audit` (diff viewer, CSV), `/admin` (service status, settings, demo state), `/demo/summary` (value screen).
 
 ### `data-testid` reference (used by `tests/e2e`)
+
+Responsive additions: `nav-toggle` (hamburger below `md`), `nav-drawer`, `overflow-menu`,
+`row-card`, `card-sort`, `filter-toggle`, `filter-panel`, `map-legend-toggle`,
+`gantt-view`, `gantt-list`, `gantt-op-<code>`.
+
 
 | Screen | Test ids |
 |---|---|

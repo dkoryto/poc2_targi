@@ -32,6 +32,13 @@ body {
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 32px 32px;
 }
+/*
+ * An author `display` declaration beats the UA rule for [hidden], which silently broke
+ * `hidden={...}` on flex/grid containers (the map legend). Make the attribute win.
+ */
+[hidden] {
+  display: none !important;
+}
 a {
   color: var(--info);
   text-decoration: none;
