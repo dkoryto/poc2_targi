@@ -19,6 +19,13 @@ public class Site : Entity
     public double Longitude { get; set; }
     public string TimeZone { get; set; } = "Europe/Warsaw";
     public Guid OrganizationId { get; set; }
+    /// <summary>i18n key describing what the plant makes, e.g. "site.profile.assembly".</summary>
+    public string ProfileKey { get; set; } = "";
+    /// <summary>Preset key of the scenario this plant is meant to demonstrate on the stand.</summary>
+    public string FeaturedScenarioKey { get; set; } = "";
+    /// <summary>The plant the app opens on when the user has no explicit choice.</summary>
+    public bool IsDefault { get; set; }
+    public int Sequence { get; set; }
 }
 
 public class User : VersionedEntity

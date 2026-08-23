@@ -5,6 +5,7 @@ namespace Dspc.Domain.Entities;
 public class PlanningScenario : VersionedEntity
 {
     public string Name { get; set; } = "";
+    public Guid SiteId { get; set; }
     public string? PresetKey { get; set; }
     public PlanningScenarioStatus Status { get; set; }
     public Guid BaselineId { get; set; }

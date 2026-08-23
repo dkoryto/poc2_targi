@@ -47,9 +47,10 @@ public sealed class PassportService(
     private static readonly Role[] OriginVisibleTo =
         [Role.QualityInspector, Role.OperationsDirector, Role.Administrator, Role.Auditor, Role.DemoPresenter, Role.ProductionPlanner, Role.InboundCoordinator];
 
-    public async Task<ListResult<PassportSummaryDto>> ListAsync(string? status, string? q, CancellationToken ct)
+    public async Task<ListResult<PassportSummaryDto>> ListAsync(Guid siteId, string? status, string? q, CancellationToken ct)
     {
         var query = db.Passports.AsNoTracking()
+            .Where(p => p.ProductSerial!.ProductionOrder!.SiteId == siteId)
             .Include(p => p.ProductSerial).ThenInclude(s => s!.Product)
             .Include(p => p.ProductSerial).ThenInclude(s => s!.ProductionOrder)
             .Include(p => p.Versions)

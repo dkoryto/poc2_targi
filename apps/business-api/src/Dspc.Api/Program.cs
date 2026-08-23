@@ -137,6 +137,7 @@ app.UseSwaggerUI(o => { o.SwaggerEndpoint("/swagger/v1/swagger.json", "DSPC v1")
 app.MapHealthEndpoints();
 var api = app.MapGroup("/api/v1");
 api.MapIdentityEndpoints();
+api.MapSiteEndpoints();
 api.MapDashboardEndpoints();
 api.MapSupplierEndpoints();
 api.MapInboundEndpoints();

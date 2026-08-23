@@ -184,7 +184,10 @@ public class DemoResetTests(ApiFixture fx)
         sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(10));
         var body = await r1.Content.ReadFromJsonAsync<JsonElement>(ApiFixture.Json);
         body.GetProperty("durationMs").GetInt64().Should().BeLessThan(10_000);
-        body.GetProperty("counts").GetProperty("purchaseOrders").GetInt32().Should().Be(18);
+        // 18 at Kielce plus the three demo plants; the golden path itself is asserted against SITE-01 below
+        body.GetProperty("counts").GetProperty("purchaseOrders").GetInt32().Should().Be(42);
+        var kielcePos = await director.GetFromJsonAsync<JsonElement>("/api/v1/purchase-orders?siteCode=SITE-01", ApiFixture.Json);
+        kielcePos.GetProperty("total").GetInt32().Should().Be(18);
         var s1 = await Snapshot();
 
         // mutate, then reset again

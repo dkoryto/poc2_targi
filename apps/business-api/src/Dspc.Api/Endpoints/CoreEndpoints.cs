@@ -9,6 +9,7 @@ using Dspc.Application.Modules.Identity;
 using Dspc.Application.Modules.Inventory;
 using Dspc.Application.Modules.Notifications;
 using Dspc.Application.Modules.Planning;
+using Dspc.Application.Modules.Sites;
 using Dspc.Application.Modules.Suppliers;
 using Dspc.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -55,11 +56,20 @@ public static class DashboardEndpoints
     public static void MapDashboardEndpoints(this RouteGroupBuilder api)
     {
         var g = api.MapGroup("/dashboard").WithTags("Dashboard").RequireAuthorization(Policies.Dashboard);
-        g.MapGet("/kpis", async (DashboardQueries q, CancellationToken ct) => Results.Ok(await q.KpisAsync(ct)));
-        g.MapGet("/map", async (DashboardQueries q, CancellationToken ct) => Results.Ok(await q.MapAsync(ct)));
-        g.MapGet("/risk-heatmap", async (DashboardQueries q, CancellationToken ct) => Results.Ok(await q.HeatmapAsync(ct)));
-        g.MapGet("/quality-status", async (DashboardQueries q, CancellationToken ct) => Results.Ok(await q.QualityStatusAsync(ct)));
-        g.MapGet("/plan", async (DashboardQueries q, CancellationToken ct) => Results.Ok(await q.PlanAsync(ct)));
+        g.MapGet("/kpis", async (string? siteCode, DashboardQueries q, ISiteContext sites, CancellationToken ct) => Results.Ok(await q.KpisAsync(await sites.ResolveAsync(siteCode, ct), ct)));
+        g.MapGet("/map", async (string? siteCode, DashboardQueries q, ISiteContext sites, CancellationToken ct) => Results.Ok(await q.MapAsync(await sites.ResolveAsync(siteCode, ct), ct)));
+        g.MapGet("/risk-heatmap", async (string? siteCode, DashboardQueries q, ISiteContext sites, CancellationToken ct) => Results.Ok(await q.HeatmapAsync(await sites.ResolveAsync(siteCode, ct), ct)));
+        g.MapGet("/quality-status", async (string? siteCode, DashboardQueries q, ISiteContext sites, CancellationToken ct) => Results.Ok(await q.QualityStatusAsync(await sites.ResolveAsync(siteCode, ct), ct)));
+        g.MapGet("/plan", async (string? siteCode, DashboardQueries q, ISiteContext sites, CancellationToken ct) => Results.Ok(await q.PlanAsync(await sites.ResolveAsync(siteCode, ct), ct)));
+    }
+}
+
+public static class SiteEndpoints
+{
+    public static void MapSiteEndpoints(this RouteGroupBuilder api)
+    {
+        api.MapGet("/sites", async (SiteQueries q, CancellationToken ct) => Results.Ok(await q.ListAsync(ct)))
+            .WithTags("Sites").RequireAuthorization().WithSummary("Plants this user may work with, in display order");
     }
 }
 
@@ -77,7 +87,8 @@ public static class InventoryEndpoints
 {
     public static void MapInventoryEndpoints(this RouteGroupBuilder api)
     {
-        api.MapGet("/inventory", async (string? partCode, InventoryQueries q, CancellationToken ct) => Results.Ok(await q.ListAsync(partCode, ct))).WithTags("Inventory").RequireAuthorization(Policies.Dashboard);
+        api.MapGet("/inventory", async (string? partCode, string? siteCode, InventoryQueries q, ISiteContext sites, CancellationToken ct) =>
+            Results.Ok(await q.ListAsync(await sites.ResolveAsync(siteCode, ct), partCode, ct))).WithTags("Inventory").RequireAuthorization(Policies.Dashboard);
     }
 }
 
@@ -86,7 +97,8 @@ public static class PlanningEndpoints
     public static void MapPlanningEndpoints(this RouteGroupBuilder api)
     {
         var g = api.MapGroup("/planning").WithTags("Planning").RequireAuthorization(Policies.Planner);
-        g.MapGet("/baseline", async (PlanningQueries q, CancellationToken ct) => Results.Ok(await q.GetBaselineAsync(ct))).WithSummary("Active baseline evaluated against current ETAs/stock (no re-sequencing)");
+        g.MapGet("/baseline", async (string? siteCode, PlanningQueries q, ISiteContext sites, CancellationToken ct) =>
+            Results.Ok(await q.GetBaselineAsync(await sites.ResolveAsync(siteCode, ct), ct))).WithSummary("Active baseline of the selected plant, evaluated against current ETAs/stock (no re-sequencing)");
     }
 }
 

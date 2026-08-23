@@ -30,7 +30,7 @@ public sealed partial class DemoSeeder
         var sites = new Dictionary<string, Site>();
         foreach (var s in Arr(orgJson, "sites"))
         {
-            var site = new Site { Id = Id("SITE", S(s, "code")), Code = S(s, "code"), Name = S(s, "name"), Country = S(s, "country", "PL"), City = S(s, "city"), Latitude = D(s, "lat"), Longitude = D(s, "lon"), TimeZone = S(s, "timeZone", "Europe/Warsaw"), OrganizationId = org.Id };
+            var site = new Site { Id = Id("SITE", S(s, "code")), Code = S(s, "code"), Name = S(s, "name"), Country = S(s, "country", "PL"), City = S(s, "city"), Latitude = D(s, "lat"), Longitude = D(s, "lon"), TimeZone = S(s, "timeZone", "Europe/Warsaw"), OrganizationId = org.Id, ProfileKey = S(s, "profileKey"), FeaturedScenarioKey = S(s, "featuredScenarioKey"), IsDefault = B(s, "isDefault"), Sequence = I(s, "sequence", 1) };
             Stamp(site); db.Sites.Add(site); sites[site.Code] = site;
         }
         var site0 = sites.Values.First();
@@ -182,7 +182,7 @@ public sealed partial class DemoSeeder
             var lot = new MaterialLot
             {
                 Id = Id("LOT", S(l, "lotNumber")), LotNumber = S(l, "lotNumber"), HeatNumber = SN(l, "heatNumber"), PartId = part.Id, SupplierId = sup.Id, PurchaseOrderLineId = poLine?.Id,
-                Quantity = M(l, "quantity"), RemainingQuantity = M(l, "remaining"), Unit = S(l, "unit", part.Unit), Status = status, ReceivedOn = DateN(SN(l, "receivedOn")), ProducedOn = DateN(SN(l, "producedOn")), ExpiresOn = DateN(SN(l, "expiresOn")),
+                SiteId = site0.Id, Quantity = M(l, "quantity"), RemainingQuantity = M(l, "remaining"), Unit = S(l, "unit", part.Unit), Status = status, ReceivedOn = DateN(SN(l, "receivedOn")), ProducedOn = DateN(SN(l, "producedOn")), ExpiresOn = DateN(SN(l, "expiresOn")),
                 CountryOfOrigin = S(l, "country", sup.Country), BlockReason = SN(l, "blockReason"), BlockedAt = UtcN(SN(l, "blockedAt"))
             };
             Stamp(lot, lot.ReceivedOn is { } r ? clock.FromSiteLocal(r.ToDateTime(new TimeOnly(8, 0))) : now); db.MaterialLots.Add(lot); lots[lot.LotNumber] = lot;
@@ -217,7 +217,7 @@ public sealed partial class DemoSeeder
         var opDefs = new Dictionary<string, OperationDefinition>(StringComparer.OrdinalIgnoreCase);
         var baseline = new PlanningBaseline
         {
-            Id = Id("BASELINE", "v1"), Version = 1, Status = PlanningBaselineStatus.Active, HorizonStart = Date(S(baselineJson, "horizonStart")), HorizonEnd = Date(S(baselineJson, "horizonEnd")),
+            Id = Id("BASELINE", $"{site0.Code}:v1"), SiteId = site0.Id, Version = 1, Status = PlanningBaselineStatus.Active, HorizonStart = Date(S(baselineJson, "horizonStart")), HorizonEnd = Date(S(baselineJson, "horizonEnd")),
             ApprovedBy = "planner", ApprovedAt = clock.T0Utc.AddDays(-3), Notes = S(orgJson["baseline"], "notes", "Plan bazowy (seed)")
         };
         Stamp(baseline, baseline.ApprovedAt); db.PlanningBaselines.Add(baseline);
@@ -349,10 +349,17 @@ public sealed partial class DemoSeeder
         await db.SaveChangesAsync(ct);
 
         // --- rule-based risk for every open line (no events at seed), baseline KPI snapshot, audit
+        await SeedPlantsAsync(dir, org, sites, suppliers, parts, products, boms, routing, supplierUserBySupplier, template, counts, ct);
+        await db.SaveChangesAsync(ct);
+
         var scored = await risk.RecalculateAffectedAsync(null, "Seed", ct, raiseEvents: false);
         counts["riskAssessments"] = scored;
-        var evaluation = await impact.EvaluateAsync(null, ct);
-        baseline.KpiJson = Json.Serialize(evaluation.Evaluation.Kpi);
+        foreach (var s in sites.Values)
+        {
+            var b = await db.PlanningBaselines.FirstAsync(x => x.SiteId == s.Id && x.Status == PlanningBaselineStatus.Active, ct);
+            var eval = await impact.EvaluateAsync(s.Id, null, ct);
+            b.KpiJson = Json.Serialize(eval.Evaluation.Kpi);
+        }
         db.AuditEvents.Add(new AuditEvent { OccurredAt = clock.UtcNow, UserName = "system", Action = "Demo.Seed", Entity = "Demo", EntityCode = SeedVersion, AfterJson = Json.Serialize(new { seedVersion = SeedVersion, t0 = clock.T0Date, counts }), CorrelationId = "seed", Source = AuditSource.Seed });
         await db.SaveChangesAsync(ct);
     }

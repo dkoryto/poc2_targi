@@ -17,9 +17,9 @@ public sealed record ScenarioChangeDto(
     string? PoCode = null,
     string? PartCode = null);
 
-public sealed record ScenarioPresetDto(string Key, string TitleKey, IReadOnlyList<ScenarioChangeDto> Changes);
+public sealed record ScenarioPresetDto(string Key, string TitleKey, IReadOnlyList<ScenarioChangeDto> Changes, bool Featured = false);
 
-public sealed record CreateScenarioRequest(string Name, IReadOnlyList<ScenarioChangeDto> Changes, string? PresetKey = null);
+public sealed record CreateScenarioRequest(string Name, IReadOnlyList<ScenarioChangeDto> Changes, string? PresetKey = null, string? SiteCode = null);
 
 public sealed record ConsequenceDto(string Kind, string? TextKey, IReadOnlyDictionary<string, object?>? Params = null, string? Text = null);
 

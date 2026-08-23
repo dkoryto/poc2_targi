@@ -2,6 +2,7 @@ using Dspc.Api.Auth;
 using Dspc.Api.Middleware;
 using Dspc.Application.Modules.Documents;
 using Dspc.Application.Modules.Inbound;
+using Dspc.Application.Modules.Sites;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Dspc.Api.Endpoints;
@@ -11,7 +12,13 @@ public static class InboundEndpoints
     public static void MapInboundEndpoints(this RouteGroupBuilder api)
     {
         var po = api.MapGroup("/purchase-orders").WithTags("Inbound").RequireAuthorization(Policies.SupplyRead);
-        po.MapGet("", async ([AsParameters] PurchaseOrderFilter filter, PurchaseOrderQueries q, CancellationToken ct) => Results.Ok(await q.ListAsync(filter, ct)))
+        po.MapGet("", async ([AsParameters] PurchaseOrderFilter filter, PurchaseOrderQueries q, ISiteContext sites, CancellationToken ct) =>
+            {
+                // Resolve through the site context so an unknown plant is a 404 and an out-of-reach one a 403,
+                // rather than silently returning an empty list.
+                var site = await sites.ResolveSiteAsync(filter.SiteCode, ct);
+                return Results.Ok(await q.ListAsync(filter with { SiteCode = site.Code }, ct));
+            })
             .WithSummary("Purchase orders (supplier users: own organisation only)");
         po.MapGet("/{code}", async (string code, PurchaseOrderQueries q, HttpResponse res, CancellationToken ct) =>
         {
@@ -35,7 +42,8 @@ public static class InboundEndpoints
             .WithSummary("Production impact of the line (suppliers get order codes/counts only)");
 
         var sh = api.MapGroup("/shipments").WithTags("Inbound").RequireAuthorization(Policies.SupplyRead);
-        sh.MapGet("", async (string? status, string? supplierCode, ShipmentService svc, CancellationToken ct) => Results.Ok(await svc.ListAsync(status, supplierCode, ct)));
+        sh.MapGet("", async (string? status, string? supplierCode, string? siteCode, ShipmentService svc, ISiteContext sites, CancellationToken ct) =>
+            Results.Ok(await svc.ListAsync(await sites.ResolveAsync(siteCode, ct), status, supplierCode, ct)));
         sh.MapGet("/{code}", async (string code, ShipmentService svc, CancellationToken ct) => Results.Ok(await svc.GetAsync(code, ct)));
         sh.MapPost("", async (CreateShipmentRequest req, ShipmentService svc, CancellationToken ct) => Results.Created($"/api/v1/shipments", await svc.CreateAsync(req, ct)))
             .AddEndpointFilter<ValidationFilter<CreateShipmentRequest>>().RequireAuthorization(Policies.SupplyWrite).WithSummary("Delivery advice (awizacja)");

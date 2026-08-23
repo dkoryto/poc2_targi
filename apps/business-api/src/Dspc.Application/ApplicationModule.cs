@@ -26,6 +26,8 @@ public static class ApplicationModule
         services.Configure<LocalAiOptions>(config.GetSection(LocalAiOptions.Section));
         services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
+        services.AddScoped<Modules.Sites.ISiteContext, Modules.Sites.SiteContext>();
+        services.AddScoped<Modules.Sites.SiteQueries>();
         services.AddScoped<IAuditWriter, AuditWriter>();
         services.AddScoped<IdentityService>();
         services.AddScoped<PlanModelBuilder>();

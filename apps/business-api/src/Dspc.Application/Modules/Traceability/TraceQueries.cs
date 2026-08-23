@@ -13,34 +13,34 @@ namespace Dspc.Application.Modules.Traceability;
 /// </summary>
 public sealed class TraceQueries(IAppDbContext db, TraceabilityIndex index)
 {
-    public async Task<IReadOnlyList<TraceSearchHit>> SearchAsync(string q, CancellationToken ct)
+    public async Task<IReadOnlyList<TraceSearchHit>> SearchAsync(Guid siteId, string q, CancellationToken ct)
     {
         var term = q.Trim();
         if (term.Length < 2) return [];
         var like = term.ToLower();
         var hits = new List<TraceSearchHit>();
 
-        hits.AddRange(await db.ProductSerials.AsNoTracking().Include(s => s.Product).Where(s => s.SerialNumber.ToLower().Contains(like))
+        hits.AddRange(await db.ProductSerials.AsNoTracking().Include(s => s.Product).Where(s => s.ProductionOrder!.SiteId == siteId && s.SerialNumber.ToLower().Contains(like))
             .OrderBy(s => s.SerialNumber).Take(10)
             .Select(s => new TraceSearchHit("Serial", s.SerialNumber, s.Product!.NamePl)).ToListAsync(ct));
 
-        hits.AddRange(await db.MaterialLots.AsNoTracking().Include(l => l.Part).Where(l => l.LotNumber.ToLower().Contains(like))
+        hits.AddRange(await db.MaterialLots.AsNoTracking().Include(l => l.Part).Where(l => l.SiteId == siteId && l.LotNumber.ToLower().Contains(like))
             .OrderBy(l => l.LotNumber).Take(10)
             .Select(l => new TraceSearchHit("Lot", l.LotNumber, $"{l.Part!.Code} · {l.Status}")).ToListAsync(ct));
 
-        hits.AddRange(await db.MaterialLots.AsNoTracking().Include(l => l.Part).Where(l => l.HeatNumber != null && l.HeatNumber!.ToLower().Contains(like))
+        hits.AddRange(await db.MaterialLots.AsNoTracking().Include(l => l.Part).Where(l => l.SiteId == siteId && l.HeatNumber != null && l.HeatNumber!.ToLower().Contains(like))
             .OrderBy(l => l.HeatNumber).Take(10)
             .Select(l => new TraceSearchHit("Heat", l.HeatNumber!, $"{l.Part!.Code} · {l.LotNumber}")).ToListAsync(ct));
 
-        hits.AddRange(await db.PurchaseOrders.AsNoTracking().Include(p => p.Supplier).Where(p => p.Code.ToLower().Contains(like))
+        hits.AddRange(await db.PurchaseOrders.AsNoTracking().Include(p => p.Supplier).Where(p => p.SiteId == siteId && p.Code.ToLower().Contains(like))
             .OrderBy(p => p.Code).Take(10)
             .Select(p => new TraceSearchHit("PurchaseOrder", p.Code, p.Supplier!.Name)).ToListAsync(ct));
 
-        hits.AddRange(await db.ProductionOrders.AsNoTracking().Include(o => o.Product).Where(o => o.Code.ToLower().Contains(like))
+        hits.AddRange(await db.ProductionOrders.AsNoTracking().Include(o => o.Product).Where(o => o.SiteId == siteId && o.Code.ToLower().Contains(like))
             .OrderBy(o => o.Code).Take(10)
             .Select(o => new TraceSearchHit("Order", o.Code, o.Product!.NamePl)).ToListAsync(ct));
 
-        hits.AddRange(await db.QualityDocuments.AsNoTracking().Where(d => d.DocumentNumber.ToLower().Contains(like))
+        hits.AddRange(await db.QualityDocuments.AsNoTracking().Where(d => d.DocumentNumber.ToLower().Contains(like) && ((d.PurchaseOrderLine != null && d.PurchaseOrderLine.PurchaseOrder!.SiteId == siteId) || (d.MaterialLot != null && d.MaterialLot.SiteId == siteId)))
             .OrderBy(d => d.DocumentNumber).Take(10)
             .Select(d => new TraceSearchHit("Document", d.DocumentNumber, d.Type.ToString())).ToListAsync(ct));
 

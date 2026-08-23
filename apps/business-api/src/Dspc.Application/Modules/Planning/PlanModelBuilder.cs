@@ -41,21 +41,22 @@ public sealed class PlanModel
 /// <summary>Assembles the planning problem (engine contract shape) from the database for the active baseline.</summary>
 public sealed class PlanModelBuilder(IAppDbContext db, IDemoClock clock, IOptions<PlanningOptions> options)
 {
-    public async Task<PlanModel> BuildAsync(PlanOverrides? overrides, CancellationToken ct, string scenarioId = "baseline")
+    /// <summary>Assembles the problem for one plant. Every plant has its own baseline, work centres, orders and stock.</summary>
+    public async Task<PlanModel> BuildAsync(Guid siteId, PlanOverrides? overrides, CancellationToken ct, string scenarioId = "baseline")
     {
         overrides ??= new PlanOverrides();
         var baseline = await db.PlanningBaselines.AsNoTracking()
-            .Where(b => b.Status == PlanningBaselineStatus.Active)
+            .Where(b => b.SiteId == siteId && b.Status == PlanningBaselineStatus.Active)
             .OrderByDescending(b => b.Version).FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException("PlanningBaseline", "active");
 
-        var lines = await db.AssemblyLines.AsNoTracking().ToDictionaryAsync(l => l.Id, ct);
-        var workCenters = await db.WorkCenters.AsNoTracking().Include(w => w.Calendar).OrderBy(w => w.Sequence).ToListAsync(ct);
+        var lines = await db.AssemblyLines.AsNoTracking().Where(l => l.SiteId == siteId).ToDictionaryAsync(l => l.Id, ct);
+        var workCenters = await db.WorkCenters.AsNoTracking().Include(w => w.Calendar).Where(w => w.SiteId == siteId).OrderBy(w => w.Sequence).ToListAsync(ct);
         var wcById = workCenters.ToDictionary(w => w.Id);
 
         var orders = await db.ProductionOrders.AsNoTracking()
             .Include(o => o.Product).Include(o => o.Operations)
-            .Where(o => o.Status != ProductionOrderStatus.Completed && o.Status != ProductionOrderStatus.Cancelled)
+            .Where(o => o.SiteId == siteId && o.Status != ProductionOrderStatus.Completed && o.Status != ProductionOrderStatus.Cancelled)
             .OrderBy(o => o.Code).ToListAsync(ct);
         var orderIds = orders.Select(o => o.Id).ToList();
 
@@ -67,9 +68,9 @@ public sealed class PlanModelBuilder(IAppDbContext db, IDemoClock clock, IOption
             .Where(r => orderIds.Contains(r.ProductionOrderId)).ToListAsync(ct);
 
         var parts = await db.Parts.AsNoTracking().ToDictionaryAsync(p => p.Code, StringComparer.OrdinalIgnoreCase, ct);
-        var lots = await db.MaterialLots.AsNoTracking().Include(l => l.Part).ToListAsync(ct);
+        var lots = await db.MaterialLots.AsNoTracking().Include(l => l.Part).Where(l => l.SiteId == siteId).ToListAsync(ct);
         var inboundLines = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.Part).Include(l => l.PurchaseOrder)
-            .Where(l => l.Status != PurchaseOrderLineStatus.Delivered && l.Quantity > l.DeliveredQuantity)
+            .Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status != PurchaseOrderLineStatus.Delivered && l.Quantity > l.DeliveredQuantity)
             .ToListAsync(ct);
 
         var planWcs = workCenters.Select(w => new PlanWorkCenter

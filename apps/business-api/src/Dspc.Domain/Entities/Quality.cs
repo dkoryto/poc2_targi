@@ -11,6 +11,8 @@ public class MaterialLot : VersionedEntity
     public PartDefinition? Part { get; set; }
     public Guid SupplierId { get; set; }
     public Supplier? Supplier { get; set; }
+    /// <summary>Receiving plant. Denormalised from the purchase-order line so lot queries can scope without a join.</summary>
+    public Guid SiteId { get; set; }
     public Guid? PurchaseOrderLineId { get; set; }
     public PurchaseOrderLine? PurchaseOrderLine { get; set; }
     public decimal Quantity { get; set; }

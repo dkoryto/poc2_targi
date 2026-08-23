@@ -1,6 +1,7 @@
 using Dspc.Api.Auth;
 using Dspc.Api.Middleware;
 using Dspc.Application.Modules.Quality;
+using Dspc.Application.Modules.Sites;
 
 namespace Dspc.Api.Endpoints;
 
@@ -10,8 +11,8 @@ public static class QualityEndpoints
     {
         var lots = api.MapGroup("/lots").WithTags("Quality").RequireAuthorization(Policies.SupplyRead);
 
-        lots.MapGet("", async (string? partCode, string? status, string? q, LotService svc, CancellationToken ct) =>
-                Results.Ok(await svc.ListAsync(partCode, status, q, ct)))
+        lots.MapGet("", async (string? partCode, string? status, string? q, string? siteCode, LotService svc, ISiteContext sites, CancellationToken ct) =>
+                Results.Ok(await svc.ListAsync(await sites.ResolveAsync(siteCode, ct), partCode, status, q, ct)))
             .WithSummary("Material lots (supplier users see only their own)");
 
         lots.MapGet("/{lotNumber}", async (string lotNumber, LotService svc, CancellationToken ct) =>

@@ -33,12 +33,14 @@ public sealed class RiskAssessmentService(IAppDbContext db, IOptions<RiskOptions
         var docs = await db.QualityDocuments.AsNoTracking().Where(d => d.PurchaseOrderLineId == line.Id).ToListAsync(ct);
         var accepted = requiredTypes.Count(t => docs.Any(d => d.Type == t && d.Status == DocumentStatus.Accepted));
 
-        var lots = await db.MaterialLots.AsNoTracking().Where(l => l.PartId == part.Id).ToListAsync(ct);
+        // stock, demand and the plan are all plant-local: a line only competes with its own plant
+        var siteId = line.PurchaseOrder?.SiteId ?? await db.PurchaseOrders.AsNoTracking().Where(p => p.Id == line.PurchaseOrderId).Select(p => p.SiteId).FirstAsync(ct);
+        var lots = await db.MaterialLots.AsNoTracking().Where(l => l.PartId == part.Id && l.SiteId == siteId).ToListAsync(ct);
         var onHand = lots.Where(l => l.Status is MaterialLotStatus.Accepted or MaterialLotStatus.ConditionallyReleased).Sum(l => l.RemainingQuantity);
-        var reserved = await db.Reservations.AsNoTracking().Where(r => r.PartId == part.Id && !r.IsBlocked).SumAsync(r => r.Quantity, ct);
+        var reserved = await db.Reservations.AsNoTracking().Where(r => r.PartId == part.Id && !r.IsBlocked && r.ProductionOrder!.SiteId == siteId).SumAsync(r => r.Quantity, ct);
         var free = onHand - reserved;
 
-        planImpact ??= await impact.EvaluateAsync(null, ct);
+        planImpact ??= await impact.EvaluateAsync(siteId, null, ct);
         var openDemand = planImpact.Model.Request.Orders.SelectMany(o => o.Operations).SelectMany(o => o.MaterialRequirements)
             .Where(r => r.PartCode.Equals(part.Code, StringComparison.OrdinalIgnoreCase)).Sum(r => r.Quantity);
 
@@ -129,8 +131,15 @@ public sealed class RiskAssessmentService(IAppDbContext db, IOptions<RiskOptions
             .Where(l => l.Status != PurchaseOrderLineStatus.Delivered);
         if (partCode is not null) q = q.Where(l => l.Part!.Code == partCode);
         var lines = await q.OrderBy(l => l.PurchaseOrder!.Code).ThenBy(l => l.LineNo).ToListAsync(ct);
-        var planImpact = await impact.EvaluateAsync(null, ct);
-        foreach (var line in lines) await AssessAndPersistAsync(line, trigger, planImpact, ct, raiseEvents);
+        // one plan evaluation per plant, reused across that plant's lines
+        var byPlant = new Dictionary<Guid, PlanImpact>();
+        foreach (var line in lines)
+        {
+            var siteId = line.PurchaseOrder!.SiteId;
+            if (!byPlant.TryGetValue(siteId, out var planImpact))
+                byPlant[siteId] = planImpact = await impact.EvaluateAsync(siteId, null, ct);
+            await AssessAndPersistAsync(line, trigger, planImpact, ct, raiseEvents);
+        }
         return lines.Count;
     }
 

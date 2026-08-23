@@ -1,5 +1,6 @@
 using Dspc.Api.Auth;
 using Dspc.Application.Modules.Planning;
+using Dspc.Application.Modules.Sites;
 
 namespace Dspc.Api.Endpoints;
 
@@ -10,10 +11,12 @@ public static class ScenarioEndpoints
     {
         var g = api.MapGroup("/planning/scenarios").WithTags("Planning").RequireAuthorization(Policies.Planner);
 
-        g.MapGet("/presets", async (ScenarioPresetProvider presets, CancellationToken ct) => Results.Ok(await presets.GetAsync(ct)))
+        g.MapGet("/presets", async (string? siteCode, ScenarioPresetProvider presets, ISiteContext sites, CancellationToken ct) =>
+                Results.Ok(await presets.GetAsync(await sites.ResolveSiteAsync(siteCode, ct), ct)))
             .WithSummary("The five demo What-If tiles, with inbound targets resolved to live purchase-order lines");
 
-        g.MapGet("", async (ScenarioService svc, CancellationToken ct) => Results.Ok(await svc.ListAsync(ct)))
+        g.MapGet("", async (string? siteCode, ScenarioService svc, ISiteContext sites, CancellationToken ct) =>
+                Results.Ok(await svc.ListAsync(await sites.ResolveAsync(siteCode, ct), ct)))
             .WithSummary("Recent scenarios");
 
         g.MapGet("/{id:guid}", async (Guid id, ScenarioService svc, CancellationToken ct) => Results.Ok(await svc.GetAsync(id, ct)))

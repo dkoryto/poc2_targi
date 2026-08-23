@@ -14,7 +14,7 @@ public sealed record KpisDto(DateTime AsOf, IReadOnlyList<KpiDto> Items);
 public sealed record MapSiteDto(string Code, string Name, double Lat, double Lon);
 public sealed record MapSupplierDto(string Code, string Name, string Country, string City, double Lat, double Lon, int RiskScore, string RiskCategory, int ActiveShipments);
 public sealed record MapShipmentDto(string Code, string PoCode, string SupplierCode, string SupplierName, string PartCode, string PartName, decimal Quantity, DateOnly Eta, DateOnly RequiredDate, string Status, int RiskScore, string RiskCategory, double Progress, double Lat, double Lon, IReadOnlyList<double[]> Route, IReadOnlyList<string> EndangeredOrders);
-public sealed record MapDto(MapSiteDto Site, IReadOnlyList<MapSupplierDto> Suppliers, IReadOnlyList<MapShipmentDto> Shipments);
+public sealed record MapDto(MapSiteDto Site, IReadOnlyList<MapSupplierDto> Suppliers, IReadOnlyList<MapShipmentDto> Shipments, IReadOnlyList<MapSiteDto> OtherSites);
 
 public sealed record HeatmapCellDto(string Row, string Col, int Score, int Count);
 public sealed record HeatmapDto(IReadOnlyList<string> Rows, IReadOnlyList<string> Cols, IReadOnlyList<HeatmapCellDto> Cells);
@@ -24,18 +24,18 @@ public sealed record QualityIssueDto(string Kind, string Code, string Label, str
 
 public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impact, IDemoClock clock, IOptions<RiskOptions> risk)
 {
-    public async Task<KpisDto> KpisAsync(CancellationToken ct)
+    public async Task<KpisDto> KpisAsync(Guid siteId, CancellationToken ct)
     {
-        var plan = await impact.EvaluateAsync(null, ct);
+        var plan = await impact.EvaluateAsync(siteId, null, ct);
         var today = clock.Today;
 
-        var openLines = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
+        var openLines = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
         var highRisk = openLines.Count(l => l.RiskScore >= risk.Value.HighRiskThreshold);
         var highRiskPrev = openLines.Count(l => l.OriginalEta == l.Eta ? l.RiskScore >= risk.Value.HighRiskThreshold : false); // seeded state as "previous period"
 
-        var delivered = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.Status == PurchaseOrderLineStatus.Delivered && l.DeliveredOn != null && l.DeliveredOn >= today.AddDays(-90)).ToListAsync(ct);
+        var delivered = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status == PurchaseOrderLineStatus.Delivered && l.DeliveredOn != null && l.DeliveredOn >= today.AddDays(-90)).ToListAsync(ct);
         var otif = delivered.Count == 0 ? 100 : 100.0 * delivered.Count(l => l.DeliveredOn <= l.RequiredDate && l.DeliveredQuantity >= l.Quantity) / delivered.Count;
-        var deliveredPrev = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.Status == PurchaseOrderLineStatus.Delivered && l.DeliveredOn != null && l.DeliveredOn >= today.AddDays(-180) && l.DeliveredOn < today.AddDays(-90)).ToListAsync(ct);
+        var deliveredPrev = await db.PurchaseOrderLines.AsNoTracking().Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status == PurchaseOrderLineStatus.Delivered && l.DeliveredOn != null && l.DeliveredOn >= today.AddDays(-180) && l.DeliveredOn < today.AddDays(-90)).ToListAsync(ct);
         var otifPrev = deliveredPrev.Count == 0 ? otif : 100.0 * deliveredPrev.Count(l => l.DeliveredOn <= l.RequiredDate && l.DeliveredQuantity >= l.Quantity) / deliveredPrev.Count;
 
         var orders = plan.Evaluation.Orders;
@@ -44,7 +44,7 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
         var baselineKpi = plan.Model.Baseline.KpiJson is null ? null : Common.Json.Deserialize<PlanKpi>(plan.Model.Baseline.KpiJson);
         var downtime = plan.Evaluation.Kpi.DowntimeHours;
 
-        var passports = await db.Passports.AsNoTracking().ToListAsync(ct);
+        var passports = await db.Passports.AsNoTracking().Where(p => p.ProductSerial!.ProductionOrder!.SiteId == siteId).ToListAsync(ct);
         var passportCompleteness = passports.Count == 0 ? 100 : 100.0 * passports.Count(p => p.Status is PassportStatus.Approved or PassportStatus.Generated) / passports.Count;
 
         var items = new List<KpiDto>
@@ -59,13 +59,14 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
         return new KpisDto(clock.UtcNow, items);
     }
 
-    public async Task<MapDto> MapAsync(CancellationToken ct)
+    public async Task<MapDto> MapAsync(Guid siteId, CancellationToken ct)
     {
-        var site = await db.Sites.AsNoTracking().OrderBy(s => s.Code).FirstAsync(ct);
+        var site = await db.Sites.AsNoTracking().FirstAsync(s => s.Id == siteId, ct);
+        var otherSites = await db.Sites.AsNoTracking().Where(s => s.Id != siteId).OrderBy(s => s.Sequence).ToListAsync(ct);
         var suppliers = await db.Suppliers.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Code).ToListAsync(ct);
         var shipments = await db.Shipments.AsNoTracking().Include(s => s.Supplier).Include(s => s.PurchaseOrder).Include(s => s.Lines).ThenInclude(l => l.Part)
-            .Where(s => s.Status != ShipmentStatus.Received && s.Status != ShipmentStatus.Cancelled).OrderBy(s => s.Eta).ToListAsync(ct);
-        var openLines = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.PurchaseOrder).Where(l => l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
+            .Where(s => s.PurchaseOrder!.SiteId == siteId && s.Status != ShipmentStatus.Received && s.Status != ShipmentStatus.Cancelled).OrderBy(s => s.Eta).ToListAsync(ct);
+        var openLines = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.PurchaseOrder).Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
         var lineIds = shipments.SelectMany(s => s.Lines.Select(l => l.Id)).ToList();
         var latest = await db.RiskAssessments.AsNoTracking().Where(r => lineIds.Contains(r.PurchaseOrderLineId)).GroupBy(r => r.PurchaseOrderLineId).Select(g => g.OrderByDescending(r => r.AssessedAt).First()).ToListAsync(ct);
         var endangeredByLine = latest.ToDictionary(r => r.PurchaseOrderLineId, r => (Common.Json.Deserialize<List<Common.EndangeredOrderDto>>(r.EndangeredOrdersJson) ?? new()).Select(e => e.OrderCode).ToList());
@@ -87,7 +88,8 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
             return new MapShipmentDto(s.Code, s.PurchaseOrder!.Code, sup.Code, sup.Name, main.Part!.Code, main.Part.NamePl, s.Lines.Sum(l => l.Quantity), s.Eta, s.Lines.Min(l => l.RequiredDate), s.Status.ToString(),
                 main.RiskScore, main.RiskCategory.ToString(), s.Progress, route[idx][1], route[idx][0], route, endangered);
         }).ToList();
-        return new MapDto(new MapSiteDto(site.Code, site.Name, site.Latitude, site.Longitude), supplierDtos, shipmentDtos);
+        return new MapDto(new MapSiteDto(site.Code, site.Name, site.Latitude, site.Longitude), supplierDtos, shipmentDtos,
+            otherSites.Select(s => new MapSiteDto(s.Code, s.Name, s.Latitude, s.Longitude)).ToList());
     }
 
     /// <summary>Gently curved polyline [lon,lat] from supplier to site (great-circle-ish feel without external data).</summary>
@@ -110,10 +112,10 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
         return pts;
     }
 
-    public async Task<HeatmapDto> HeatmapAsync(CancellationToken ct)
+    public async Task<HeatmapDto> HeatmapAsync(Guid siteId, CancellationToken ct)
     {
         var lines = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.Part).Include(l => l.PurchaseOrder).ThenInclude(p => p!.Supplier)
-            .Where(l => l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
+            .Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
         var rows = lines.Select(l => l.PurchaseOrder!.Supplier!.Country).Distinct().OrderBy(c => c == "PL" ? "" : c).ToList();
         var cols = Enum.GetNames<PartCategory>().ToList();
         var cells = new List<HeatmapCellDto>();
@@ -126,13 +128,14 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
         return new HeatmapDto(rows, cols, cells);
     }
 
-    public async Task<QualityStatusDto> QualityStatusAsync(CancellationToken ct)
+    public async Task<QualityStatusDto> QualityStatusAsync(Guid siteId, CancellationToken ct)
     {
-        var passports = await db.Passports.AsNoTracking().Include(p => p.ProductSerial).ToListAsync(ct);
-        var docs = await db.QualityDocuments.AsNoTracking().Include(d => d.PurchaseOrderLine).ThenInclude(l => l!.PurchaseOrder).ToListAsync(ct);
-        var ncr = await db.NonConformances.AsNoTracking().Where(n => n.Status != NonConformanceStatus.Closed).ToListAsync(ct);
-        var lots = await db.MaterialLots.AsNoTracking().Where(l => l.Status == MaterialLotStatus.Blocked || l.Status == MaterialLotStatus.Recalled).ToListAsync(ct);
-        var serials = await db.ProductSerials.AsNoTracking().CountAsync(s => s.Status == SerialStatus.InProduction, ct);
+        var passports = await db.Passports.AsNoTracking().Include(p => p.ProductSerial).Where(p => p.ProductSerial!.ProductionOrder!.SiteId == siteId).ToListAsync(ct);
+        var docs = await db.QualityDocuments.AsNoTracking().Include(d => d.PurchaseOrderLine).ThenInclude(l => l!.PurchaseOrder)
+            .Where(d => (d.PurchaseOrderLine != null && d.PurchaseOrderLine.PurchaseOrder!.SiteId == siteId) || (d.MaterialLot != null && d.MaterialLot.SiteId == siteId)).ToListAsync(ct);
+        var ncr = await db.NonConformances.AsNoTracking().Where(n => n.Status != NonConformanceStatus.Closed && (n.MaterialLot == null || n.MaterialLot.SiteId == siteId)).ToListAsync(ct);
+        var lots = await db.MaterialLots.AsNoTracking().Where(l => l.SiteId == siteId && (l.Status == MaterialLotStatus.Blocked || l.Status == MaterialLotStatus.Recalled)).ToListAsync(ct);
+        var serials = await db.ProductSerials.AsNoTracking().CountAsync(s => s.Status == SerialStatus.InProduction && s.ProductionOrder!.SiteId == siteId, ct);
         var issues = new List<QualityIssueDto>();
         issues.AddRange(docs.Where(d => d.Status is DocumentStatus.Rejected or DocumentStatus.RequiresCompletion or DocumentStatus.Missing or DocumentStatus.Pending)
             .OrderBy(d => d.Status).Select(d => new QualityIssueDto("Document", d.DocumentNumber, $"{d.Type} · {(d.PurchaseOrderLine?.PurchaseOrder?.Code ?? d.LotNumber ?? "")}", d.Status.ToString(), d.PurchaseOrderLine?.PurchaseOrder is { } po ? $"/supply/orders/{po.Code}" : null)));
@@ -144,5 +147,5 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
             ncr.Count, lots.Count, passports.Count(p => p.Status is PassportStatus.Approved or PassportStatus.Generated), serials, issues.Take(12).ToList());
     }
 
-    public async Task<GanttData> PlanAsync(CancellationToken ct) => (await impact.EvaluateAsync(null, ct)).Gantt;
+    public async Task<GanttData> PlanAsync(Guid siteId, CancellationToken ct) => (await impact.EvaluateAsync(siteId, null, ct)).Gantt;
 }

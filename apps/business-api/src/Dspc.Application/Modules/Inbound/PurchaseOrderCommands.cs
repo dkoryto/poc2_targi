@@ -73,7 +73,7 @@ public sealed class PurchaseOrderCommands(IAppDbContext db, ISupplierScope scope
         {
             var overrides = new PlanOverrides();
             overrides.EtaByLineId[line.Id] = line.Eta;
-            var planImpact = await impact.EvaluateAsync(overrides, ct);
+            var planImpact = await impact.EvaluateAsync(po2.SiteId, overrides, ct);
             riskDto = await risk.AssessAndPersistAsync(line, etaChanged ? "EtaChanged" : "LineUpdated", planImpact, ct);
         }
         else riskDto = await CurrentRiskAsync(line, ct);
@@ -109,7 +109,7 @@ public sealed class PurchaseOrderCommands(IAppDbContext db, ISupplierScope scope
 
         var overrides = new PlanOverrides();
         overrides.EtaByLineId[line.Id] = line.Eta;
-        var planImpact = await impact.EvaluateAsync(overrides, ct);
+        var planImpact = await impact.EvaluateAsync(po.SiteId, overrides, ct);
         var riskDto = await risk.AssessAndPersistAsync(line, "EtaChanged", planImpact, ct);
         audit.Write("PurchaseOrderLine.EtaChange", "PurchaseOrderLine", $"{po.Code}/{line.LineNo}", line.Id, before, Snapshot(line));
         await db.SaveChangesAsync(ct);
@@ -121,7 +121,7 @@ public sealed class PurchaseOrderCommands(IAppDbContext db, ISupplierScope scope
     public async Task<LineImpactDto> ImpactAsync(string poCode, Guid lineId, CancellationToken ct)
     {
         var line = await LoadLineAsync(poCode, lineId, ct);
-        var planImpact = await impact.EvaluateAsync(null, ct);
+        var planImpact = await impact.EvaluateAsync(line.PurchaseOrder!.SiteId, null, ct);
         var (result, endangered) = await risk.ComputeAsync(line, planImpact, ct);
         var dto = RiskAssessmentService.ToDto(result, endangered, clock.UtcNow);
         if (scope.IsRestricted)

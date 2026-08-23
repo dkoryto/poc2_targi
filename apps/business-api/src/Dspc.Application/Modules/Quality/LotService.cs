@@ -19,9 +19,9 @@ public sealed class LotService(
     IEventPublisher events, IAuditWriter audit, TraceabilityIndex trace,
     Passports.PassportInvalidationService passportInvalidation)
 {
-    public async Task<ListResult<LotSummaryDto>> ListAsync(string? partCode, string? status, string? q, CancellationToken ct)
+    public async Task<ListResult<LotSummaryDto>> ListAsync(Guid siteId, string? partCode, string? status, string? q, CancellationToken ct)
     {
-        var query = scope.Apply(db.MaterialLots.AsNoTracking()).Include(l => l.Part).Include(l => l.Supplier).AsQueryable();
+        var query = scope.Apply(db.MaterialLots.AsNoTracking()).Where(l => l.SiteId == siteId).Include(l => l.Part).Include(l => l.Supplier).AsQueryable();
         if (!string.IsNullOrWhiteSpace(partCode)) query = query.Where(l => l.Part!.Code == partCode);
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<MaterialLotStatus>(status, true, out var s)) query = query.Where(l => l.Status == s);
         if (!string.IsNullOrWhiteSpace(q))

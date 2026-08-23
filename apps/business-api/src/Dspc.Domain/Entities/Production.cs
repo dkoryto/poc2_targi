@@ -104,6 +104,7 @@ public class OperationDefinition : Entity
 
 public class PlanningBaseline : Entity
 {
+    public Guid SiteId { get; set; }
     public int Version { get; set; }
     public PlanningBaselineStatus Status { get; set; }
     public DateOnly HorizonStart { get; set; }

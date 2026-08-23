@@ -82,7 +82,10 @@ public class SupplierIsolationTests(ApiFixture fx)
         shipments.GetProperty("items").EnumerateArray().Select(s => s.GetProperty("supplierCode").GetString()).Should().OnlyContain(s => s == "SUP-02");
         var docs = await hydromech.GetFromJsonAsync<JsonElement>("/api/v1/documents", ApiFixture.Json);
         var numbers = docs.GetProperty("items").EnumerateArray().Select(d => d.GetProperty("documentNumber").GetString()!).ToList();
-        numbers.Should().HaveCount(9); // 5 line documents (PO-2026-0007/0012) + 4 lot documents (ACT-40-0388/0371)
+        // Kielce: 5 line documents (PO-2026-0007/0012) + 4 lot documents (ACT-40-0388/0371);
+        // SUP-02 also supplies Zamość (PO-2026-2005), which adds its line and lot certificate.
+        numbers.Should().HaveCount(11);
+        numbers.Should().Contain(["MC-HYD-2026-3114", "MC-HYD-2026-3114L"]);
         numbers.Should().NotContain(n => n.Contains("VIS") || n.Contains("NOR") || n.Contains("BAL") || n.Contains("CAR") || n.Contains("RHC") || n.Contains("SIL") || n.Contains("IBE"));
         var suppliers = await hydromech.GetFromJsonAsync<JsonElement>("/api/v1/suppliers", ApiFixture.Json);
         suppliers.GetProperty("total").GetInt32().Should().Be(1);

@@ -10,9 +10,9 @@ namespace Dspc.Application.Modules.Inbound;
 
 public sealed class ShipmentService(IAppDbContext db, ISupplierScope scope, ICurrentUser user, IDemoClock clock, IEventPublisher events, IAuditWriter audit, RiskAssessmentService risk)
 {
-    public async Task<ListResult<ShipmentDto>> ListAsync(string? status, string? supplierCode, CancellationToken ct)
+    public async Task<ListResult<ShipmentDto>> ListAsync(Guid siteId, string? status, string? supplierCode, CancellationToken ct)
     {
-        var q = scope.Apply(db.Shipments.AsNoTracking()).Include(s => s.Supplier).Include(s => s.PurchaseOrder).Include(s => s.Events).Include(s => s.Lines).ThenInclude(l => l.Part).AsQueryable();
+        var q = scope.Apply(db.Shipments.AsNoTracking()).Where(s => s.PurchaseOrder!.SiteId == siteId).Include(s => s.Supplier).Include(s => s.PurchaseOrder).Include(s => s.Events).Include(s => s.Lines).ThenInclude(l => l.Part).AsQueryable();
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<ShipmentStatus>(status, true, out var st)) q = q.Where(s => s.Status == st);
         if (!string.IsNullOrWhiteSpace(supplierCode)) q = q.Where(s => s.Supplier!.Code == supplierCode);
         var list = await q.OrderBy(s => s.Eta).ThenBy(s => s.Code).ToListAsync(ct);

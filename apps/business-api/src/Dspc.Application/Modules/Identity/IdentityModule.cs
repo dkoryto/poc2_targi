@@ -18,7 +18,7 @@ public sealed class DemoOptions
 }
 
 public sealed record LoginRequest(string Username, string Password);
-public sealed record UserContextDto(Guid Id, string Username, string DisplayName, string Role, Guid? SupplierId, string? SupplierCode, string? SupplierName, Guid SiteId, string SiteCode, string Locale, bool DemoMode);
+public sealed record UserContextDto(Guid Id, string Username, string DisplayName, string Role, Guid? SupplierId, string? SupplierCode, string? SupplierName, Guid SiteId, string SiteCode, string Locale, bool DemoMode, IReadOnlyList<string> AvailableSites);
 public sealed record LoginResponse(string AccessToken, DateTime ExpiresAt, UserContextDto User);
 public sealed record DemoAccountDto(string Username, string Role, string? SupplierCode, string? Description);
 
@@ -80,6 +80,19 @@ public sealed class IdentityService(IAppDbContext db, IPasswordHasher hasher, IJ
     private async Task<UserContextDto> ToContextAsync(User user, CancellationToken ct)
     {
         var site = await db.Sites.AsNoTracking().FirstAsync(s => s.Id == user.SiteId, ct);
-        return new UserContextDto(user.Id, user.Username, user.DisplayName, user.Role.ToString(), user.SupplierId, user.Supplier?.Code, user.Supplier?.Name, user.SiteId, site.Code, user.Locale, DemoEnabled);
+        // Plants this user may switch between: a supplier only sees the ones it actually delivers to.
+        var all = await db.Sites.AsNoTracking().OrderBy(s => s.Sequence).ThenBy(s => s.Code).ToListAsync(ct);
+        List<string> available;
+        if (user.Role == Role.SupplierUser && user.SupplierId is { } supplierId)
+        {
+            var supplied = await db.PurchaseOrders.AsNoTracking().Where(p => p.SupplierId == supplierId).Select(p => p.SiteId).Distinct().ToListAsync(ct);
+            available = all.Where(s => supplied.Contains(s.Id)).Select(s => s.Code).ToList();
+            if (available.Count == 0) available = [site.Code];
+        }
+        else available = all.Select(s => s.Code).ToList();
+
+        var defaultSite = available.Contains(site.Code) ? site : all.First(s => s.Code == available[0]);
+        return new UserContextDto(user.Id, user.Username, user.DisplayName, user.Role.ToString(), user.SupplierId, user.Supplier?.Code, user.Supplier?.Name,
+            defaultSite.Id, defaultSite.Code, user.Locale, DemoEnabled, available);
     }
 }

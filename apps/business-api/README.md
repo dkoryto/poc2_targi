@@ -52,9 +52,20 @@ dotnet ef migrations add <Name> -p src/Dspc.Infrastructure -s src/Dspc.Api -o Pe
 | Project | Contents |
 |---|---|
 | `Dspc.Domain` | entities + enums (`Entities/*.cs`, `Common/Enums.cs`), domain events (`Events/DomainEvents.cs`), `Risk/RiskScoreCalculator` (pure, weights injected) |
-| `Dspc.Application` | `Abstractions/` (db, current user, supplier scope, event publisher, clock, storage, scanner, seeder), `Modules/<Name>/` vertical slices: Identity, Dashboard, Suppliers, Inbound (PO/lines/ETA/shipments/logistics events), Documents, Inventory, Risk, Planning (`PlanModelBuilder` → engine contract, `Scheduling/BaselineImpactEvaluator` = impact + fallback, `GanttBuilder`, `ScenarioService` + `ScenarioRunnerHostedService` = What-If), Quality (`LotService` lots/inspections/blocking, `TraceabilityIndex`), Traceability (`TraceQueries` genealogy), Passports (`PassportService` completeness/approval/versioned PDF, `PassportInvalidationService`), Notifications, Audit, Demo, Admin |
+| `Dspc.Application` | `Abstractions/` (db, current user, supplier scope, event publisher, clock, storage, scanner, seeder), `Modules/<Name>/` vertical slices: Identity, Dashboard, Suppliers, Inbound (PO/lines/ETA/shipments/logistics events), Documents, Inventory, Risk, Planning (`PlanModelBuilder` → engine contract, `Scheduling/BaselineImpactEvaluator` = impact + fallback, `GanttBuilder`, `ScenarioService` + `ScenarioRunnerHostedService` = What-If), Quality (`LotService` lots/inspections/blocking, `TraceabilityIndex`), Traceability (`TraceQueries` genealogy), Passports (`PassportService` completeness/approval/versioned PDF, `PassportInvalidationService`), Notifications, Audit, Demo, Admin, Sites (`ISiteContext` plant resolution + `SiteQueries`) |
 | `Dspc.Infrastructure` | `Persistence/` (`AppDbContext`, one `IEntityTypeConfiguration` per entity, snake_case, `xmin` concurrency, migrations), `Seeding/DemoSeeder` (deterministic, T0-relative, fixture-driven), `Outbox/`, `Identity/` (PBKDF2 + JWT), `Storage/` (FileSystem, MinIO), `Services/` (clock, probes, recent errors, no-op scanner), `Documents/` (QuestPDF passport renderer + QRCoder, seed post-processor) |
 | `Dspc.Api` | `Program.cs` composition, `Endpoints/*` minimal-API groups, `Auth/` (`HttpCurrentUser`, `SupplierScope`, `Policies`), `Middleware/` (correlation id, security headers, Problem Details handler, idempotency, validation filter), `Realtime/LiveHub` |
+
+## Multi-site
+
+Four demo plants share one organisation: `SITE-01` Kielce (golden path), `SITE-02` Piła, `SITE-03` Zamość,
+`SITE-04` Leszno — each with its own work centres, orders, purchase orders, lots, baseline and headline What-If
+scenario. Listing and dashboard endpoints take `?siteCode=`; `ISiteContext` resolves it (absent → caller's default,
+unknown → 404, out of reach → 403) and query classes take a plain `Guid siteId`. Suppliers reach only the plants
+they deliver to. SITE-01 is seeded from the golden-path files, the other three from `packages/demo-data/plants.json`
+(regenerate with `node packages/demo-data/generate-plants.mjs`).
+
+See `docs/architecture/multi-site.md` and `docs/adr/0007-multi-site-scoping.md`.
 
 ## Request pipeline
 

@@ -5,6 +5,18 @@ Errors: RFC 7807 Problem Details (`type`, `title`, `status`, `detail`, `errors?`
 Auth: `Authorization: Bearer <jwt>`. Lists return `{ items: T[], total: number }`. Every mutating endpoint accepts optional `Idempotency-Key` header and returns `ETag`/expects `If-Match` (rowVersion) on status edits → `412` on conflict.
 SignalR hub `/hubs/live`, server→client method `DomainEvent(event: { name: string; occurredAt: string; correlationId: string; payload: object })`.
 
+## Multi-site
+
+The demonstrator runs four plants (`SITE-01` Kielce … `SITE-04` Leszno). Every listing and dashboard endpoint below
+accepts an optional **`?siteCode=`**; omitting it uses the caller's default plant. Unknown plant → `404`, a plant the
+caller may not see → `403`. `GET /sites` lists the plants available to the caller and `GET /auth/me` returns
+`siteCode` plus `availableSites`. Full contract and the per-plant scenarios: `docs/architecture/multi-site.md`.
+
+Exceptions: `/notifications` and `/audit` are organisation-wide (neither entity carries a plant) — see
+`docs/adr/0007-multi-site-scoping.md`.
+
+- `GET /sites` → `[{ code, name, city, country, lat, lon, timeZone, profileKey, featuredScenarioKey, isDefault }]`
+
 ## Identity
 - `POST /auth/login { username, password } → { accessToken, expiresAt, user: UserContext }`
 - `GET /auth/me → UserContext { id, username, displayName, role, supplierId?, supplierName?, siteId, locale, demoMode }`

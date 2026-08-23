@@ -3,6 +3,7 @@ using Dspc.Application.Common;
 using Dspc.Domain.Common;
 using Dspc.Domain.Entities;
 using Dspc.Domain.Events;
+using Dspc.Application.Modules.Sites;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -21,13 +22,15 @@ public sealed class ScenarioService(
     ICurrentUser user,
     IAuditWriter audit,
     IEventPublisher events,
+    Sites.ISiteContext siteContext,
     ILogger<ScenarioService> log)
 {
     // ---------------------------------------------------------------- queries
 
-    public async Task<ListResult<ScenarioSummaryDto>> ListAsync(CancellationToken ct)
+    public async Task<ListResult<ScenarioSummaryDto>> ListAsync(Guid siteId, CancellationToken ct)
     {
         var rows = await db.PlanningScenarios.AsNoTracking().Include(s => s.Changes)
+            .Where(s => s.SiteId == siteId)
             .OrderByDescending(s => s.CreatedAt).Take(50).ToListAsync(ct);
         return ListResult.Of(rows.Select(s => new ScenarioSummaryDto(
             s.Id, s.Name, s.Status.ToString(), s.CreatedAt, s.CreatedBy, s.Solver, s.Changes.Count,
@@ -69,11 +72,14 @@ public sealed class ScenarioService(
 
         await ValidateChangesAsync(request.Changes, ct);
 
-        var baseline = await ActiveBaselineAsync(ct);
+        // The plant is implied by what the changes point at; mixing plants in one scenario is rejected.
+        var siteId = await ResolveScenarioSiteAsync(request.Changes, request.SiteCode, ct);
+        var baseline = await ActiveBaselineAsync(siteId, ct);
         var scenario = new PlanningScenario
         {
             Id = Guid.NewGuid(),
             Name = request.Name.Trim(),
+            SiteId = siteId,
             PresetKey = request.PresetKey,
             Status = PlanningScenarioStatus.Draft,
             BaselineId = baseline.Id,
@@ -184,10 +190,10 @@ public sealed class ScenarioService(
             var overrides = await ToOverridesAsync(changes, ct);
 
             // "Before" = baseline + the scenario change, no re-sequencing.
-            var before = await impact.EvaluateAsync(overrides, ct);
+            var before = await impact.EvaluateAsync(s.SiteId, overrides, ct);
 
             // "After" = the engine proposal for the same problem.
-            var model = await builder.BuildAsync(overrides, ct, s.Id.ToString());
+            var model = await builder.BuildAsync(s.SiteId, overrides, ct, s.Id.ToString());
             var outcome = await engine.SolveAsync(model.Request, ct);
             var after = GanttBuilder.Build(model, outcome.Response, clock);
 
@@ -317,13 +323,14 @@ public sealed class ScenarioService(
         if (s.ResponseJson is null) throw new ConflictException("Scenario has no plan to approve.");
 
         var response = Json.Deserialize<PlanningResponse>(s.ResponseJson)!;
-        var current = await ActiveBaselineAsync(ct);
+        var current = await ActiveBaselineAsync(s.SiteId, ct);
         var currentOps = await db.ScheduledOperations.Where(o => o.PlanningBaselineId == current.Id).AsNoTracking().ToListAsync(ct);
         var codeByOperationId = await db.OperationDefinitions.AsNoTracking().ToDictionaryAsync(o => o.Id, o => o.Code, ct);
 
         var next = new PlanningBaseline
         {
             Id = Guid.NewGuid(),
+            SiteId = current.SiteId,
             Version = current.Version + 1,
             Status = PlanningBaselineStatus.Active,
             HorizonStart = current.HorizonStart,
@@ -398,10 +405,49 @@ public sealed class ScenarioService(
         await db.PlanningScenarios.Include(s => s.Changes).FirstOrDefaultAsync(s => s.Id == id, ct)
         ?? throw new NotFoundException("PlanningScenario", id.ToString());
 
-    private async Task<PlanningBaseline> ActiveBaselineAsync(CancellationToken ct) =>
-        await db.PlanningBaselines.AsNoTracking().Where(b => b.Status == PlanningBaselineStatus.Active)
+    private async Task<PlanningBaseline> ActiveBaselineAsync(Guid siteId, CancellationToken ct) =>
+        await db.PlanningBaselines.AsNoTracking().Where(b => b.SiteId == siteId && b.Status == PlanningBaselineStatus.Active)
             .OrderByDescending(b => b.Version).FirstOrDefaultAsync(ct)
         ?? throw new NotFoundException("PlanningBaseline", "active");
+
+    /// <summary>
+    /// Derives the plant from the scenario's targets. Every target must belong to the same plant — a scenario that
+    /// mixes plants is a modelling error, not something to silently pick a winner for.
+    /// </summary>
+    private async Task<Guid> ResolveScenarioSiteAsync(IReadOnlyList<ScenarioChangeDto> changes, string? siteCode, CancellationToken ct)
+    {
+        var found = new Dictionary<Guid, string>();
+        foreach (var c in changes)
+        {
+            Guid? id = c.Type switch
+            {
+                ScenarioChangeType.DELAY_INBOUND when c.PoLineId is { } lineId =>
+                    await db.PurchaseOrderLines.AsNoTracking().Where(l => l.Id == lineId).Select(l => (Guid?)l.PurchaseOrder!.SiteId).FirstOrDefaultAsync(ct),
+                ScenarioChangeType.BLOCK_LOT when c.LotNumber is { } lot =>
+                    await db.MaterialLots.AsNoTracking().Where(l => l.LotNumber == lot).Select(l => (Guid?)l.SiteId).FirstOrDefaultAsync(ct),
+                ScenarioChangeType.PRIORITY or ScenarioChangeType.DELAY_ORDER when c.OrderCode is { } oc =>
+                    await db.ProductionOrders.AsNoTracking().Where(o => o.Code == oc).Select(o => (Guid?)o.SiteId).FirstOrDefaultAsync(ct),
+                ScenarioChangeType.CAPACITY when c.WorkCenterCode is { } wc =>
+                    await db.WorkCenters.AsNoTracking().Where(w => w.Code == wc).Select(w => (Guid?)w.SiteId).FirstOrDefaultAsync(ct),
+                _ => null
+            };
+            if (id is { } sid && sid != Guid.Empty) found[sid] = TargetCodeOf(c) ?? c.Type.ToString();
+        }
+
+        if (found.Count > 1)
+            throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["changes"] = [$"A scenario must stay within one plant, but its targets span {found.Count}: {string.Join(", ", found.Values)}."]
+            });
+        if (found.Count == 1)
+        {
+            var sid = found.Keys.First();
+            // still enforce the caller's reach
+            var site = await db.Sites.AsNoTracking().FirstAsync(x => x.Id == sid, ct);
+            return (await siteContext.ResolveSiteAsync(site.Code, ct)).Id;
+        }
+        return await siteContext.ResolveAsync(siteCode, ct);
+    }
 
     private static ScenarioDto ToDto(PlanningScenario s, int? approvedBaselineVersion = null)
     {

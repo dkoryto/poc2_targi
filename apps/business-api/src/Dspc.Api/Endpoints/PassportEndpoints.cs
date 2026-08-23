@@ -1,5 +1,6 @@
 using Dspc.Api.Auth;
 using Dspc.Application.Modules.Passports;
+using Dspc.Application.Modules.Sites;
 
 namespace Dspc.Api.Endpoints;
 
@@ -9,8 +10,8 @@ public static class PassportEndpoints
     {
         var g = api.MapGroup("/passports").WithTags("Passports").RequireAuthorization(Policies.Trace);
 
-        g.MapGet("", async (string? status, string? q, PassportService svc, CancellationToken ct) =>
-            Results.Ok(await svc.ListAsync(status, q, ct)));
+        g.MapGet("", async (string? status, string? q, string? siteCode, PassportService svc, ISiteContext sites, CancellationToken ct) =>
+                Results.Ok(await svc.ListAsync(await sites.ResolveAsync(siteCode, ct), status, q, ct)));
 
         g.MapGet("/{serial}", async (string serial, PassportService svc, CancellationToken ct) =>
                 Results.Ok(await svc.GetAsync(serial, ct)))

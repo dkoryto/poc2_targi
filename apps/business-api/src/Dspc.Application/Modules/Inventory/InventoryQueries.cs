@@ -12,13 +12,13 @@ public sealed record InventoryItemDto(string PartCode, string PartName, string P
 
 public sealed class InventoryQueries(IAppDbContext db, IPlanImpactEvaluator impact, IDemoClock clock)
 {
-    public async Task<ListResult<InventoryItemDto>> ListAsync(string? partCode, CancellationToken ct)
+    public async Task<ListResult<InventoryItemDto>> ListAsync(Guid siteId, string? partCode, CancellationToken ct)
     {
         var parts = await db.Parts.AsNoTracking().Where(p => partCode == null || p.Code == partCode).OrderBy(p => p.Code).ToListAsync(ct);
-        var lots = await db.MaterialLots.AsNoTracking().Include(l => l.Supplier).ToListAsync(ct);
-        var reservations = await db.Reservations.AsNoTracking().Where(r => !r.IsBlocked).GroupBy(r => r.PartId).Select(g => new { g.Key, Qty = g.Sum(r => r.Quantity) }).ToDictionaryAsync(x => x.Key, x => x.Qty, ct);
-        var inbound = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.PurchaseOrder).Where(l => l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
-        var plan = await impact.EvaluateAsync(null, ct);
+        var lots = await db.MaterialLots.AsNoTracking().Include(l => l.Supplier).Where(l => l.SiteId == siteId).ToListAsync(ct);
+        var reservations = await db.Reservations.AsNoTracking().Where(r => !r.IsBlocked && r.ProductionOrder!.SiteId == siteId).GroupBy(r => r.PartId).Select(g => new { g.Key, Qty = g.Sum(r => r.Quantity) }).ToDictionaryAsync(x => x.Key, x => x.Qty, ct);
+        var inbound = await db.PurchaseOrderLines.AsNoTracking().Include(l => l.PurchaseOrder).Where(l => l.PurchaseOrder!.SiteId == siteId && l.Status != PurchaseOrderLineStatus.Delivered).ToListAsync(ct);
+        var plan = await impact.EvaluateAsync(siteId, null, ct);
         var demand = plan.Model.Request.Orders.SelectMany(o => o.Operations).SelectMany(o => o.MaterialRequirements).GroupBy(r => r.PartCode, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity), StringComparer.OrdinalIgnoreCase);
         var items = parts.Select(p =>
         {

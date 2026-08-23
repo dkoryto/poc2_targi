@@ -3,6 +3,8 @@ using Dspc.Api.Auth;
 using Dspc.Application.Modules.Audit;
 using Dspc.Application.Modules.Traceability;
 
+using Dspc.Application.Modules.Sites;
+
 namespace Dspc.Api.Endpoints;
 
 public static class TraceEndpoints
@@ -11,8 +13,8 @@ public static class TraceEndpoints
     {
         var g = api.MapGroup("/trace").WithTags("Traceability").RequireAuthorization(Policies.Trace);
 
-        g.MapGet("/search", async (string? q, TraceQueries svc, CancellationToken ct) =>
-                Results.Ok(await svc.SearchAsync(q ?? "", ct)))
+        g.MapGet("/search", async (string? q, string? siteCode, TraceQueries svc, ISiteContext sites, CancellationToken ct) =>
+                Results.Ok(await svc.SearchAsync(await sites.ResolveAsync(siteCode, ct), q ?? "", ct)))
             .WithSummary("Search serials, lots, heats, purchase orders, production orders and documents");
 
         g.MapGet("/serials/{serial}", async (string serial, TraceQueries svc, CancellationToken ct) =>
