@@ -31,7 +31,7 @@ public static class HealthEndpoints
                 var ready = report.Status != HealthStatus.Unhealthy && MigrateAndSeedHostedService.Ready;
                 ctx.Response.StatusCode = ready ? 200 : 503;
                 ctx.Response.ContentType = "application/json";
-                await ctx.Response.WriteAsJsonAsync(new { status = ready ? "Healthy" : "Unhealthy", seeded = MigrateAndSeedHostedService.Ready, seedError = MigrateAndSeedHostedService.LastError, checks = report.Entries.Select(e => new { name = e.Key, status = e.Value.Status.ToString(), durationMs = (int)e.Value.Duration.TotalMilliseconds }) });
+                await ctx.Response.WriteAsJsonAsync(new { status = ready ? "Healthy" : "Unhealthy", seeded = MigrateAndSeedHostedService.Ready, seedError = MigrateAndSeedHostedService.LastError, remediation = MigrateAndSeedHostedService.FatalError, checks = report.Entries.Select(e => new { name = e.Key, status = e.Value.Status.ToString(), durationMs = (int)e.Value.Duration.TotalMilliseconds }) });
             }
         }).AllowAnonymous();
     }

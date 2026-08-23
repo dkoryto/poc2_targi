@@ -11,6 +11,7 @@ using Dspc.Domain.Common;
 using Dspc.Domain.Entities;
 using Dspc.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -49,10 +50,39 @@ public sealed partial class DemoSeeder(
     {
         if (await db.Sites.AnyAsync(ct))
         {
-            state.Last ??= new SeedResult(0, SeedVersion, clock.UtcNow, new Dictionary<string, int>());
-            return state.Last;
+            // The database already holds demo data, but it may have been written by an older build (e.g. a
+            // single-plant seed upgraded in place). Re-seed when the stored version differs, otherwise the
+            // demo would silently run on stale data that no longer matches this build.
+            var stored = await ReadSeedVersionAsync(ct);
+            if (stored == SeedVersion)
+            {
+                state.Last ??= new SeedResult(0, SeedVersion, clock.UtcNow, new Dictionary<string, int>());
+                return state.Last;
+            }
+            log.LogInformation("Seed version changed ({Stored} -> {Current}); re-seeding demo data", stored ?? "unknown", SeedVersion);
         }
         return await ResetAsync(ct);
+    }
+
+    /// <summary>Seed version recorded in <c>seed_metadata</c>, or null when never written (pre-multi-site databases).</summary>
+    private async Task<string?> ReadSeedVersionAsync(CancellationToken ct)
+    {
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync(ct);
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT seed_version FROM seed_metadata WHERE id = 1";
+        if (db.Database.CurrentTransaction is not null) cmd.Transaction = db.Database.CurrentTransaction.GetDbTransaction();
+        var value = await cmd.ExecuteScalarAsync(ct);
+        return value as string;
+    }
+
+    private async Task WriteSeedVersionAsync(CancellationToken ct)
+    {
+        const string sql = """
+            INSERT INTO seed_metadata (id, seed_version, seeded_at) VALUES (1, @p0, @p1)
+            ON CONFLICT (id) DO UPDATE SET seed_version = EXCLUDED.seed_version, seeded_at = EXCLUDED.seeded_at
+            """;
+        await db.Database.ExecuteSqlRawAsync(sql, new object[] { SeedVersion, clock.UtcNow }, ct);
     }
 
     public async Task<SeedResult> ResetAsync(CancellationToken ct)
@@ -66,6 +96,7 @@ public sealed partial class DemoSeeder(
             await TruncateAllAsync(ct);
             db.ChangeTracker.Clear();
             await SeedAsync(dir, counts, ct);
+            await WriteSeedVersionAsync(ct);
             await tx.CommitAsync(ct);
         }
         db.ChangeTracker.Clear();

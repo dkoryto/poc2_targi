@@ -49,6 +49,24 @@ public static class ScenarioCalculations
         return moved;
     }
 
+    /// <summary>
+    /// Re-stamps the "after" plan's <c>Changed</c>/<c>ShiftDays</c> markers against <paramref name="before"/>
+    /// (the un-resequenced plan) instead of the approved baseline the engine was handed.
+    /// The whole result screen — KPI tile, Gantt highlighting and the moved-operations table — must answer the
+    /// same question ("what did re-planning move?"), so there is exactly one definition of "moved" on the wire.
+    /// </summary>
+    public static GanttData ReanchorChanges(GanttData before, GanttData after)
+    {
+        var beforeOps = before.Operations.ToDictionary(o => o.Code, StringComparer.OrdinalIgnoreCase);
+        var ops = after.Operations.Select(a =>
+        {
+            if (!beforeOps.TryGetValue(a.Code, out var b)) return a with { Changed = false, ShiftDays = 0 };
+            var moved = b.Start != a.Start || b.End != a.End || !string.Equals(b.WorkCenterCode, a.WorkCenterCode, StringComparison.OrdinalIgnoreCase);
+            return a with { Changed = moved, ShiftDays = moved ? Math.Round((a.Start - b.Start).TotalDays, 1) : 0 };
+        }).ToList();
+        return after with { Operations = ops };
+    }
+
     /// <summary>After − Before. Negative downtime/lateness means the proposal is an improvement.</summary>
     public static PlanKpi KpiDelta(PlanKpi before, PlanKpi after) => new()
     {

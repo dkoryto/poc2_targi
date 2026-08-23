@@ -121,6 +121,52 @@ public class PlanningScenarioTests
 
     private static readonly DateTime Base = new(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc);
 
+    [Fact]
+    public void Reanchoring_marks_only_what_re_planning_moved_and_agrees_with_the_table()
+    {
+        // The engine flags both operations as changed against the approved baseline, but only the second
+        // one differs from "before" — the first moved because of the scenario's event, not the re-plan.
+        var before = Plan(("WO-1/10", "WC-CUT", 30, 38), ("WO-1/20", "WC-INT", 60, 68));
+        var after = PlanFlagged(
+            (("WO-1/10", "WC-CUT", 30, 38), true, 1.0),
+            (("WO-1/20", "WC-INT", 40, 48), true, 0.5));
+
+        var reanchored = ScenarioCalculations.ReanchorChanges(before, after);
+        var moved = ScenarioCalculations.MovedOperations(before, reanchored);
+
+        // Headline count, Gantt markers and the table must be the same number.
+        reanchored.Operations.Count(o => o.Changed).Should().Be(1);
+        moved.Should().ContainSingle().Which.OperationCode.Should().Be("WO-1/20");
+
+        var unchanged = reanchored.Operations.Single(o => o.Code == "WO-1/10");
+        unchanged.Changed.Should().BeFalse();
+        unchanged.ShiftDays.Should().Be(0);
+
+        var movedOp = reanchored.Operations.Single(o => o.Code == "WO-1/20");
+        movedOp.Changed.Should().BeTrue();
+        movedOp.ShiftDays.Should().Be(-0.8);                       // 20 h earlier than "before"
+    }
+
+    [Fact]
+    public void Reanchoring_clears_flags_when_re_planning_changed_nothing()
+    {
+        var before = Plan(("WO-1/10", "WC-CUT", 30, 38));
+        var after = PlanFlagged((("WO-1/10", "WC-CUT", 30, 38), true, 3.0));
+
+        var reanchored = ScenarioCalculations.ReanchorChanges(before, after);
+
+        reanchored.Operations.Should().OnlyContain(o => !o.Changed && o.ShiftDays == 0);
+        ScenarioCalculations.MovedOperations(before, reanchored).Should().BeEmpty();
+    }
+
+    private static GanttData PlanFlagged(params ((string Code, string Wc, int StartHour, int EndHour) Op, bool Changed, double ShiftDays)[] ops) => new(
+        new DateOnly(2026, 9, 7), new DateOnly(2026, 11, 30), [],
+        [],
+        ops.Select(o => new GanttOperation("WO-1", o.Op.Code, 10, o.Op.Wc,
+            Base.AddHours(o.Op.StartHour), Base.AddHours(o.Op.EndHour),
+            false, "Planned", false, o.Changed, o.ShiftDays, null, null)).ToList(),
+        [], []);
+
     private static GanttData Plan(params (string Code, string Wc, int StartHour, int EndHour)[] ops) => new(
         new DateOnly(2026, 9, 7), new DateOnly(2026, 11, 30), [],
         [],

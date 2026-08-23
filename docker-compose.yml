@@ -68,7 +68,7 @@ services:
     ports:
       - "127.0.0.1:${ENGINE_PORT:-8081}:8081"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/actuator/health | grep -q UP"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -86,7 +86,7 @@ services:
     ports:
       - "127.0.0.1:${API_PORT:-5080}:5080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:5080/health/ready >/dev/null 2>&1 || curl -fs http://localhost:5080/health/ready >/dev/null"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5080/health/ready >/dev/null 2>&1 || curl -fs http://127.0.0.1:5080/health/ready >/dev/null"]
       interval: 5s
       timeout: 5s
       retries: 60
@@ -101,7 +101,8 @@ services:
     ports:
       - "127.0.0.1:${WEB_PORT:-5173}:80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/ >/dev/null"]
+      # 127.0.0.1, not localhost: nginx listens on IPv4 only and localhost resolves to ::1 first.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null"]
       interval: 5s
       timeout: 3s
       retries: 20

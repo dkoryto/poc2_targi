@@ -118,6 +118,45 @@ public class PlanningScenarioApiTests(ApiFixture fx)
         compare.GetProperty("kpiDelta").GetProperty("downtimeHours").ValueKind.Should().Be(JsonValueKind.Number);
     }
 
+    /// <summary>
+    /// Regression for a screen that contradicted itself: the KPI tile counted operations moved against the
+    /// approved baseline while the table below it counted operations moved against "before".
+    /// </summary>
+    [Fact]
+    public async Task The_moved_operations_tile_the_gantt_and_the_table_report_the_same_number()
+    {
+        using var planner = await fx.AsAsync("ProductionPlanner");
+        var scenario = await RunPresetAsync(planner, "DELAY_ACT40_10D");
+        var id = scenario.GetProperty("id").GetString();
+
+        var tile = scenario.GetProperty("kpiAfter").GetProperty("movedOperations").GetInt32();
+        var flaggedOnGantt = scenario.GetProperty("after").GetProperty("operations").EnumerateArray()
+            .Count(o => o.GetProperty("changed").GetBoolean());
+        var compare = await planner.GetFromJsonAsync<JsonElement>($"/api/v1/planning/scenarios/{id}/compare", ApiFixture.Json);
+        var table = compare.GetProperty("movedOperations").GetArrayLength();
+
+        tile.Should().Be(table);
+        flaggedOnGantt.Should().Be(table);
+
+        // "Before" is the reference plan, so nothing has moved relative to it, and the delta equals the table.
+        scenario.GetProperty("kpiBefore").GetProperty("movedOperations").GetInt32().Should().Be(0);
+        compare.GetProperty("kpiDelta").GetProperty("movedOperations").GetInt32().Should().Be(table);
+
+        // Every operation flagged on the Gantt must actually appear in the table, with the same shift.
+        var shiftsOnGantt = scenario.GetProperty("after").GetProperty("operations").EnumerateArray()
+            .Where(o => o.GetProperty("changed").GetBoolean())
+            .ToDictionary(o => o.GetProperty("code").GetString()!, o => o.GetProperty("shiftDays").GetDouble());
+        foreach (var row in compare.GetProperty("movedOperations").EnumerateArray())
+        {
+            var code = row.GetProperty("operationCode").GetString()!;
+            shiftsOnGantt.Should().ContainKey(code);
+            shiftsOnGantt[code].Should().BeApproximately(row.GetProperty("shiftDays").GetDouble(), 0.11);
+        }
+
+        // The engine's own vs-baseline count is still available, under its own name.
+        scenario.GetProperty("changesVsBaseline").GetInt32().Should().BeGreaterThanOrEqualTo(table);
+    }
+
     [Fact]
     public async Task Running_a_scenario_never_touches_the_baseline_until_it_is_approved()
     {

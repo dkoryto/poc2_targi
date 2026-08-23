@@ -42,7 +42,12 @@ public sealed record ScenarioDto(
     DateTime? ApprovedAt,
     string? ApprovedBy,
     int? BaselineVersion,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    /// <summary>
+    /// Operations whose window differs from the <em>approved baseline</em>. Distinct from
+    /// <c>KpiAfter.MovedOperations</c>, which counts what re-planning moved relative to "before".
+    /// </summary>
+    int? ChangesVsBaseline = null);
 
 public sealed record ScenarioSummaryDto(
     Guid Id,

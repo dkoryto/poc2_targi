@@ -197,14 +197,26 @@ public sealed class ScenarioService(
             var outcome = await engine.SolveAsync(model.Request, ct);
             var after = GanttBuilder.Build(model, outcome.Response, clock);
 
+            // The engine measures "changed" against the approved baseline it was handed. The result screen asks a
+            // different question — what did re-planning move relative to what would otherwise happen — so the
+            // Gantt markers and the headline KPI are re-anchored on "before". The engine's own count is kept in
+            // ResponseJson and surfaced separately as "changes vs the approved baseline".
+            after = ScenarioCalculations.ReanchorChanges(before.Gantt, after);
+            var movedVsBefore = ScenarioCalculations.MovedOperations(before.Gantt, after);
+
             var explanations = BuildExplanations(outcome, before.Evaluation, changes);
+
+            // Copies, not the engine's own objects: ResponseJson must keep the engine's unmodified numbers.
+            // "Before" is the reference plan, so by definition nothing has moved relative to it yet.
+            var kpiBefore = Clone(before.Evaluation.Kpi, 0);
+            var kpiAfter = Clone(outcome.Response.Kpi, movedVsBefore.Count);
 
             s.RequestJson = Json.Serialize(model.Request);
             s.ResponseJson = Json.Serialize(outcome.Response);
             s.BeforeJson = Json.Serialize(before.Gantt);
             s.AfterJson = Json.Serialize(after);
-            s.KpiBeforeJson = Json.Serialize(before.Evaluation.Kpi);
-            s.KpiAfterJson = Json.Serialize(outcome.Response.Kpi);
+            s.KpiBeforeJson = Json.Serialize(kpiBefore);
+            s.KpiAfterJson = Json.Serialize(kpiAfter);
             s.ExplanationsJson = Json.Serialize(explanations);
             s.Solver = outcome.Response.Solver;
             s.ElapsedMs = outcome.Response.ElapsedMs;
@@ -239,6 +251,17 @@ public sealed class ScenarioService(
             await db.SaveChangesAsync(CancellationToken.None);
         }
     }
+
+    /// <summary>Copy of a KPI set with the presentation-level moved-operations count substituted.</summary>
+    private static PlanKpi Clone(PlanKpi k, int movedOperations) => new()
+    {
+        DowntimeHours = k.DowntimeHours,
+        LateOrders = k.LateOrders,
+        TotalLatenessDays = k.TotalLatenessDays,
+        MovedOperations = movedOperations,
+        OrdersWithShortage = k.OrdersWithShortage,
+        OnTimeRate = k.OnTimeRate
+    };
 
     private async Task<PlanOverrides> ToOverridesAsync(IReadOnlyList<ScenarioChangeDto> changes, CancellationToken ct)
     {
@@ -467,6 +490,7 @@ public sealed class ScenarioService(
             approved ? s.DecidedAt : null,
             approved ? s.DecidedBy : null,
             approvedBaselineVersion,
-            s.FailureReason);
+            s.FailureReason,
+            response?.Kpi.MovedOperations);
     }
 }
