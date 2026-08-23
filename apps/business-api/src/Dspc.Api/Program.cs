@@ -156,8 +156,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<IdempotencyMiddleware>();
 
-app.UseSwagger();
-app.UseSwaggerUI(o => { o.SwaggerEndpoint("/swagger/v1/swagger.json", "DSPC v1"); o.DocumentTitle = "DSPC API"; });
+// Swagger is developer documentation; in Production it must not be served at all
+// (the Caddy proxy additionally answers /swagger with 404).
+if (!app.Environment.IsProduction())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(o => { o.SwaggerEndpoint("/swagger/v1/swagger.json", "DSPC v1"); o.DocumentTitle = "DSPC API"; });
+}
 
 app.MapHealthEndpoints();
 var api = app.MapGroup("/api/v1");

@@ -207,9 +207,19 @@ export function DeliveryMap({
       labelsRef.current.push({ el: label, rank: 2 });
       label.textContent = `${sup.code} · ${sup.city}`;
       wrap.append(dot, label);
-      const popup = new Popup({ offset: 12, closeButton: true }).setHTML(
-        `<div><strong>${sup.name}</strong><br/><span style="color:var(--fg-2)">${sup.code} · ${sup.city}, ${sup.country}</span><br/>${i18n.t('risk.score')}: <strong style="color:${riskHex(sup.riskCategory)}">${i18n.t(`risk.${sup.riskCategory}`)} · ${Math.round(sup.riskScore)}</strong></div>`,
-      );
+      // Popup content is built with textContent, never HTML interpolation: supplier/shipment
+      // codes come from API data and must not become markup.
+      const popupEl = document.createElement('div');
+      const supName = document.createElement('strong');
+      supName.textContent = sup.name;
+      const supSub = document.createElement('span');
+      supSub.style.color = 'var(--fg-2)';
+      supSub.textContent = `${sup.code} · ${sup.city}, ${sup.country}`;
+      const supScore = document.createElement('strong');
+      supScore.style.color = riskHex(sup.riskCategory);
+      supScore.textContent = `${i18n.t(`risk.${sup.riskCategory}`)} · ${Math.round(sup.riskScore)}`;
+      popupEl.append(supName, document.createElement('br'), supSub, document.createElement('br'), `${i18n.t('risk.score')}: `, supScore);
+      const popup = new Popup({ offset: 12, closeButton: true }).setDOMContent(popupEl);
       markersRef.current.push(new Marker({ element: wrap, anchor: 'center' }).setLngLat([sup.lon, sup.lat]).setPopup(popup).addTo(map));
     }
 
@@ -226,7 +236,27 @@ export function DeliveryMap({
       m.dataset.testid = `map-shipment-${sh.code}`;
       if (pulseCodes.has(sh.code) || pulseCodes.has(sh.poCode)) m.classList.add('pulse');
       const popupEl = document.createElement('div');
-      popupEl.innerHTML = `<div><strong>${sh.code}</strong> · ${sh.poCode}<br/><span style="color:var(--fg-2)">${sh.partCode} × ${sh.quantity}</span><br/>${i18n.t('dashboard.popupEta')}: <strong>${fmtDate(sh.eta)}</strong> · ${i18n.t('dashboard.popupRequired')}: ${fmtDate(sh.requiredDate)}<br/>${i18n.t('risk.score')}: <strong style="color:${riskHex(sh.riskCategory)}">${i18n.t(`risk.${sh.riskCategory}`)} · ${Math.round(sh.riskScore)}</strong> <span style="color:var(--fg-3)">(${i18n.t('app.ruleBased')})</span></div>`;
+      const shCode = document.createElement('strong');
+      shCode.textContent = sh.code;
+      const shSub = document.createElement('span');
+      shSub.style.color = 'var(--fg-2)';
+      shSub.textContent = `${sh.partCode} × ${sh.quantity}`;
+      const shEta = document.createElement('strong');
+      shEta.textContent = fmtDate(sh.eta);
+      const shReq = document.createElement('strong');
+      shReq.textContent = fmtDate(sh.requiredDate);
+      const shScore = document.createElement('strong');
+      shScore.style.color = riskHex(sh.riskCategory);
+      shScore.textContent = `${i18n.t(`risk.${sh.riskCategory}`)} · ${Math.round(sh.riskScore)}`;
+      const shNote = document.createElement('span');
+      shNote.style.color = 'var(--fg-3)';
+      shNote.textContent = `(${i18n.t('app.ruleBased')})`;
+      popupEl.append(
+        shCode, ` · ${sh.poCode}`, document.createElement('br'),
+        shSub, document.createElement('br'),
+        `${i18n.t('dashboard.popupEta')}: `, shEta, ` · ${i18n.t('dashboard.popupRequired')}: `, shReq, document.createElement('br'),
+        `${i18n.t('risk.score')}: `, shScore, ' ', shNote,
+      );
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = i18n.t('dashboard.openPo');
