@@ -70,8 +70,43 @@ Wyniki ostatniego uruchomienia: sekcja „Status” poniżej.
 
 ## Status implementacji
 
-_(uzupełniane na końcu prac)_
+Zaimplementowane i zweryfikowane na uruchomionym środowisku Compose:
+
+| Obszar | Stan |
+|---|---|
+| Control Room (KPI, mapa offline, heatmapa, Gantt, jakość, focus mode) | gotowe |
+| Portal kooperanta (zamówienia, statusy, partie, ETA, dokumenty, awizacje, izolacja danych) | gotowe |
+| Ocena ryzyka dostaw (regułowa, wyjaśnialna, „Dlaczego ten wynik?”) | gotowe |
+| Logistyka wjazdowa i symulator zdarzeń | gotowe |
+| MRP i What-If (5 scenariuszy + własny, Przed/Po, zatwierdzanie planu) | gotowe |
+| Silnik planowania (Java, deterministyczny, fallback `Heuristic fallback`) | gotowe |
+| Traceability (trace-back/forward, genealogia, blokada partii) | gotowe |
+| Cyfrowy paszport jakościowy (kompletność, PDF, QR, SHA-256, wersjonowanie, unieważnianie) | gotowe |
+| RBAC w API, audyt append-only, outbox + SignalR, powiadomienia | gotowe |
+| Tryb demo: auto-login, przełącznik ról, panel prezentera, reset | gotowe |
+| Motyw jasny/ciemny/auto, PL/EN, zwijane menu | gotowe |
+| Opcjonalne wspomaganie AI (`LOCAL_AI_ENABLED`) z deterministycznym symulatorem | gotowe |
+
+Wyniki testów (ostatnie pełne uruchomienie):
+
+| Warstwa | Wynik |
+|---|---|
+| .NET (`dotnet test`) | 89 / 89 |
+| Java (`./mvnw test`) | 27 / 27 |
+| Web (`pnpm test`) | 49 / 49 |
+| E2E (`pnpm test` w `tests/e2e`, na kontenerach) | 15 / 15 |
+
+Zmierzone na uruchomionym środowisku: scenariusz `ACT-40 +10 dni` — ryzyko 44 → 79 (krytyczne), przestój 36 → 8 h, `WO-2026-014` spóźnione o 4 dni, `WO-2026-019` wciągnięte o 29 dni na gniazdo integracji, czas solvera 2–5 ms; reset demo 0,6–2,3 s; paszport PDF ok. 81 kB, 2 strony.
 
 ## Znane ograniczenia
 
-_(uzupełniane na końcu prac)_
+- Demonstrator, nie produkt: dane fikcyjne, brak certyfikacji i formalnej oceny zgodności (AQAP/ISO/STANAG).
+- Profil `demo` celowo osłabia uwierzytelnianie (auto-login, przełącznik ról, reset) i nie może być wystawiony poza `127.0.0.1`; produkcyjnie wymaga OIDC/MFA (`Demo__Enabled=false` wyłącza te endpointy).
+- Komunikacja wewnątrz Compose po HTTP, bez TLS; sekrety demonstracyjne w `.env.example`.
+- `IFileScanner` to bezpieczny mock — brak realnego skanowania antywirusowego.
+- Jeden zakład, jedna strefa czasowa, horyzont 12 tygodni; solver heurystyczny (nie CP-SAT), zoptymalizowany pod dane demonstracyjne.
+- Scenariusze uruchamiane w kolejce w procesie API — restart API w trakcie przeliczania zostawia scenariusz w stanie `Running`.
+- W trybie `Heuristic fallback` plan „Po” jest równy planowi „Przed” (heurystyka lokalna nie wciąga zleceń do przodu).
+- Brak kopii zapasowych, HA i retencji dla PostgreSQL/MinIO.
+- QuestPDF na licencji Community — przy zastosowaniu komercyjnym zweryfikuj próg przychodowy (`docs/licenses.md`).
+- Etykiety dostawców na mapie mogą się nakładać przy dużym zagęszczeniu (np. Gliwice/Kraków).
