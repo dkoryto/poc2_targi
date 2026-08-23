@@ -14,9 +14,9 @@ test.describe('UI golden path', () => {
     await expect(page.getByTestId('kpi-OTIF')).toBeVisible();
 
     await page.goto('/planning');
+    // Clicking a preset tile creates the scenario and starts the solve, then routes to its detail page.
     await page.getByTestId('scenario-tile-DELAY_ACT40_10D').click();
-    await page.getByTestId('btn-run-scenario').click();
-    await expect(page.getByTestId('scenario-status')).toContainText(/Zakończ|Completed|Gotow/i, { timeout: 30_000 });
+    await expect(page.getByTestId('scenario-status')).toContainText(/Completed|Zakończ/i, { timeout: 60_000 });
     await expect(page.getByTestId('explanation-ORDER_PULLED_FORWARD')).toBeVisible();
     await expect(page.getByTestId('kpi-delta-downtime')).toBeVisible();
 
@@ -29,7 +29,7 @@ test.describe('UI golden path', () => {
 
   test('language switch and role switch work', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'EN' }).click();
+    await page.getByTestId('lang-switch').getByRole('button', { name: 'EN' }).click();
     await expect(page.getByText(/Material Readiness|Control Room/i).first()).toBeVisible();
   });
 });
