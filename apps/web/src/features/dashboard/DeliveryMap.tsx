@@ -78,6 +78,8 @@ export function DeliveryMap({
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  // Labels are decluttered after every camera change; lower rank wins a collision.
+  const labelsRef = useRef<{ el: HTMLElement; rank: number }[]>([]);
   const readyRef = useRef(false);
 
   useEffect(() => {
@@ -99,6 +101,8 @@ export function DeliveryMap({
       dragRotate: false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    map.on('moveend', declutterLabels);
+    map.on('zoomend', declutterLabels);
     map.on('load', () => {
       // StrictMode mounts twice: a discarded map can still fire `load` after the live one
       // and would then steal the markers onto an already-removed instance.
@@ -109,6 +113,7 @@ export function DeliveryMap({
       map.addSource('done', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({ id: 'done', type: 'line', source: 'done', paint: { 'line-color': ['get', 'color'], 'line-width': 3, 'line-opacity': 0.9 } });
       render(map);
+      requestAnimationFrame(declutterLabels);
     });
     mapRef.current = map;
     return () => {
@@ -119,9 +124,28 @@ export function DeliveryMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Hide labels that would overlap one already placed. Without this, plants and suppliers that
+   * sit close together (Kielce/Zamość/Leszno, Gliwice/Kraków) print their names on top of each
+   * other and none of them can be read.
+   */
+  const declutterLabels = () => {
+    const placed: DOMRect[] = [];
+    const overlaps = (a: DOMRect, b: DOMRect) =>
+      a.left < b.right + 2 && a.right + 2 > b.left && a.top < b.bottom + 2 && a.bottom + 2 > b.top;
+    for (const { el } of [...labelsRef.current].sort((a, b) => a.rank - b.rank)) {
+      el.style.visibility = 'visible';
+      const box = el.getBoundingClientRect();
+      if (box.width === 0) continue;
+      if (placed.some((p) => overlaps(box, p))) el.style.visibility = 'hidden';
+      else placed.push(box);
+    }
+  };
+
   const render = (map: MlMap) => {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
+    labelsRef.current = [];
     const routeFeatures = data.shipments.map((sh) => ({ type: 'Feature' as const, properties: { color: riskHex(sh.riskCategory) }, geometry: { type: 'LineString' as const, coordinates: sh.route.length >= 2 ? sh.route : [sh.route[0] ?? [sh.lon, sh.lat], [data.site.lon, data.site.lat]] } }));
     const doneFeatures = data.shipments.map((sh) => {
       const route = sh.route.length >= 2 ? sh.route : [[sh.lon, sh.lat] as [number, number], [data.site.lon, data.site.lat] as [number, number]];
@@ -131,11 +155,21 @@ export function DeliveryMap({
     (map.getSource('routes') as maplibregl.GeoJSONSource | undefined)?.setData({ type: 'FeatureCollection', features: routeFeatures });
     (map.getSource('done') as maplibregl.GeoJSONSource | undefined)?.setData({ type: 'FeatureCollection', features: doneFeatures });
 
+    // The active plant is the one the whole screen is about, so it gets a label of its own and
+    // the highest priority when labels are decluttered. Without it the nearest other plant's
+    // label sat next to this marker and read as if it named this one.
+    const siteWrap = document.createElement('div');
+    siteWrap.className = s.markerWrapSite ?? '';
     const site = document.createElement('div');
     site.className = s.markerSite ?? "";
     site.setAttribute('aria-label', data.site.name);
     site.title = `${data.site.code} · ${data.site.name}`;
-    markersRef.current.push(new Marker({ element: site, anchor: 'center' }).setLngLat([data.site.lon, data.site.lat]).addTo(map));
+    const siteLabel = document.createElement('span');
+    siteLabel.className = s.markerLabel ?? "";
+    siteLabel.textContent = data.site.name;
+    labelsRef.current.push({ el: siteLabel, rank: 0 });
+    siteWrap.append(site, siteLabel);
+    markersRef.current.push(new Marker({ element: siteWrap, anchor: 'center' }).setLngLat([data.site.lon, data.site.lat]).addTo(map));
 
     for (const other of otherSites) {
       if (other.code === data.site.code) continue;
@@ -150,6 +184,7 @@ export function DeliveryMap({
       dot.onclick = () => onSelectSite?.(other.code);
       const label = document.createElement('span');
       label.className = [s.markerLabel, s.markerLabelMuted].filter(Boolean).join(' ');
+      labelsRef.current.push({ el: label, rank: 1 });
       label.textContent = other.name;
       wrap.append(dot, label);
       markersRef.current.push(new Marker({ element: wrap, anchor: 'center' }).setLngLat([other.lon, other.lat]).addTo(map));
@@ -169,6 +204,7 @@ export function DeliveryMap({
       if (pulseCodes.has(sup.code)) dot.classList.add('pulse');
       const label = document.createElement('span');
       label.className = s.markerLabel ?? "";
+      labelsRef.current.push({ el: label, rank: 2 });
       label.textContent = `${sup.code} · ${sup.city}`;
       wrap.append(dot, label);
       const popup = new Popup({ offset: 12, closeButton: true }).setHTML(
@@ -207,6 +243,7 @@ export function DeliveryMap({
     const map = mapRef.current;
     if (!map || !readyRef.current) return;
     render(map);
+    requestAnimationFrame(declutterLabels);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, pulseCodes, otherSites]);
 
@@ -242,6 +279,7 @@ export function DeliveryMap({
       map.setPaintProperty('land', 'fill-color', readThemeColor('--map-land', '#18212e'));
       map.setPaintProperty('borders', 'line-color', readThemeColor('--map-border', '#2f3c4f'));
       render(map);
+      requestAnimationFrame(declutterLabels);
       map.triggerRepaint();
     };
     document.addEventListener(THEME_EVENT, onThemeChange);

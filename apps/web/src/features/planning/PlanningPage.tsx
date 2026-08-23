@@ -27,11 +27,18 @@ export function ScenarioStatusChip({ status, small }: { status: ScenarioStatus; 
  * The API sends `titleKey` either bare (`ACT40_DELAY`) or fully qualified
  * (`planning.presets.ACT40_DELAY`); resolve both, falling back to the raw value.
  */
-function presetTitle(titleKey: string, t: (k: string, o?: Record<string, unknown>) => string): string {
+function presetTitle(
+  titleKey: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+  params?: Record<string, string>,
+): string {
+  // Some titles name a record that differs per plant (the priority preset targets that plant's
+  // own order), so the API sends the values to interpolate rather than baking them into the text.
+  const opts = { defaultValue: '', ...(params ?? {}) };
   const qualified = titleKey.includes('.') ? titleKey : `planning.presets.${titleKey}`;
-  const viaQualified = t(qualified, { defaultValue: '' });
+  const viaQualified = t(qualified, opts);
   if (viaQualified) return viaQualified;
-  return t(titleKey, { defaultValue: titleKey });
+  return t(titleKey, { ...opts, defaultValue: titleKey });
 }
 
 export function PlanningPage() {
@@ -126,13 +133,13 @@ export function PlanningPage() {
                 type="button"
                 className={[s.tile, isFeatured(p) && s.tileFeatured].filter(Boolean).join(' ')}
                 disabled={!canRun || busyKey !== null}
-                onClick={() => void createAndRun(presetTitle(p.titleKey, t), p.changes, p.key)}
+                onClick={() => void createAndRun(presetTitle(p.titleKey, t, p.titleParams), p.changes, p.key)}
                 data-testid={`scenario-tile-${p.key}`}
                 title={canRun ? t('planning.runHint') : t('common.forbidden')}
               >
                 <span className={s.tileTitle}>
                   {busyKey === p.key ? <Clock3 size={15} aria-hidden /> : <Play size={15} aria-hidden />}
-                  {presetTitle(p.titleKey, t)}
+                  {presetTitle(p.titleKey, t, p.titleParams)}
                   {isFeatured(p) && (
                     <span className={s.featuredBadge} data-testid={`scenario-featured-${p.key}`}>
                       <Star size={11} aria-hidden />

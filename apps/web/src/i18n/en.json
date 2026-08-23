@@ -635,7 +635,7 @@
       "ACT40_DELAY": "Delay ACT-40 actuators by 10 days",
       "MCU_X7_DELAY": "Delay MCU-X7 control modules by 14 days",
       "HTS22_BLOCK": "Simulate blocking the HTS-22 steel lot for quality",
-      "WO014_PRIORITY": "Raise priority of WO-2026-014",
+      "WO014_PRIORITY": "Raise priority of {{orderCode}}",
       "WC_INT_CAPACITY": "Reduce integration cell capacity by 50%"
     },
     "createAndRun": "Create and re-plan",

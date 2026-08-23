@@ -641,7 +641,7 @@
       "ACT40_DELAY": "Opóźnij siłowniki ACT-40 o 10 dni",
       "MCU_X7_DELAY": "Opóźnij moduły sterujące MCU-X7 o 14 dni",
       "HTS22_BLOCK": "Symuluj blokadę partii stali HTS-22 z powodu jakości",
-      "WO014_PRIORITY": "Zwiększ priorytet zlecenia WO-2026-014",
+      "WO014_PRIORITY": "Zwiększ priorytet zlecenia {{orderCode}}",
       "WC_INT_CAPACITY": "Zmniejsz dostępność gniazda integracji o 50%"
     },
     "createAndRun": "Utwórz i przelicz plan",

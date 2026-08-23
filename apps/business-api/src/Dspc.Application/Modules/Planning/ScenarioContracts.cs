@@ -17,7 +17,9 @@ public sealed record ScenarioChangeDto(
     string? PoCode = null,
     string? PartCode = null);
 
-public sealed record ScenarioPresetDto(string Key, string TitleKey, IReadOnlyList<ScenarioChangeDto> Changes, bool Featured = false);
+public sealed record ScenarioPresetDto(string Key, string TitleKey, IReadOnlyList<ScenarioChangeDto> Changes, bool Featured = false,
+    /// <summary>Values interpolated into the localised title, e.g. the order this plant's priority preset actually targets.</summary>
+    IReadOnlyDictionary<string, string>? TitleParams = null);
 
 public sealed record CreateScenarioRequest(string Name, IReadOnlyList<ScenarioChangeDto> Changes, string? PresetKey = null, string? SiteCode = null);
 

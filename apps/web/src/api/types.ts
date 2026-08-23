@@ -567,6 +567,8 @@ export interface ScenarioPreset {
   /** Exactly one preset per plant is the headline scenario. */
   featured?: boolean;
   siteCode?: string;
+  /** Values interpolated into the localised title, e.g. the order this plant's priority preset targets. */
+  titleParams?: Record<string, string>;
 }
 export interface Explanation {
   reasonCode: string;

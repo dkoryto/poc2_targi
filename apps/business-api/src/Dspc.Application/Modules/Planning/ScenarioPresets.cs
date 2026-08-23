@@ -63,9 +63,12 @@ public sealed class ScenarioPresetProvider(IAppDbContext db)
             .OrderByDescending(o => o.Priority).ThenBy(o => o.DueDate).ThenBy(o => o.Code)
             .Select(o => o.Code).FirstOrDefaultAsync(ct);
         if (order is not null)
+            // The title names the order, which differs per plant — pass it in rather than baking
+            // Kielce's WO-2026-014 into the translation, where it was simply wrong elsewhere.
             result.Add(new ScenarioPresetDto("PRIORITY_WO014", "planning.presets.WO014_PRIORITY",
                 [new ScenarioChangeDto(ScenarioChangeType.PRIORITY, OrderCode: order, Priority: 5)],
-                site.FeaturedScenarioKey == "PRIORITY_WO014"));
+                site.FeaturedScenarioKey == "PRIORITY_WO014",
+                new Dictionary<string, string> { ["orderCode"] = order }));
 
         // --- halve the plant's integration cell
         var wc = await db.WorkCenters.AsNoTracking()
