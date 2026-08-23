@@ -22,5 +22,5 @@ target/
 .idea/
 .vscode/
 # generated runtime data
-infrastructure/data/
-storage/
+/infrastructure/data/
+/storage/
