@@ -119,6 +119,8 @@ Wyniki testów (ostatnie pełne uruchomienie):
 
 Zmierzone na uruchomionym środowisku: scenariusz `ACT-40 +10 dni` — ryzyko 44 → 79 (krytyczne), przestój 36 → 8 h, `WO-2026-014` spóźnione o 4 dni, `WO-2026-019` wciągnięte o 29 dni na gniazdo integracji, czas solvera 2–5 ms; reset demo 0,6–2,3 s; paszport PDF ok. 81 kB, 2 strony.
 
+Lista otwartych zadań z priorytetami i dowodami: [`TODO.md`](TODO.md).
+
 ## Znane ograniczenia
 
 - Demonstrator, nie produkt: dane fikcyjne, brak certyfikacji i formalnej oceny zgodności (AQAP/ISO/STANAG).
