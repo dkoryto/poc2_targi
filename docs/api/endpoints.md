@@ -66,3 +66,15 @@ SignalR hub `/hubs/live`, server→client method `DomainEvent(event: { name: str
 - `POST /demo/reset` (DemoPresenter/Administrator, demo only) → `{ durationMs, seedVersion, counts:{...} }`; `GET /demo/script` → presenter steps; `GET /demo/status` → `{ demoMode, seedVersion, seededAt, lastResetMs }`
 - `GET /admin/settings` → risk weights, objective weights, thresholds (read-only v1); `GET /admin/status` → `{ services:[{name:'postgres'|'minio'|'planning-engine'|'local-ai', status:'up'|'down'|'disabled', latencyMs}] , recentErrors:[{at, operation, message}] }`
 - `GET /health/live`, `GET /health/ready`
+
+## Added by web (wave 1) — assumptions the UI relies on; backend must honour or adjust `apps/web/src/api/types.ts`
+- `POST /purchase-orders/{code}/lines/{lineId}/eta` `reason` enum: `PRODUCTION_DELAY|LOGISTICS|QUALITY|CAPACITY|MATERIAL_SHORTAGE|OTHER`.
+- `POST /shipments/{code}/events` `type` enum: `Departed|BorderCrossed|Delayed|Arrived|Note`; `Shipment` DTO includes `supplierName`, `requiredDate?`, `progress` 0..1, `lines:[{lineId, partCode, quantity}]`, `events[]`.
+- `PurchaseOrderSummary` fields used by the list: `supplierCode, supplierName, status, orderedAt, requiredDate (min of lines), eta (max of lines), lineCount, riskScore (max), riskCategory, progressPercent (avg), siteCode`.
+- `PurchaseOrderLine.risk` is a full `RiskSummary` (score, category, factors[], endangeredOrders[]); `documents[].documentNumber` optional.
+- `ChangeEntry { id, occurredAt, user, action, field?, before?, after?, comment? }` for PO `history`.
+- `LogisticsEvent { id, type, severity, supplierCode?, shipmentCode?, description, raisedAt, active }`; `GET /logistics-events` returns `{items,total}`. Event name `LogisticsRiskEventRaised` is expected on the hub.
+- `Notification { id, createdAt, title, message, severity:'info'|'warn'|'critical', read, route?, eventName? }`; `POST /notifications/{id}/read` → 204.
+- `DomainEvent.payload` keys the UI reads: `code | poCode | shipmentCode | supplierCode`, `category` + `previousCategory` (for `DeliveryRiskChanged` pulse/toast), `lotNumber`, `serial`.
+- `GET /demo/script` items: `{ step, titleKey, descriptionKey, route, action? }` where keys are i18n keys (`demo.script.N.title` / `.desc` exist in the web bundle for N=1..9). If the API returns an empty list the UI falls back to its built-in 9 steps.
+- `GET /health/live` is polled by the top bar every 10 s (any 2xx = online).

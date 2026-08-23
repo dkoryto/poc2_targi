@@ -15,7 +15,7 @@ export const keys = {
   suppliers: ['suppliers'] as const,
   purchaseOrders: {
     all: ['purchase-orders'] as const,
-    list: (filters: Record<string, unknown>) => ['purchase-orders', 'list', filters] as const,
+    list: (filters: object) => ['purchase-orders', 'list', filters] as const,
     detail: (code: string) => ['purchase-orders', 'detail', code] as const,
     impact: (code: string, lineId: string) => ['purchase-orders', 'impact', code, lineId] as const,
   },
