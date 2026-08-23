@@ -17,9 +17,19 @@ export async function apiAs(role: Role, supplierCode?: string): Promise<APIReque
 
 export async function resetDemo(): Promise<void> {
   const api = await apiAs('DemoPresenter');
-  const res = await api.post('/api/v1/demo/reset');
-  if (!res.ok()) throw new Error(`reset failed: ${res.status()}`);
-  await api.dispose();
+  try {
+    // The reset endpoint is rate limited; a full suite run legitimately exceeds a low budget,
+    // so back off and retry rather than failing the spec on a 429.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const res = await api.post('/api/v1/demo/reset');
+      if (res.ok()) return;
+      if (res.status() !== 429) throw new Error(`reset failed: ${res.status()}`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    throw new Error('reset failed: still rate limited after 5 attempts');
+  } finally {
+    await api.dispose();
+  }
 }
 
 export async function kpi(code: string): Promise<number> {

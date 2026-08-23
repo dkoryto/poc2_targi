@@ -98,8 +98,8 @@ builder.Services.AddRateLimiter(o =>
     void Policy(string name, int fallback) => o.AddPolicy(name, c => RateLimitPartition.GetFixedWindowLimiter(Key(c), _ => new FixedWindowRateLimiterOptions { PermitLimit = Limit(name, fallback), Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     Policy("login", 30);      // demo role switching + auto-login share this budget per IP
     Policy("upload", 30);
-    Policy("scenario", 6);
-    Policy("reset", 6);
+    Policy("scenario", 20);
+    Policy("reset", 20);  // a presenter may reset repeatedly while rehearsing
 });
 
 builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>("postgres");
