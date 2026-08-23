@@ -13,6 +13,22 @@ Przed rozpoczęciem: `./scripts/start.sh`, otwórz http://localhost:5173 (auto-l
 | 7 | **Paszport** | `/passports/PMV-2026-0007` → kontrola kompletności (DQP-01, wszystkie pozycje spełnione) → **Generuj paszport** → PDF z QR i SHA-256, wersja v2. Pokaż też `SCM-2026-0103` z listą braków. | „Jedno kliknięcie — dokumentacja odbiorowa gotowa. Niekompletny paszport mówi dokładnie, czego brakuje.” |
 | 8 | **Podsumowanie** | Panel prezentera → **Podsumowanie wartości**: ryzyko wykryte 10 dni wcześniej, uniknięty przestój 28 h, 100 % identyfikowalności, paszport w 1 klik. | |
 
+## Cztery zakłady — cztery historie
+
+Selektor zakładu w pasku górnym przełącza kontekst całej aplikacji. Każdy zakład ma **scenariusz wiodący**
+(wyróżniony kafel na ekranie Planowania), więc na stoisku można pokazać cztery różne rozmowy bez resetu:
+
+| Zakład | Profil | Scenariusz wiodący | Do kogo mówi |
+|---|---|---|---|
+| **Zakład Kielce** (`SITE-01`) | montaż i integracja platform | opóźnienie siłowników `ACT-40` o 10 dni | pełna ścieżka: ryzyko → What-If → paszport (scenariusz główny powyżej) |
+| **Zakład Piła** (`SITE-02`) | elektronika i łączność | opóźnienie modułów `MCU-X7` o 14 dni | szef produkcji elektroniki — wąskie gardło komponentów |
+| **Zakład Zamość** (`SITE-03`) | konstrukcje i opancerzenie | blokada partii stali | szef jakości — trace-forward i unieważnienie paszportów |
+| **Zakład Leszno** (`SITE-04`) | integracja i testy końcowe | ograniczenie pojemności gniazda integracji o 50 % | dyrektor operacyjny — utrata zdolności produkcyjnej |
+
+Wskazówka dla prezentera: zacznij od **Kielc** (pełna ścieżka wartości), a pozostałe zakłady trzymaj jako
+odpowiedź na pytanie „a jak to wygląda u nas?" — wystarczy przełączyć zakład i kliknąć wyróżniony kafel.
+Szczegóły danych: `docs/architecture/multi-site.md`.
+
 ## Scenariusz dodatkowy (1 min): blokada partii
 
 `/trace/lots/HTS-22-2608` → **Zablokuj partię** (powód: NCR jakościowy) → trace-forward: `WO-2026-011` (PMV-2026-0007/0008 → paszporty **Unieważnione**), `WO-2026-018` (rezerwacja zagrożona, brak 400 kg do ETA PO-2026-0013). Dashboard: paszporty wymagające działania 2, partie zablokowane 2.
