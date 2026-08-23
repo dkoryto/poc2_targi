@@ -44,7 +44,8 @@ public sealed class ApiFixture : IAsyncLifetime
             ["PlanningEngine__BaseUrl"] = "http://127.0.0.1:1",
             ["Serilog__MinimumLevel__Default"] = "Warning",
             ["RateLimits__loginPerMinute"] = "1000",
-            ["RateLimits__resetPerMinute"] = "1000"
+            ["RateLimits__resetPerMinute"] = "1000",
+            ["RateLimits__scenarioPerMinute"] = "1000"
         };
         foreach (var (k, v) in settings) Environment.SetEnvironmentVariable(k, v);
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Demo"));

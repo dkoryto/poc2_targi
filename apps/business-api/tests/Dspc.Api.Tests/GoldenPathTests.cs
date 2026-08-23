@@ -124,7 +124,10 @@ public class DashboardKpiTests(ApiFixture fx)
 
         var quality = await director.GetFromJsonAsync<JsonElement>("/api/v1/dashboard/quality-status", ApiFixture.Json);
         quality.GetProperty("lotsBlocked").GetInt32().Should().Be(1);
-        quality.GetProperty("passports").GetProperty("approved").GetInt32().Should().Be(2);
+        // the two issued passports (PMV-2026-0007/0008) are rendered to PDF by the seed post-processor, so they are
+        // seeded as Generated rather than Approved; the "ready for acceptance" aggregate counts both statuses
+        quality.GetProperty("passports").GetProperty("generated").GetInt32().Should().Be(2);
+        quality.GetProperty("readyForAcceptance").GetInt32().Should().Be(2);
         quality.GetProperty("documents").GetProperty("rejected").GetInt32().Should().Be(1);
     }
 

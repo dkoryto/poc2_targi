@@ -34,12 +34,26 @@ public static class InfrastructureModule
         services.AddSingleton<SeedState>();
         services.AddHttpClient("probe");
         services.AddSingleton<IExternalServiceProbe, ExternalServiceProbe>();
+        services.AddHttpClient<Application.Modules.Planning.IPlanningEngine, Planning.PlanningEngineClient>(Planning.PlanningEngineClient.ClientName, (sp, c) =>
+        {
+            var o = sp.GetRequiredService<IOptions<PlanningEngineOptions>>().Value;
+            c.BaseAddress = new Uri(o.BaseUrl.TrimEnd('/') + "/");
+            c.Timeout = TimeSpan.FromMilliseconds(Math.Max(500, o.TimeoutMs) + 500);   // hard ceiling; the per-call CTS is authoritative
+        });
         services.AddSingleton<IFileScanner, NoOpFileScanner>();
 
         services.AddSingleton<IDocumentStorage>(sp =>
         {
             var o = sp.GetRequiredService<IOptions<StorageOptions>>();
             return o.Value.Provider.Equals("Minio", StringComparison.OrdinalIgnoreCase) ? new MinioDocumentStorage(o) : new FileSystemDocumentStorage(o);
+        });
+
+        services.AddSingleton<Application.Modules.Passports.IPassportPdfGenerator, Documents.PassportPdfGenerator>();
+        services.AddScoped<ISeedPostProcessor, Documents.PassportSeedPostProcessor>();
+        services.AddHttpClient("local-ai", (sp, c) =>
+        {
+            var o = sp.GetRequiredService<IOptions<Application.Modules.Admin.LocalAiOptions>>().Value;
+            c.BaseAddress = new Uri(o.BaseUrl.TrimEnd('/') + "/");
         });
 
         services.AddScoped<IEventPublisher, OutboxEventPublisher>();

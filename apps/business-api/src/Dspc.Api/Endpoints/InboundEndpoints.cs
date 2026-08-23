@@ -76,10 +76,10 @@ public static class DocumentEndpoints
         });
         g.MapPost("/{id:guid}/verify", async (Guid id, VerifyDocumentRequest req, DocumentService svc, CancellationToken ct) => Results.Ok(await svc.VerifyAsync(id, req, ct)))
             .AddEndpointFilter<ValidationFilter<VerifyDocumentRequest>>().RequireAuthorization(Policies.Quality);
-        g.MapPost("/{id:guid}/ai-extract", (Guid id, IConfiguration cfg) => cfg.GetValue<bool>("LocalAi:Enabled")
-                ? Results.Problem(statusCode: 501, title: "Not implemented", detail: "Local AI extraction adapter arrives in wave 2.")
-                : Results.NotFound())
-            .RequireAuthorization(Policies.Quality);
+        g.MapPost("/{id:guid}/ai-extract", async (Guid id, AiExtractionService svc, CancellationToken ct) =>
+                svc.Enabled ? Results.Ok(await svc.ExtractAsync(id, ct)) : Results.NotFound())
+            .RequireAuthorization(Policies.Quality).RequireRateLimiting("upload")
+            .WithSummary("Optional local-LLM field extraction (LocalAi:Enabled). Proposal only — a human accepts it via /verify.");
     }
 
     private static string? NullIfEmpty(Microsoft.Extensions.Primitives.StringValues v) => string.IsNullOrWhiteSpace(v) ? null : v.ToString();

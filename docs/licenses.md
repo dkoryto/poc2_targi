@@ -6,6 +6,7 @@
 | Serilog, FluentValidation, Swashbuckle | Apache-2.0 | business-api |
 | QuestPDF | **Community licence** (free for organisations < 1 M USD annual revenue; otherwise commercial licence required — verify before commercial deployment) | business-api (PDF) |
 | QRCoder | MIT | business-api |
+| SkiaSharp.NativeAssets.Linux | MIT | business-api (QuestPDF rendering backend in the container) |
 | AWSSDK.S3 | Apache-2.0 | business-api (MinIO client) |
 | Testcontainers, xUnit, FluentAssertions | MIT / Apache-2.0 | tests |
 | Spring Boot, Jackson | Apache-2.0 | planning-engine |

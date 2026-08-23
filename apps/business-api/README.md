@@ -1,8 +1,9 @@
 # business-api — ASP.NET Core modular monolith
 
 Business backend of the DSPC demonstrator: suppliers & inbound, rule-based delivery risk, dashboard KPIs, baseline plan
-evaluation, documents, notifications, audit, identity, demo seed/reset. Planning scenarios, traceability and passports
-(PDF) are wave-2 modules built on the same model.
+evaluation and What-If scenarios, documents, material lots and quality blocking, traceability (genealogy, trace-back and
+trace-forward), digital quality passports (versioned PDF with QR and SHA-256), notifications, audit, identity and demo
+seed/reset.
 
 ## Run
 
@@ -24,7 +25,7 @@ Development profile auto-migrates and seeds (`Demo:Enabled=true`, JWT dev key). 
 | `Demo__ClockAnchor` | pin T0 to the Monday of that week (tests/e2e) | current week |
 | `Storage__Provider` = `FileSystem` \| `Minio`, `Storage__Root`, `Storage__Minio__Endpoint/AccessKey/SecretKey/Bucket` | document storage | FileSystem `./storage` |
 | `PlanningEngine__BaseUrl`, `__TimeoutMs` | Java engine | `http://localhost:8081`, 3000 |
-| `LocalAi__Enabled`, `__BaseUrl`, `__Model` | optional local LLM adapter | disabled |
+| `LocalAi__Enabled`, `__BaseUrl`, `__Model`, `__Simulator` | optional local LLM adapter for certificate fields (proposals only); `Simulator` answers from a deterministic fixture | disabled, simulator on |
 | `Cors__Origins` | comma list | `http://localhost:5173` |
 | `Seed__Path` | demo JSON folder | auto-detect `packages/demo-data` |
 | `Seed__Skip` | skip migrate/seed on startup | `false` |
@@ -51,8 +52,8 @@ dotnet ef migrations add <Name> -p src/Dspc.Infrastructure -s src/Dspc.Api -o Pe
 | Project | Contents |
 |---|---|
 | `Dspc.Domain` | entities + enums (`Entities/*.cs`, `Common/Enums.cs`), domain events (`Events/DomainEvents.cs`), `Risk/RiskScoreCalculator` (pure, weights injected) |
-| `Dspc.Application` | `Abstractions/` (db, current user, supplier scope, event publisher, clock, storage, scanner, seeder), `Modules/<Name>/` vertical slices: Identity, Dashboard, Suppliers, Inbound (PO/lines/ETA/shipments/logistics events), Documents, Inventory, Risk, Planning (`PlanModelBuilder` → engine contract, `Scheduling/BaselineImpactEvaluator` = impact + fallback, `GanttBuilder`), Notifications, Audit, Demo, Admin |
-| `Dspc.Infrastructure` | `Persistence/` (`AppDbContext`, one `IEntityTypeConfiguration` per entity, snake_case, `xmin` concurrency, migrations), `Seeding/DemoSeeder` (deterministic, T0-relative, fixture-driven), `Outbox/`, `Identity/` (PBKDF2 + JWT), `Storage/` (FileSystem, MinIO), `Services/` (clock, probes, recent errors, no-op scanner) |
+| `Dspc.Application` | `Abstractions/` (db, current user, supplier scope, event publisher, clock, storage, scanner, seeder), `Modules/<Name>/` vertical slices: Identity, Dashboard, Suppliers, Inbound (PO/lines/ETA/shipments/logistics events), Documents, Inventory, Risk, Planning (`PlanModelBuilder` → engine contract, `Scheduling/BaselineImpactEvaluator` = impact + fallback, `GanttBuilder`, `ScenarioService` + `ScenarioRunnerHostedService` = What-If), Quality (`LotService` lots/inspections/blocking, `TraceabilityIndex`), Traceability (`TraceQueries` genealogy), Passports (`PassportService` completeness/approval/versioned PDF, `PassportInvalidationService`), Notifications, Audit, Demo, Admin |
+| `Dspc.Infrastructure` | `Persistence/` (`AppDbContext`, one `IEntityTypeConfiguration` per entity, snake_case, `xmin` concurrency, migrations), `Seeding/DemoSeeder` (deterministic, T0-relative, fixture-driven), `Outbox/`, `Identity/` (PBKDF2 + JWT), `Storage/` (FileSystem, MinIO), `Services/` (clock, probes, recent errors, no-op scanner), `Documents/` (QuestPDF passport renderer + QRCoder, seed post-processor) |
 | `Dspc.Api` | `Program.cs` composition, `Endpoints/*` minimal-API groups, `Auth/` (`HttpCurrentUser`, `SupplierScope`, `Policies`), `Middleware/` (correlation id, security headers, Problem Details handler, idempotency, validation filter), `Realtime/LiveHub` |
 
 ## Request pipeline

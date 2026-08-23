@@ -60,7 +60,11 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problemDetails, I
                 break;
             case UnprocessableException u:
                 pd = new ProblemDetails { Status = 422, Title = u.Title, Detail = u.Message };
-                if (u.Payload is not null) pd.Extensions["missing"] = u.Payload;
+                // a dictionary payload becomes top-level extensions (e.g. `missing[]`, `requirements[]` — the shape the
+                // web client reads); anything else keeps the original single `missing` key
+                if (u.Payload is IReadOnlyDictionary<string, object?> parts)
+                    foreach (var (key, value) in parts) pd.Extensions[key] = value;
+                else if (u.Payload is not null) pd.Extensions["missing"] = u.Payload;
                 break;
             case AppException a:
                 pd = new ProblemDetails { Status = a.Status, Title = a.Title, Detail = a.Message };
