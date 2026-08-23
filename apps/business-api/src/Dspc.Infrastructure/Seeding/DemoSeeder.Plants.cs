@@ -274,7 +274,7 @@ public sealed partial class DemoSeeder
                 var pp = new Passport
                 {
                     Id = Id("PASS", serial.SerialNumber), ProductSerialId = serial.Id, PassportTemplateId = template.Id,
-                    Status = Enum.Parse<PassportStatus>(S(p, "status", "Draft"), true), ApprovedBy = SN(p, "approvedBy"),
+                    Status = SeedPassportStatus(p), ApprovedBy = SN(p, "approvedBy"),
                     ApprovedAt = UtcN(SN(p, "approvedAt")), CurrentVersion = 0, DeviationsJson = "[]"
                 };
                 Stamp(pp, serial.CreatedAt); db.Passports.Add(pp);

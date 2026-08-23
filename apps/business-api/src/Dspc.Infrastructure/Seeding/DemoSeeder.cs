@@ -141,6 +141,19 @@ public sealed partial class DemoSeeder(
     private static double D(JsonNode? n, string key, double fallback = 0) => n?[key] is JsonValue v ? v.GetValue<double>() : fallback;
     private static decimal M(JsonNode? n, string key, decimal fallback = 0) => n?[key] is JsonValue v ? v.GetValue<decimal>() : fallback;
     private static bool B(JsonNode? n, string key, bool fallback = false) => n?[key] is JsonValue v ? v.GetValue<bool>() : fallback;
+    /// <summary>
+    /// Reads a seeded passport status. <see cref="PassportStatus.Generated"/> is a derived state: it means a PDF
+    /// version exists, and only the render pipeline may set it. Seed data asking for it is treated as
+    /// <see cref="PassportStatus.Approved"/> so the post-processor renders a real document and promotes the passport.
+    /// Without this, a passport could be seeded as "Generated" with no version, no PDF and no checksum — a detail
+    /// screen with nothing on it.
+    /// </summary>
+    private static PassportStatus SeedPassportStatus(JsonNode? n)
+    {
+        var status = Enum.Parse<PassportStatus>(S(n, "status", "Draft"), true);
+        return status == PassportStatus.Generated ? PassportStatus.Approved : status;
+    }
+
     private static IEnumerable<JsonNode> Arr(JsonNode? n, string? key = null) => ((key is null ? n : n?[key]) as JsonArray)?.Where(x => x is not null).Select(x => x!) ?? Enumerable.Empty<JsonNode>();
 
     public static Guid Id(string kind, string key)

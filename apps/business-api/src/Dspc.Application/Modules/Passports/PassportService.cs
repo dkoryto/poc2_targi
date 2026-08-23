@@ -142,7 +142,7 @@ public sealed class PassportService(
             facts.Inspections.Select(i => new PassportRenderInspection(i.Code, i.Result.ToString(), i.InspectedAt, i.InspectedBy, i.Notes)).ToList(),
             facts.Deviations.Select(d => new PassportRenderDeviation(d.Code, d.Title, d.ApprovedBy, d.ApprovedAt)).ToList(),
             completeness.Requirements.Select(r => (r.Code, r.Satisfied, r.Evidence)).ToList(),
-            $"/passports/{serial}", "Zakład Centralny (demo)");
+            $"/passports/{serial}", await SiteNameAsync(passport, ct));
 
         var bytes = pdf.Render(model);
         var sha = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
@@ -165,6 +165,18 @@ public sealed class PassportService(
         passport.InvalidatedAt = null;
         passport.UpdatedAt = now;
         return entity;
+    }
+
+    /// <summary>
+    /// Plant that produced the serial, for the document header. The demonstrator runs four plants, so this must follow
+    /// the production order rather than be assumed.
+    /// </summary>
+    private async Task<string> SiteNameAsync(Passport passport, CancellationToken ct)
+    {
+        var siteId = passport.ProductSerial?.ProductionOrder?.SiteId;
+        if (siteId is null || siteId == Guid.Empty) return "Demo";
+        var name = await db.Sites.AsNoTracking().Where(x => x.Id == siteId).Select(x => x.Name).FirstOrDefaultAsync(ct);
+        return string.IsNullOrWhiteSpace(name) ? "Demo" : $"{name} (demo)";
     }
 
     public async Task<PassportPdfDownload> DownloadAsync(string serial, int version, CancellationToken ct)

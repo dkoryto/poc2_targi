@@ -138,6 +138,29 @@
   box-shadow: 0 0 0 1px var(--map-marker-ring);
   cursor: pointer;
 }
+
+/* On touch, map dots stay visually small but get a finger-sized hit area, so switching
+   plants or opening a supplier popup does not require pixel-accurate tapping. */
+@media (pointer: coarse) {
+  .marker::after,
+  .markerSite::after,
+  .markerSiteOther::after,
+  .markerShipment::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--tap);
+    height: var(--tap);
+    transform: translate(-50%, -50%);
+  }
+  .marker,
+  .markerSite,
+  .markerSiteOther,
+  .markerShipment {
+    position: relative;
+  }
+}
 .markerSite {
   width: 16px;
   height: 16px;

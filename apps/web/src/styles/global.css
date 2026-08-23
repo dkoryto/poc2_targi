@@ -162,6 +162,9 @@ code,
   [role='button'],
   a.navLink,
   select,
+  textarea,
+  /* text and date inputs are typed into on touch too: a 32px date field is not tappable */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
   input[type='checkbox'],
   input[type='radio'] {
     min-height: var(--tap);

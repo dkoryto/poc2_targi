@@ -199,4 +199,83 @@ public class PassportTests(ApiFixture fx) : IAsyncLifetime
         passport.GetProperty("status").GetString().Should().Be("Generated");
         passport.GetProperty("versions").GetArrayLength().Should().Be(1, "reset rebuilds exactly one seeded version");
     }
+
+    /// <summary>
+    /// Every plant must tell the same passport story. This is the regression for the defect where the passports seeded
+    /// for Piła, Zamość and Leszno were marked Generated but had no version, no PDF and no checksum, so their detail
+    /// screen was empty while the list showed status "Wygenerowany" next to a blank version column.
+    /// </summary>
+    [Theory]
+    [InlineData("SITE-01")]
+    [InlineData("SITE-02")]
+    [InlineData("SITE-03")]
+    [InlineData("SITE-04")]
+    public async Task Every_generated_passport_has_a_downloadable_pdf_on_every_plant(string siteCode)
+    {
+        using var c = await fx.AsAsync("QualityInspector");
+
+        var list = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports?siteCode={siteCode}", ApiFixture.Json);
+        var items = list.TryGetProperty("items", out var arr) ? arr : list;
+        items.GetArrayLength().Should().BeGreaterThan(0, "each plant seeds passports");
+
+        var generatedSeen = 0;
+        foreach (var row in items.EnumerateArray())
+        {
+            var serial = row.GetProperty("serial").GetString()!;
+            var detail = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports/{serial}", ApiFixture.Json);
+            if (detail.GetProperty("status").GetString() != "Generated") continue;
+
+            generatedSeen++;
+            var versions = detail.GetProperty("versions");
+            versions.GetArrayLength().Should().BeGreaterThan(0,
+                $"{serial} on {siteCode} is Generated, which asserts a rendered document exists");
+
+            var current = versions.EnumerateArray().First();
+            var sha = current.GetProperty("sha256").GetString();
+            sha.Should().MatchRegex("^[0-9a-f]{64}$", $"{serial} must carry a checksum");
+
+            var version = current.GetProperty("version").GetInt32();
+            var pdf = await c.GetAsync($"/api/v1/passports/{serial}/versions/{version}/pdf");
+            pdf.StatusCode.Should().Be(HttpStatusCode.OK);
+            var bytes = await pdf.Content.ReadAsByteArrayAsync();
+            bytes.Length.Should().BeGreaterThan(1000, $"{serial} must be a real document");
+            Encoding.ASCII.GetString(bytes, 0, 5).Should().Be("%PDF-");
+
+            var qr = await c.GetAsync($"/api/v1/passports/{serial}/qr");
+            qr.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        generatedSeen.Should().BeGreaterThan(0, $"{siteCode} seeds at least one issued passport");
+    }
+
+    /// <summary>Each plant's second passport is the "incomplete" half of the story and must name concrete gaps.</summary>
+    [Theory]
+    [InlineData("SITE-01")]
+    [InlineData("SITE-02")]
+    [InlineData("SITE-03")]
+    [InlineData("SITE-04")]
+    public async Task Every_plant_seeds_an_incomplete_passport_with_named_gaps(string siteCode)
+    {
+        using var c = await fx.AsAsync("QualityInspector");
+
+        var list = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports?siteCode={siteCode}", ApiFixture.Json);
+        var items = list.TryGetProperty("items", out var arr) ? arr : list;
+
+        var incomplete = new List<string>();
+        foreach (var row in items.EnumerateArray())
+        {
+            var serial = row.GetProperty("serial").GetString()!;
+            var detail = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports/{serial}", ApiFixture.Json);
+            var completeness = detail.GetProperty("completeness");
+            if (completeness.GetProperty("complete").GetBoolean()) continue;
+
+            incomplete.Add(serial);
+            completeness.GetProperty("missing").GetArrayLength().Should().BeGreaterThan(0,
+                $"{serial} is incomplete, so the screen must list what is missing");
+            foreach (var m in completeness.GetProperty("missing").EnumerateArray())
+                m.GetProperty("code").GetString().Should().NotBeNullOrWhiteSpace();
+        }
+
+        incomplete.Should().NotBeEmpty($"{siteCode} needs a passport with gaps to demonstrate the completeness rules");
+    }
 }

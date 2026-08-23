@@ -39,9 +39,16 @@ test.describe('supplier ETA update drives risk and the dashboard', () => {
 
   test('the change is audited', async () => {
     const auditor = await apiAs('Auditor');
-    const audit = await (await auditor.get('/api/v1/audit?entity=PurchaseOrderLine')).json();
-    expect(audit.items.length).toBeGreaterThan(0);
-    const entry = audit.items[0];
+    // Audit rows are written through the outbox dispatcher (~500 ms poll), so poll rather
+    // than asserting once — a bare read races the dispatcher and fails intermittently.
+    let audit: { items: { correlationId: string; before: unknown; after: unknown }[] } = { items: [] };
+    await expect
+      .poll(async () => {
+        audit = await (await auditor.get('/api/v1/audit?entity=PurchaseOrderLine')).json();
+        return audit.items.length;
+      }, { timeout: 15_000, intervals: [250, 500, 1000] })
+      .toBeGreaterThan(0);
+    const entry = audit.items[0]!;
     expect(entry.correlationId).toBeTruthy();
     expect(entry.before).toBeTruthy();
     expect(entry.after).toBeTruthy();

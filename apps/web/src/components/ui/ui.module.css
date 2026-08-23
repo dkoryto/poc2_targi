@@ -671,6 +671,11 @@
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-xs);
 }
+/* Keep the value and its unit on one line: in a narrow card the row was wrapping to "80 / %". */
+.progressRow > span {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
 
 /* Badge (count) */
 .badge {
@@ -1109,6 +1114,10 @@
     overflow: visible;
     text-overflow: clip;
     align-items: flex-start;
+    /* A flex item defaults to min-width:auto and refuses to shrink below its longest
+       word, which clipped "Przewidywany przestój" at 360px even with wrapping on. */
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .kpi {
     padding: 10px 12px;
