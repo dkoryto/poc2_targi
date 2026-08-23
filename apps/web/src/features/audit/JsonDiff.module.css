@@ -1,0 +1,50 @@
+/* Before/after diff. On a phone the three-column table forced the page sideways, so the
+   two sides stack per field instead (docs/architecture/responsive.md). */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  background: var(--bg-1);
+}
+.itemChanged {
+  background: var(--warn-bg);
+  border-color: var(--warn);
+}
+.field {
+  color: var(--fg-2);
+  overflow-wrap: anywhere;
+}
+.values {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.before {
+  color: var(--fg-2);
+}
+.beforeChanged {
+  color: var(--crit);
+  text-decoration: line-through;
+}
+.after {
+  color: var(--fg-0);
+}
+.afterChanged {
+  color: var(--ok);
+  font-weight: 600;
+}

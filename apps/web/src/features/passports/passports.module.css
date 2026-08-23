@@ -95,3 +95,42 @@
   margin: 2px 0 0;
   font-weight: 600;
 }
+
+/* Mobile (docs/architecture/responsive.md). */
+@media (max-width: 767px) {
+  .filters {
+    grid-template-columns: 1fr;
+    grid-column: 1 / -1;
+  }
+  .meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Requirement rows: evidence drops under the label instead of squeezing it. */
+  .req {
+    grid-template-columns: 20px 1fr;
+    row-gap: 2px;
+  }
+  .evidence {
+    grid-column: 2 / -1;
+    overflow-wrap: anywhere;
+  }
+  .missingBox ul {
+    padding-left: 16px;
+  }
+  .qr {
+    width: 132px;
+    height: 132px;
+  }
+  .banner {
+    align-items: flex-start;
+  }
+}
+
+/* Back-links are plain <a>, which the global coarse-pointer rule does not cover
+   (it lists a.navLink only), so give them a 44px touch target of their own. */
+@media (pointer: coarse) {
+  .backLink {
+    min-height: var(--tap);
+    align-items: center;
+  }
+}

@@ -266,3 +266,60 @@
   color: var(--fg-2);
   font-size: var(--fs-sm);
 }
+
+/* Mobile (docs/architecture/responsive.md). */
+@media (max-width: 767px) {
+  /* Two columns keep the full KPI label readable; three clipped it at 390px. */
+  .kpiCompare,
+  .kpiStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpiAfter {
+    font-size: var(--fs-lg);
+  }
+  .baselineMeta {
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* The change builder rows stack; the fixed 160px label track overflowed. */
+  .changeRow {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .explanation {
+    padding: 10px;
+  }
+  .tile {
+    min-height: 0;
+  }
+  .featuredBadge {
+    margin-left: 0;
+  }
+  .tileTitle {
+    flex-wrap: wrap;
+  }
+}
+
+/* Approve / reject / save stay reachable by thumb while the result scrolls (mobile only:
+   the component renders this bar instead of the header row below `md`). */
+.actionBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 calc(10px + var(--safe-b));
+  background: linear-gradient(to top, var(--bg-0) 72%, transparent);
+}
+.actionBar > * {
+  flex: 1;
+}
+
+/* Back-links are plain <a>, which the global coarse-pointer rule does not cover
+   (it lists a.navLink only), so give them a 44px touch target of their own. */
+@media (pointer: coarse) {
+  .backLink {
+    min-height: var(--tap);
+    align-items: center;
+  }
+}

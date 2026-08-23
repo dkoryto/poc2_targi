@@ -1,0 +1,55 @@
+/* Audit list. The filter row and the wide table were page-overflow sources on a phone
+   (docs/architecture/responsive.md rule 1). */
+.filters {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: end;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.cardList {
+  display: flex;
+  flex-direction: column;
+}
+.rowCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  min-height: var(--tap);
+  font: inherit;
+}
+.rowCardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.rowCardMeta {
+  color: var(--fg-2);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+.detail {
+  padding: 0 12px 12px;
+  border-top: 1px dashed var(--border);
+}
+@media (max-width: 767px) {
+  .filters {
+    grid-template-columns: 1fr;
+    grid-column: 1 / -1;
+  }
+}

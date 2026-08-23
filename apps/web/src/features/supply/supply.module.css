@@ -95,3 +95,63 @@
   margin: 2px 0 0;
   font-weight: 600;
 }
+
+/* Mobile (docs/architecture/responsive.md). The desktop grids below `md` are the main
+   source of page-level horizontal scrolling, so every fixed multi-column track collapses. */
+@media (max-width: 767px) {
+  /* Inside FilterBar's mobile panel this wrapper is a grid item: span it and stack. */
+  .filters {
+    grid-template-columns: 1fr;
+    grid-column: 1 / -1;
+  }
+  .meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .metaItem dd {
+    overflow-wrap: anywhere;
+  }
+  /* Document rows stack so the status chip and the download link keep a 44px hit area. */
+  .docRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px 0;
+  }
+  .docRow > :last-child {
+    justify-self: start;
+    min-height: var(--tap);
+    display: inline-flex;
+    align-items: center;
+  }
+  /* "Dlaczego ten wynik?" must read without sideways scrolling: label over bar+value. */
+  .factor {
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+  }
+  .factorBar {
+    grid-column: 1 / 2;
+  }
+  .riskCompare {
+    gap: 8px;
+  }
+  .riskScore {
+    font-size: var(--fs-xl);
+  }
+  /* Form actions sit full width, reachable by thumb. `.row` is a global utility class,
+     so it must be escaped or CSS Modules would hash it into a selector that never matches. */
+  .section :global(.row) {
+    justify-content: stretch;
+  }
+  .section :global(.row) > button {
+    flex: 1;
+    min-height: var(--tap);
+  }
+}
+
+/* Back-links are plain <a>, which the global coarse-pointer rule does not cover
+   (it lists a.navLink only), so give them a 44px touch target of their own. */
+@media (pointer: coarse) {
+  .backLink {
+    min-height: var(--tap);
+    align-items: center;
+  }
+}

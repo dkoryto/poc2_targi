@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import s from './supply.module.css';
 import { usePurchaseOrders, type PoFilters } from './api';
 import { useAuth } from '@/features/auth/auth';
-import { Button, DataTable, FormField, Input, PoStatusChip, ProgressBar, RiskBadge, Select, type Column } from '@/components/ui';
+import { DataTable, FilterBar, FormField, Input, PoStatusChip, ProgressBar, RiskBadge, Select, type Column } from '@/components/ui';
 import { PO_LINE_STATUSES, type PurchaseOrderSummary } from '@/api/types';
 import { daysBetween, fmtDate } from '@/lib/format';
 
@@ -39,6 +39,7 @@ export function SupplyListPage() {
     [params],
   );
   const q = usePurchaseOrders(filters);
+  const activeFilters = Object.values(filters).filter(Boolean).length;
   const set = (k: string, v: string) => {
     const next = new URLSearchParams(params);
     if (v) next.set(k, v);
@@ -47,14 +48,14 @@ export function SupplyListPage() {
   };
 
   const columns: Column<PurchaseOrderSummary>[] = [
-    { key: 'code', header: t('supply.order'), render: (r) => <strong>{r.code}</strong>, sortValue: (r) => r.code },
+    { key: 'code', header: t('supply.order'), render: (r) => <strong>{r.code}</strong>, sortValue: (r) => r.code, card: 'title' },
     ...(user?.role !== 'SupplierUser' ? [{ key: 'supplier', header: t('supply.supplier'), render: (r: PurchaseOrderSummary) => `${r.supplierCode} · ${r.supplierName}`, sortValue: (r: PurchaseOrderSummary) => r.supplierName } as Column<PurchaseOrderSummary>] : []),
-    { key: 'status', header: t('supply.status'), render: (r) => <PoStatusChip status={r.status} small />, sortValue: (r) => r.status },
+    { key: 'status', header: t('supply.status'), render: (r) => <PoStatusChip status={r.status} small />, sortValue: (r) => r.status, card: 'meta' },
     { key: 'lines', header: t('supply.lines'), render: (r) => r.lineCount, sortValue: (r) => r.lineCount, align: 'right' },
     { key: 'required', header: t('supply.required'), render: (r) => fmtDate(r.requiredDate), sortValue: (r) => r.requiredDate },
     { key: 'eta', header: t('supply.eta'), render: (r) => <EtaCell eta={r.eta} required={r.requiredDate} />, sortValue: (r) => r.eta },
     { key: 'progress', header: t('supply.progress'), render: (r) => <ProgressBar value={r.progressPercent} label={t('supply.progress')} />, sortValue: (r) => r.progressPercent, width: 140 },
-    { key: 'risk', header: t('supply.risk'), render: (r) => <RiskBadge category={r.riskCategory} score={r.riskScore} small />, sortValue: (r) => r.riskScore },
+    { key: 'risk', header: t('supply.risk'), render: (r) => <RiskBadge category={r.riskCategory} score={r.riskScore} small />, sortValue: (r) => r.riskScore, card: 'meta' },
     { key: 'site', header: t('supply.site'), render: (r) => r.siteCode, sortValue: (r) => r.siteCode },
   ];
 
@@ -66,6 +67,7 @@ export function SupplyListPage() {
           <p>{t('supply.subtitle')}{user?.role === 'SupplierUser' ? ` · ${user.supplierName ?? ''} — ${t('supply.ownDataOnly')}` : ''}</p>
         </div>
       </div>
+      <FilterBar activeCount={activeFilters} onClear={() => setParams(new URLSearchParams(), { replace: true })} data-testid="supply-filters">
       <div className={s.filters}>
         <FormField label={t('common.search')}>{(id) => <Input id={id} placeholder={t('supply.searchPlaceholder')} value={params.get('q') ?? ''} onChange={(e) => set('q', e.target.value)} />}</FormField>
         <FormField label={t('supply.filterStatus')}>
@@ -86,8 +88,8 @@ export function SupplyListPage() {
         </FormField>
         <FormField label={`${t('supply.filterDue')} ${t('common.from').toLowerCase()}`}>{(id) => <Input id={id} type="date" value={params.get('dueFrom') ?? ''} onChange={(e) => set('dueFrom', e.target.value)} />}</FormField>
         <FormField label={`${t('supply.filterDue')} ${t('common.to').toLowerCase()}`}>{(id) => <Input id={id} type="date" value={params.get('dueTo') ?? ''} onChange={(e) => set('dueTo', e.target.value)} />}</FormField>
-        <Button variant="ghost" onClick={() => setParams(new URLSearchParams(), { replace: true })}>{t('common.clearFilters')}</Button>
       </div>
+      </FilterBar>
       <DataTable columns={columns} rows={q.data?.items} rowKey={(r) => r.code} loading={q.isLoading} error={q.error} onRetry={() => q.refetch()} onRowClick={(r) => navigate(`/supply/orders/${r.code}`)} initialSort={{ key: 'risk', dir: 'desc' }} data-testid="po-table" />
     </div>
   );

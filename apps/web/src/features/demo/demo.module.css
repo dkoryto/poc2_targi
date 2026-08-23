@@ -1,0 +1,25 @@
+/* Value-summary tiles. The inline 4-column grid overflowed a phone screen. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.tileValue {
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+@media (max-width: 1199px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+  .tileValue {
+    font-size: 28px;
+  }
+}

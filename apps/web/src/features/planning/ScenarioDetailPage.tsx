@@ -7,7 +7,7 @@ import { useApproveScenario, useCompare, useRejectScenario, useRunScenario, useS
 import { CAN_APPROVE, CAN_RUN, ScenarioStatusChip } from './PlanningPage';
 import { ScenarioResult, SolverBadge } from './ScenarioResult';
 import { describeChange } from './ScenarioBuilder';
-import { Button, ConfirmDialog, ErrorState, LoadingState, useToast } from '@/components/ui';
+import { Button, ConfirmDialog, ErrorState, LoadingState, useIsMobile, useToast } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth';
 import { onDomainEvent } from '@/realtime/useLive';
 import { fmtDateTime, fmtNumber } from '@/lib/format';
@@ -46,11 +46,39 @@ export function ScenarioDetailPage() {
     }
   };
 
+  const isMobile = useIsMobile();
+  /**
+   * Rendered once: inline in the header on desktop, in a sticky bottom bar on mobile so
+   * approve/reject stay under the thumb while the result scrolls.
+   */
+  const actions = !sc ? null : (
+    <>
+      {(sc.status === 'Draft' || sc.status === 'Failed' || sc.status === 'Saved') && canRun && (
+        <Button icon={<RefreshCw size={14} />} onClick={() => void act(() => run.mutateAsync(sc.id), 'planning.runStarted')} loading={run.isPending} data-testid="btn-run-scenario">
+          {t('planning.run')}
+        </Button>
+      )}
+      {sc.status === 'Completed' && (
+        <>
+          <Button icon={<Save size={14} />} onClick={() => void act(() => save.mutateAsync(sc.id), 'planning.saved')} loading={save.isPending} disabled={!canRun} data-testid="btn-save-scenario">
+            {t('planning.save')}
+          </Button>
+          <Button variant="danger" icon={<X size={14} />} onClick={() => void act(() => reject.mutateAsync(sc.id), 'planning.rejected')} loading={reject.isPending} disabled={!canRun} data-testid="btn-reject-plan">
+            {t('planning.reject')}
+          </Button>
+          <Button variant="primary" icon={<Check size={14} />} onClick={() => setConfirm(true)} disabled={!canApprove} title={canApprove ? undefined : t('planning.approveForbidden')} data-testid="btn-approve-plan">
+            {t('planning.approve')}
+          </Button>
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="page" data-testid="scenario-detail">
       <div className="page-header">
         <div>
-          <Link to="/planning" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('planning.backToList')}</Link>
+          <Link to="/planning" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('planning.backToList')}</Link>
           <h1>{sc?.name ?? t('planning.scenario')}</h1>
           {sc && (
             <p className="row" style={{ gap: 10 }}>
@@ -61,28 +89,7 @@ export function ScenarioDetailPage() {
             </p>
           )}
         </div>
-        {sc && (
-          <div className="row">
-            {(sc.status === 'Draft' || sc.status === 'Failed' || sc.status === 'Saved') && canRun && (
-              <Button icon={<RefreshCw size={14} />} onClick={() => void act(() => run.mutateAsync(sc.id), 'planning.runStarted')} loading={run.isPending} data-testid="btn-run-scenario">
-                {t('planning.run')}
-              </Button>
-            )}
-            {sc.status === 'Completed' && (
-              <>
-                <Button icon={<Save size={14} />} onClick={() => void act(() => save.mutateAsync(sc.id), 'planning.saved')} loading={save.isPending} disabled={!canRun} data-testid="btn-save-scenario">
-                  {t('planning.save')}
-                </Button>
-                <Button variant="danger" icon={<X size={14} />} onClick={() => void act(() => reject.mutateAsync(sc.id), 'planning.rejected')} loading={reject.isPending} disabled={!canRun} data-testid="btn-reject-plan">
-                  {t('planning.reject')}
-                </Button>
-                <Button variant="primary" icon={<Check size={14} />} onClick={() => setConfirm(true)} disabled={!canApprove} title={canApprove ? undefined : t('planning.approveForbidden')} data-testid="btn-approve-plan">
-                  {t('planning.approve')}
-                </Button>
-              </>
-            )}
-          </div>
-        )}
+        {sc && !isMobile && <div className="row" data-testid="scenario-actions">{actions}</div>}
       </div>
 
       {scenario.isLoading && <LoadingState />}
@@ -103,6 +110,10 @@ export function ScenarioDetailPage() {
           {sc.status === 'Failed' && <ErrorState error={new Error(sc.errorMessage ?? t('planning.failed'))} onRetry={canRun ? () => void run.mutateAsync(sc.id) : undefined} />}
           {done && sc.after && <ScenarioResult scenario={sc} compare={compare.data} />}
         </>
+      )}
+
+      {sc && isMobile && actions && (
+        <div className={s.actionBar} data-testid="scenario-actions">{actions}</div>
       )}
 
       <ConfirmDialog

@@ -7,7 +7,7 @@ import { useSerial, useTraceAudit } from './api';
 import { GenealogyTree, nodeStatusLabel, nodeStatusTone } from './GenealogyTree';
 import { hitRoute } from './TracePage';
 import type { AuditEvent, TraceComponent, TraceNode, TraceSearchHit } from '@/api/types';
-import { Button, Card, DataTable, ErrorState, LoadingState, StatusChip, Tabs, type Column, useToast } from '@/components/ui';
+import { Button, Card, DataTable, ErrorState, LoadingState, Sheet, StatusChip, Tabs, useIsMobile, type Column, useToast } from '@/components/ui';
 import { copyText, downloadFile } from '@/lib/download';
 import { fmtDateTime } from '@/lib/format';
 import { buildUrl } from '@/api/client';
@@ -74,11 +74,12 @@ export function SerialPage() {
   const data = useSerial(serial);
   const [tab, setTab] = useState('genealogy');
   const [selected, setSelected] = useState<TraceNode | null>(null);
+  const isMobile = useIsMobile();
   const audit = useTraceAudit({ entity: 'Serial', code: serial }, tab === 'audit');
   const trace = data.data;
 
   const compCols: Column<TraceComponent>[] = [
-    { key: 'part', header: t('supply.part'), render: (r) => <span><span className="mono">{r.partCode}</span>{r.partName ? <span className="muted"> · {r.partName}</span> : null}</span>, sortValue: (r) => r.partCode },
+    { key: 'part', header: t('supply.part'), render: (r) => <span><span className="mono">{r.partCode}</span>{r.partName ? <span className="muted"> · {r.partName}</span> : null}</span>, sortValue: (r) => r.partCode, card: 'title' },
     { key: 'lot', header: t('trace.lotHeat'), render: (r) => <Link to={`/trace/lots/${encodeURIComponent(r.lotNumber)}`} className="mono">{r.lotNumber}{r.heatNumber ? ` / ${r.heatNumber}` : ''}</Link>, sortValue: (r) => r.lotNumber },
     { key: 'sup', header: t('supply.supplier'), render: (r) => `${r.supplierName ?? r.supplierCode}${r.country ? ` (${r.country})` : ''}`, sortValue: (r) => r.supplierCode },
     { key: 'cert', header: t('trace.certificate'), render: (r) => <Hash value={r.certSha256} /> },
@@ -86,7 +87,7 @@ export function SerialPage() {
   const auditCols: Column<AuditEvent>[] = [
     { key: 'at', header: t('audit.occurredAt'), render: (r) => fmtDateTime(r.occurredAt), sortValue: (r) => r.occurredAt },
     { key: 'user', header: t('audit.user'), render: (r) => r.user },
-    { key: 'action', header: t('audit.action'), render: (r) => r.action },
+    { key: 'action', header: t('audit.action'), render: (r) => r.action, card: 'title' },
     { key: 'entity', header: t('audit.entity'), render: (r) => <span className="mono">{r.entity} {r.entityCode}</span> },
     { key: 'corr', header: t('audit.correlationId'), render: (r) => <span className="mono muted" style={{ fontSize: 11 }}>{r.correlationId.slice(0, 8)}</span> },
   ];
@@ -95,7 +96,7 @@ export function SerialPage() {
     <div className="page" data-testid="serial-page">
       <div className="page-header">
         <div>
-          <Link to="/trace" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.backToSearch')}</Link>
+          <Link to="/trace" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.backToSearch')}</Link>
           <h1 className="mono">{serial}</h1>
           {trace && <p>{trace.productName} ({trace.productCode}) · {t('gantt.order')} <Link to="/planning">{trace.orderCode}</Link> · BOM {trace.bomVersion}</p>}
         </div>
@@ -116,9 +117,15 @@ export function SerialPage() {
               <Card title={t('trace.genealogy')} definition={t('trace.genealogyDef')}>
                 <GenealogyTree root={trace.genealogy} selected={selected} onSelect={setSelected} />
               </Card>
-              <Card title={t('common.details')}>
-                {selected ? <NodePanel node={selected} onNavigate={navigate} /> : <p className="muted">{t('trace.selectNode')}</p>}
-              </Card>
+              {isMobile ? (
+                <Sheet open={!!selected} onClose={() => setSelected(null)} title={selected?.code ?? t('common.details')} data-testid="trace-node-sheet">
+                  {selected && <NodePanel node={selected} onNavigate={(r) => { setSelected(null); navigate(r); }} />}
+                </Sheet>
+              ) : (
+                <Card title={t('common.details')}>
+                  {selected ? <NodePanel node={selected} onNavigate={navigate} /> : <p className="muted">{t('trace.selectNode')}</p>}
+                </Card>
+              )}
             </div>
           )}
           {tab === 'components' && (

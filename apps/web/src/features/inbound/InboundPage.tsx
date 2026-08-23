@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Zap } from 'lucide-react';
+import s from './inbound.module.css';
 import { useAddShipmentEvent, useLogisticsEvents, useRaiseLogisticsEvent, useShipment, useShipments } from './api';
 import { useMapData } from '@/features/dashboard/api';
 import { DeliveryMap } from '@/features/dashboard/DeliveryMap';
@@ -90,14 +91,14 @@ export function InboundPage() {
   });
 
   const columns: Column<Shipment>[] = [
-    { key: 'code', header: t('inbound.shipment'), render: (r) => <strong>{r.code}</strong>, sortValue: (r) => r.code },
+    { key: 'code', header: t('inbound.shipment'), render: (r) => <strong>{r.code}</strong>, sortValue: (r) => r.code, card: 'title' },
     { key: 'po', header: t('supply.order'), render: (r) => r.poCode, sortValue: (r) => r.poCode },
     { key: 'supplier', header: t('supply.supplier'), render: (r) => `${r.supplierCode} · ${r.supplierName}`, sortValue: (r) => r.supplierName },
     { key: 'parts', header: t('supply.part'), render: (r) => r.lines.map((l) => `${l.partCode}×${l.quantity}`).join(', ') },
-    { key: 'status', header: t('supply.status'), render: (r) => <ShipmentStatusChip status={r.status} small />, sortValue: (r) => r.status },
+    { key: 'status', header: t('supply.status'), render: (r) => <ShipmentStatusChip status={r.status} small />, sortValue: (r) => r.status, card: 'meta' },
     { key: 'eta', header: t('supply.eta'), render: (r) => fmtDate(r.eta), sortValue: (r) => r.eta },
     { key: 'progress', header: t('inbound.progress'), render: (r) => <ProgressBar value={r.progress * 100} label={t('inbound.progress')} />, sortValue: (r) => r.progress, width: 140 },
-    { key: 'risk', header: t('supply.risk'), render: (r) => <RiskBadge category={r.riskCategory} score={r.riskScore} small />, sortValue: (r) => r.riskScore },
+    { key: 'risk', header: t('supply.risk'), render: (r) => <RiskBadge category={r.riskCategory} score={r.riskScore} small />, sortValue: (r) => r.riskScore, card: 'meta' },
   ];
 
   return (
@@ -108,10 +109,10 @@ export function InboundPage() {
           <p>{t('inbound.subtitle')}</p>
         </div>
       </div>
-      <div className="grid-2" style={{ gridTemplateColumns: '3fr 2fr' }}>
+      <div className={s.split}>
         <div className="stack">
           <DataTable columns={columns} rows={shipments.data?.items} rowKey={(r) => r.code} loading={shipments.isLoading} error={shipments.error} onRetry={() => shipments.refetch()} onRowClick={(r) => navigate(`/inbound/${r.code}`)} selectedKey={code ?? null} initialSort={{ key: 'risk', dir: 'desc' }} data-testid="shipments-table" />
-          <Card title={t('dashboard.map')} flush style={{ height: 320 }}>
+          <Card title={t('dashboard.map')} flush className={s.mapCard}>
             {map.data && <DeliveryMap data={map.data} pulseCodes={new Set()} onOpenPo={(c) => navigate(`/supply/orders/${c}`)} />}
           </Card>
         </div>
@@ -145,7 +146,7 @@ export function InboundPage() {
             {events.data && events.data.items.filter((e) => e.active).length === 0 && <p className="muted">{t('inbound.noEvents')}</p>}
             <div className="stack">
               {events.data?.items.filter((e) => e.active).map((e) => (
-                <div key={e.id} className="row" style={{ justifyContent: 'space-between', fontSize: 'var(--fs-sm)', borderBottom: '1px solid var(--border)', paddingBottom: 6 }}>
+                <div key={e.id} className={s.eventRow}>
                   <span>
                     <strong>{t(`logisticsEvent.${e.type}`)}</strong> · {e.shipmentCode ?? e.supplierCode}
                     <br />

@@ -61,7 +61,7 @@ export function LotPage() {
     <div className="page" data-testid="lot-page">
       <div className="page-header">
         <div>
-          <Link to="/trace/lots" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.allLots')}</Link>
+          <Link to="/trace/lots" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.allLots')}</Link>
           <h1 className="mono">{lotNumber}</h1>
           {d && <p>{d.partName ?? d.partCode} · {d.supplierName ?? d.supplierCode} · {fmtNumber(d.quantity)} {d.unit}</p>}
         </div>

@@ -79,11 +79,11 @@ export function PassportPage() {
   const missing = missingFromApi ?? p?.completeness.missing ?? [];
 
   const verCols: Column<PassportVersion>[] = [
-    { key: 'v', header: t('common.version'), render: (r) => <strong>v{r.version}</strong>, sortValue: (r) => r.version },
+    { key: 'v', header: t('common.version'), render: (r) => <strong>v{r.version}</strong>, sortValue: (r) => r.version, card: 'title' },
     { key: 'at', header: t('passports.generatedAt'), render: (r) => `${fmtDateTime(r.generatedAt)} · ${r.generatedBy}`, sortValue: (r) => r.generatedAt },
     { key: 'sha', header: 'SHA-256', render: (r) => <Hash value={r.sha256} /> },
     { key: 'size', header: t('passports.size'), align: 'right', render: (r) => fmtBytes(r.fileSize) },
-    { key: 'status', header: t('supply.status'), render: (r) => <StatusChip tone={r.status === 'Current' ? 'ok' : r.status === 'Invalidated' ? 'critical' : 'neutral'} label={t(`passports.version.${r.status}`)} small /> },
+    { key: 'status', header: t('supply.status'), render: (r) => <StatusChip tone={r.status === 'Current' ? 'ok' : r.status === 'Invalidated' ? 'critical' : 'neutral'} label={t(`passports.version.${r.status}`)} small />, card: 'meta' },
     { key: 'dl', header: '', render: (r) => <Button size="sm" icon={<FileDown size={13} />} onClick={() => void downloadFile(`/passports/${encodeURIComponent(serial)}/versions/${r.version}/pdf`, `passport-${serial}-v${r.version}.pdf`, { openInNewTab: true }).catch(() => toast.critical(t('common.error')))} data-testid={`passport-pdf-${r.version}`}>PDF</Button> },
   ];
 
@@ -91,7 +91,7 @@ export function PassportPage() {
     <div className="page" data-testid="passport-page">
       <div className="page-header">
         <div>
-          <Link to="/passports" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('passports.title')}</Link>
+          <Link to="/passports" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('passports.title')}</Link>
           <h1 className="mono">{serial}</h1>
           {p && <p>{p.productName ?? p.productCode} · {t('gantt.order')} {p.orderCode} · {t('passports.template')} <span className="mono">{p.templateCode}</span>{p.bomVersion ? ` · BOM ${p.bomVersion}` : ''}</p>}
         </div>
@@ -145,7 +145,7 @@ export function PassportPage() {
               <Card title={t('passports.components')} flush>
                 <DataTable
                   columns={[
-                    { key: 'part', header: t('supply.part'), render: (r) => <span className="mono">{r.partCode}</span>, sortValue: (r) => r.partCode },
+                    { key: 'part', header: t('supply.part'), render: (r) => <span className="mono">{r.partCode}</span>, sortValue: (r) => r.partCode, card: 'title' },
                     { key: 'lot', header: t('trace.lot'), render: (r) => <Link to={`/trace/lots/${encodeURIComponent(r.lotNumber)}`} className="mono">{r.lotNumber}</Link> },
                     { key: 'sup', header: t('supply.supplier'), render: (r) => `${r.supplierName ?? r.supplierCode}${r.country ? ` (${r.country})` : ''}` },
                     { key: 'cert', header: t('trace.certificate'), render: (r) => <Hash value={r.certSha256} /> },

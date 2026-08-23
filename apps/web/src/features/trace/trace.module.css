@@ -173,3 +173,61 @@
   gap: 8px;
   align-items: end;
 }
+
+/* Mobile (docs/architecture/responsive.md). */
+@media (max-width: 767px) {
+  .searchBox {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchBox input {
+    max-width: none;
+  }
+  /* Search hits: the 110px kind column pushed long labels off screen. */
+  .hit {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 10px 8px;
+    min-height: var(--tap);
+  }
+  .meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filters {
+    grid-template-columns: 1fr;
+    grid-column: 1 / -1;
+  }
+  .panelRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 0;
+  }
+  /* Shallower indentation so a deep genealogy still fits 390px. */
+  .tree ul {
+    padding-left: 12px;
+    margin-left: 7px;
+  }
+  .node {
+    flex-wrap: wrap;
+    padding: 8px 6px;
+    row-gap: 2px;
+  }
+  .nodeKind {
+    min-width: 0;
+  }
+  .nodeLabel {
+    white-space: normal;
+    overflow: visible;
+    flex-basis: 100%;
+  }
+}
+
+/* Back-links are plain <a>, which the global coarse-pointer rule does not cover
+   (it lists a.navLink only), so give them a 44px touch target of their own. */
+@media (pointer: coarse) {
+  .backLink {
+    min-height: var(--tap);
+    align-items: center;
+  }
+}

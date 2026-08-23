@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import d from './demo.module.css';
 import { Link } from 'react-router';
 import { ShieldCheck, TimerOff, GitBranch, FileBadge } from 'lucide-react';
 import { useScenarios, useScenario } from '@/features/planning/api';
@@ -28,12 +29,12 @@ export function SummaryPage() {
   return (
     <div className="page" data-testid="summary-page">
       <div className="page-header"><div><h1>{t('summary.title')}</h1><p>{t('summary.subtitle')}</p></div><Link to="/">{t('nav.controlRoom')} →</Link></div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+      <div className={d.tiles}>
         {tiles.map((x) => (
           <Card key={x.label}>
             <div className="stack" style={{ alignItems: 'flex-start', gap: 8, padding: 8 }}>
               <x.icon size={28} color={x.color} aria-hidden />
-              <div style={{ fontSize: 34, fontWeight: 700, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{x.value}</div>
+              <div className={d.tileValue}>{x.value}</div>
               <div style={{ fontWeight: 600 }}>{x.label}</div>
               <div className="muted" style={{ fontSize: 'var(--fs-sm)' }}>{x.detail}</div>
             </div>

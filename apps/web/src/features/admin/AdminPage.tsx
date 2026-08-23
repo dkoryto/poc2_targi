@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import a from './admin.module.css';
 import { useTranslation } from 'react-i18next';
 import { Database, HardDrive, Cpu, Brain, Radio, AlertOctagon } from 'lucide-react';
 import { api } from '@/api/client';
@@ -78,18 +79,18 @@ export function AdminPage() {
         {status.isLoading && <LoadingState rows={2} />}
         {status.isError && <ErrorState error={status.error} onRetry={() => status.refetch()} />}
         {status.data && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 10 }} data-testid="service-cards">
+          <div className={a.services} data-testid="service-cards">
             {status.data.services.map((s) => {
               const Icon = ICONS[s.name] ?? Radio;
               return (
-                <div key={s.name} style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 12, background: 'var(--bg-2)', display: 'flex', flexDirection: 'column', gap: 6 }} data-testid={`service-${s.name}`}>
+                <div key={s.name} className={a.serviceCard} data-testid={`service-${s.name}`}>
                   <span className="row"><Icon size={16} aria-hidden /> <strong>{t(`admin.services.${s.name}`, { defaultValue: s.name })}</strong></span>
                   <StatusChip tone={s.status === 'up' ? 'ok' : s.status === 'down' ? 'critical' : 'neutral'} label={t(`status.service.${s.status}`)} small />
                   <span className="muted" style={{ fontSize: 11 }}>{s.latencyMs != null ? `${fmtNumber(s.latencyMs)} ms` : '—'}</span>
                 </div>
               );
             })}
-            <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 12, background: 'var(--bg-2)', display: 'flex', flexDirection: 'column', gap: 6 }} data-testid="service-signalr">
+            <div className={a.serviceCard} data-testid="service-signalr">
               <span className="row"><Radio size={16} aria-hidden /> <strong>SignalR</strong></span>
               <StatusChip tone={live === 'connected' ? 'ok' : live === 'connecting' ? 'warn' : 'critical'} label={t(`admin.live.${live}`)} small />
             </div>
@@ -107,7 +108,7 @@ export function AdminPage() {
         </Card>
         <Card title={t('admin.demoStatus')}>
           {demo.data ? (
-            <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 12px', fontSize: 'var(--fs-sm)' }}>
+            <dl className={a.demoList}>
               <dt className="muted">{t('admin.demoMode')}</dt><dd style={{ margin: 0 }}>{demo.data.demoMode ? t('common.yes') : t('common.no')}</dd>
               <dt className="muted">{t('demo.seedVersion')}</dt><dd style={{ margin: 0 }} className="mono">{demo.data.seedVersion}</dd>
               <dt className="muted">{t('admin.seededAt')}</dt><dd style={{ margin: 0 }}>{fmtDateTime(demo.data.seededAt)}</dd>
@@ -120,7 +121,7 @@ export function AdminPage() {
         {settings.isLoading && <LoadingState rows={3} />}
         {settings.isError && <ErrorState error={settings.error} onRetry={() => settings.refetch()} />}
         {settings.data && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }} data-testid="settings-tables">
+          <div className={a.settings} data-testid="settings-tables">
             <SettingsTable
               title={t('admin.riskWeights')}
               rows={normaliseWeights(settings.data.riskWeights, 'weight').map((r) => ({ code: r.code, label: t(`risk.factors.${r.code}`, { defaultValue: r.code }), value: fmtNumber(r.value, 2) }))}
@@ -149,7 +150,7 @@ function SettingsTable({ title, rows }: { title: string; rows: { code: string; l
   return (
     <div>
       <h3 style={{ marginBottom: 6 }}>{title}</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--fs-sm)' }}>
+      <table className={a.settingsTable}>
         <tbody>
           {rows.map((r) => <tr key={r.code} style={{ borderTop: '1px solid var(--border)' }}><td style={{ padding: '4px 6px' }}>{r.label}</td><td style={{ padding: '4px 6px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r.value}</td></tr>)}
         </tbody>

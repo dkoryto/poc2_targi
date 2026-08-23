@@ -1,0 +1,51 @@
+/* Admin. The service and settings grids had inline fixed column counts, which beat the
+   global media queries and overflowed the page on a phone. */
+.services {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.serviceCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.demoList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: var(--fs-sm);
+}
+.settingsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+@media (max-width: 1199px) {
+  .services {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .services,
+  .settings {
+    grid-template-columns: 1fr;
+  }
+  .demoList {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .demoList dt {
+    margin-top: 6px;
+  }
+}

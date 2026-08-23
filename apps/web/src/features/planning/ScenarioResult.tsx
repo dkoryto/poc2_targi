@@ -123,11 +123,11 @@ export function ScenarioResult({ scenario, compare }: { scenario: PlanningScenar
 
   const moved = compare?.movedOperations ?? [];
   const cols: Column<(typeof moved)[number]>[] = [
-    { key: 'op', header: t('gantt.op'), render: (r) => <span className="mono">{r.operationCode}</span>, sortValue: (r) => r.operationCode },
+    { key: 'op', header: t('gantt.op'), render: (r) => <span className="mono">{r.operationCode}</span>, sortValue: (r) => r.operationCode, card: 'title' },
     { key: 'wc', header: t('gantt.workCenter'), render: (r) => r.workCenterCode, sortValue: (r) => r.workCenterCode },
     { key: 'before', header: t('risk.before'), render: (r) => `${fmtDateTime(r.before.start)} – ${fmtDateTime(r.before.end)}` },
     { key: 'after', header: t('risk.after'), render: (r) => `${fmtDateTime(r.after.start)} – ${fmtDateTime(r.after.end)}` },
-    { key: 'shift', header: t('gantt.shift'), align: 'right', render: (r) => <span style={{ color: r.shiftDays > 0 ? 'var(--warn)' : 'var(--ok)' }}>{fmtSigned(r.shiftDays, 1)} d</span>, sortValue: (r) => r.shiftDays },
+    { key: 'shift', header: t('gantt.shift'), align: 'right', render: (r) => <span style={{ color: r.shiftDays > 0 ? 'var(--warn)' : 'var(--ok)' }}>{fmtSigned(r.shiftDays, 1)} d</span>, sortValue: (r) => r.shiftDays, card: 'meta' },
   ];
 
   return (

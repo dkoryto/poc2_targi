@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { Truck, ArrowLeft } from 'lucide-react';
+import s from './supply.module.css';
 import { usePurchaseOrder } from './api';
 import { LineDrawer } from './LineDrawer';
 import { AdviceDialog } from './AdviceDialog';
@@ -23,24 +24,24 @@ export function PurchaseOrderPage() {
   const canAdvice = user?.role === 'SupplierUser' || user?.role === 'InboundCoordinator' || user?.role === 'DemoPresenter' || user?.role === 'Administrator';
 
   const columns: Column<PurchaseOrderLine>[] = [
-    { key: 'no', header: '#', render: (l) => l.lineNo, sortValue: (l) => l.lineNo, width: 40 },
-    { key: 'part', header: t('supply.part'), render: (l) => <span><strong>{l.partCode}</strong> <span className="muted">{l.partName}</span></span>, sortValue: (l) => l.partCode },
+    { key: 'no', header: '#', render: (l) => l.lineNo, sortValue: (l) => l.lineNo, width: 40, card: 'meta' },
+    { key: 'part', header: t('supply.part'), render: (l) => <span><strong>{l.partCode}</strong> <span className="muted">{l.partName}</span></span>, sortValue: (l) => l.partCode, card: 'title' },
     { key: 'qty', header: t('supply.qty'), render: (l) => `${l.quantity} ${l.unit}`, sortValue: (l) => l.quantity, align: 'right' },
-    { key: 'status', header: t('supply.status'), render: (l) => <PoStatusChip status={l.status} small />, sortValue: (l) => l.status },
+    { key: 'status', header: t('supply.status'), render: (l) => <PoStatusChip status={l.status} small />, sortValue: (l) => l.status, card: 'meta' },
     { key: 'progress', header: t('supply.progress'), render: (l) => <ProgressBar value={l.progressPercent} label={t('supply.progress')} />, sortValue: (l) => l.progressPercent, width: 140 },
     { key: 'required', header: t('supply.required'), render: (l) => fmtDate(l.requiredDate), sortValue: (l) => l.requiredDate },
     { key: 'eta', header: t('supply.eta'), render: (l) => <EtaCell eta={l.eta} required={l.requiredDate} />, sortValue: (l) => l.eta },
     { key: 'lot', header: t('supply.lotNumber'), render: (l) => l.lotNumber ?? '—', sortValue: (l) => l.lotNumber },
     { key: 'docs', header: t('supply.documents'), render: (l) => <span className="row">{l.documents.length === 0 ? <span className="muted">—</span> : l.documents.map((d) => <DocStatusChip key={d.id} status={d.status} small />)}</span> },
-    { key: 'risk', header: t('supply.risk'), render: (l) => <RiskBadge category={l.risk.category} score={l.risk.score} small />, sortValue: (l) => l.risk.score },
-    { key: 'act', header: '', render: (l) => <Button size="sm" onClick={(e) => { e.stopPropagation(); setLineId(l.id); }} data-testid={`edit-line-${l.lineNo}`}>{t('supply.editLine')}</Button> },
+    { key: 'risk', header: t('supply.risk'), render: (l) => <RiskBadge category={l.risk.category} score={l.risk.score} small />, sortValue: (l) => l.risk.score, card: 'meta' },
+    { key: 'act', header: '', render: (l) => <Button size="sm" onClick={(e) => { e.stopPropagation(); setLineId(l.id); }} data-testid={`edit-line-${l.lineNo}`}>{t('supply.editLine')}</Button>, card: 'hidden' },
   ];
 
   return (
     <div className="page" data-testid="po-page">
       <div className="page-header">
         <div>
-          <Link to="/supply" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} /> {t('supply.orders')}</Link>
+          <Link to="/supply" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} /> {t('supply.orders')}</Link>
           <h1>{code}</h1>
           {q.data && (
             <p>
