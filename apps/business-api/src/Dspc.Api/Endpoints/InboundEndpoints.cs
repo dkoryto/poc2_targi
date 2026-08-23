@@ -69,10 +69,30 @@ public static class DocumentEndpoints
             if (!req.HasFormContentType) throw new Application.Common.ValidationException(new Dictionary<string, string[]> { ["file"] = ["multipart/form-data expected"] });
             var form = await req.ReadFormAsync(ct);
             var file = form.Files.GetFile("file") ?? throw new Application.Common.ValidationException(new Dictionary<string, string[]> { ["file"] = ["File is required."] });
-            var dto = new UploadDocumentRequest(form["type"].ToString(), Guid.TryParse(form["poLineId"], out var pl) ? pl : null, NullIfEmpty(form["lotNumber"]), NullIfEmpty(form["heatNumber"]),
-                form["documentNumber"].ToString(), DateOnly.TryParse(form["issuedOn"], out var d) ? d : null);
+            // A value that is present but unparseable is a different failure from one that is
+            // absent: report it against its own field rather than letting it fall through as null,
+            // where the caller would be told the document references nothing at all.
+            var bindingErrors = new Dictionary<string, string[]>();
+            Guid? poLineId = null;
+            var rawPoLineId = form["poLineId"].ToString();
+            if (!string.IsNullOrWhiteSpace(rawPoLineId))
+            {
+                if (Guid.TryParse(rawPoLineId, out var parsedPoLineId)) poLineId = parsedPoLineId;
+                else bindingErrors["poLineId"] = ["Must be a GUID."];
+            }
+            DateOnly? issuedOn = null;
+            var rawIssuedOn = form["issuedOn"].ToString();
+            if (!string.IsNullOrWhiteSpace(rawIssuedOn))
+            {
+                if (DateOnly.TryParse(rawIssuedOn, out var parsedIssuedOn)) issuedOn = parsedIssuedOn;
+                else bindingErrors["issuedOn"] = ["Must be a date (yyyy-MM-dd)."];
+            }
+            if (bindingErrors.Count > 0) throw new Application.Common.ValidationException(bindingErrors);
+
+            var dto = new UploadDocumentRequest(form["type"].ToString(), poLineId, NullIfEmpty(form["lotNumber"]), NullIfEmpty(form["heatNumber"]),
+                form["documentNumber"].ToString(), issuedOn);
             var vr = await validator.ValidateAsync(dto, ct);
-            if (!vr.IsValid) throw new Application.Common.ValidationException(vr.Errors.GroupBy(e => char.ToLowerInvariant(e.PropertyName[0]) + e.PropertyName[1..]).ToDictionary(x => x.Key, x => x.Select(e => e.ErrorMessage).ToArray()));
+            if (!vr.IsValid) throw new Application.Common.ValidationException(Application.Common.ValidationErrors.ToProblemDetails(vr.Errors));
             await using var stream = file.OpenReadStream();
             var result = await svc.UploadAsync(dto, file.FileName, file.Length, stream, ct);
             return Results.Created($"/api/v1/documents/{result.Id}", result);

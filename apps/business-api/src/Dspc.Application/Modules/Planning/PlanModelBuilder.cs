@@ -93,6 +93,13 @@ public sealed class PlanModelBuilder(IAppDbContext db, IDemoClock clock, IOption
                 .GroupBy(r => r.Part!.Code, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity), StringComparer.OrdinalIgnoreCase);
             var delay = overrides.DelayDaysByOrder.GetValueOrDefault(o.Code, 0);
+            // Raising an order's priority has to mean "schedule it sooner". The engine anchors every
+            // operation to its baseline window and only pulls an order forward when that lowers the
+            // objective; in an on-time baseline the objective is already near zero, so a bare priority
+            // bump provably changed nothing. Releasing the anchor lets the engine place the promoted
+            // order at the earliest feasible slot and push lower-ranked work aside, which is what a
+            // planner means by expediting. Frozen operations keep their window regardless.
+            var expedited = overrides.PriorityByOrder.TryGetValue(o.Code, out var raisedTo) && raisedTo > o.Priority;
             var po = new PlanOrder
             {
                 Code = o.Code,
@@ -118,15 +125,17 @@ public sealed class PlanModelBuilder(IAppDbContext db, IDemoClock clock, IOption
                     })
                     .Where(r => r.Quantity > 0).ToList();
                 schedByOp.TryGetValue(op.Id, out var s);
+                var frozenOp = op.Frozen || op.Status == OperationStatus.Completed || op.Status == OperationStatus.InProgress;
+                var anchored = s is not null && !(expedited && !frozenOp);
                 po.Operations.Add(new PlanOperation
                 {
                     Code = op.Code,
                     Sequence = op.Sequence,
                     WorkCenterCode = wcById[op.WorkCenterId].Code,
                     DurationHours = op.DurationHours,
-                    Frozen = op.Frozen || op.Status == OperationStatus.Completed || op.Status == OperationStatus.InProgress,
-                    BaselineStart = s is null ? null : clock.ToSiteLocal(s.Start),
-                    BaselineEnd = s is null ? null : clock.ToSiteLocal(s.End),
+                    Frozen = frozenOp,
+                    BaselineStart = anchored ? clock.ToSiteLocal(s!.Start) : null,
+                    BaselineEnd = anchored ? clock.ToSiteLocal(s!.End) : null,
                     MaterialRequirements = reqs
                 });
             }

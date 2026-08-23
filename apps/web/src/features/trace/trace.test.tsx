@@ -6,6 +6,8 @@ import { SerialPage, componentsFromTree } from './SerialPage';
 import { LotPage } from './LotPage';
 import { TracePage } from './TracePage';
 import { renderWithProviders } from '@/test/utils';
+import { server } from '@/mocks/server';
+import { http, HttpResponse } from 'msw';
 import { serialTrace } from '@/mocks/wave2';
 
 function App() {
@@ -62,6 +64,39 @@ describe('Traceability', () => {
     expect(screen.getByTestId('block-result')).toHaveTextContent('PMV-2026-0008');
     await waitFor(() => expect(screen.getByTestId('trace-forward')).toHaveTextContent('Unieważniony'));
     expect(screen.getByTestId('btn-block-lot')).toBeDisabled();
+  });
+
+  it('refuses to block a lot with empty fields and says why, instead of failing silently', async () => {
+    const user = userEvent.setup();
+    let posted = 0;
+    server.use(http.post('/api/v1/lots/:lot/block', () => { posted++; return HttpResponse.json({}, { status: 400 }); }));
+    renderWithProviders(<App />, { route: '/trace/lots/HTS-22-2608', auth: true });
+    await waitFor(() => expect(screen.getByTestId('btn-block-lot')).toBeEnabled());
+    await user.click(screen.getByTestId('btn-block-lot'));
+
+    await user.click(screen.getByTestId('confirm-button'));
+
+    // The dialog stays open and explains the refusal; nothing is sent to the server.
+    await waitFor(() => expect(screen.getByTestId('form-alert')).toBeInTheDocument());
+    expect(screen.getByTestId('block-reason')).toBeInTheDocument();
+    expect(posted).toBe(0);
+  });
+
+  it('shows the field errors the API returns when it rejects a block', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('/api/v1/lots/:lot/block', () =>
+        HttpResponse.json({ title: 'Validation failed', status: 400, errors: { ncrTitle: ['Tytuł NCR jest za krótki.'] } }, { status: 400 }),
+      ),
+    );
+    renderWithProviders(<App />, { route: '/trace/lots/HTS-22-2608', auth: true });
+    await waitFor(() => expect(screen.getByTestId('btn-block-lot')).toBeEnabled());
+    await user.click(screen.getByTestId('btn-block-lot'));
+    await user.type(screen.getByTestId('block-reason'), 'Powód blokady');
+    await user.type(screen.getByTestId('block-ncr'), 'X');
+    await user.click(screen.getByTestId('confirm-button'));
+
+    await waitFor(() => expect(screen.getByText('Tytuł NCR jest za krótki.')).toBeInTheDocument());
   });
 
   it('search groups hits by kind', async () => {

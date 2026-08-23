@@ -43,25 +43,46 @@ public sealed class ScenarioPresetProvider(IAppDbContext db)
                 d.Key == site.FeaturedScenarioKey));
         }
 
-        // --- block a steel lot the plant has actually built into a finished product: blocking a lot that was never
-        // consumed invalidates nothing, so prefer one with consumptions (SITE-01 → HTS-22-2608, SITE-03 → HTS-22-3110).
+        // --- block a steel lot whose loss actually starves production.
+        // This tile is a simulation: it never changes lot status, so it cannot invalidate a passport
+        // (that happens only through POST /lots/{lot}/block). Preferring a lot already consumed by a
+        // finished product therefore demonstrated nothing — on Kielce the material simply arrived
+        // before it was needed and the tile reported "no change". Prefer a lot that an open order is
+        // still counting on; fall back to a consumed one, then to any accepted lot.
         var steelLots = await db.MaterialLots.AsNoTracking().Include(l => l.Part)
             .Where(l => l.SiteId == site.Id && l.Part!.Code == "HTS-22" && l.Status == MaterialLotStatus.Accepted)
             .OrderBy(l => l.LotNumber).Select(l => new { l.Id, l.LotNumber }).ToListAsync(ct);
+        var reservedLotIds = await db.Reservations.AsNoTracking()
+            .Where(r => r.MaterialLotId != null && !r.IsBlocked
+                        && r.ProductionOrder != null
+                        && r.ProductionOrder.Status != ProductionOrderStatus.Completed
+                        && r.ProductionOrder.Status != ProductionOrderStatus.Cancelled)
+            .Select(r => r.MaterialLotId!.Value).Distinct().ToListAsync(ct);
         var consumedLotIds = await db.MaterialConsumptions.AsNoTracking()
             .Where(c => c.ProductSerial != null).Select(c => c.MaterialLotId).Distinct().ToListAsync(ct);
-        var steelLot = steelLots.FirstOrDefault(l => consumedLotIds.Contains(l.Id))?.LotNumber
+        var steelLot = steelLots.FirstOrDefault(l => reservedLotIds.Contains(l.Id))?.LotNumber
+                       ?? steelLots.FirstOrDefault(l => consumedLotIds.Contains(l.Id))?.LotNumber
                        ?? steelLots.FirstOrDefault()?.LotNumber;
         if (steelLot is not null)
             result.Add(new ScenarioPresetDto("BLOCK_LOT_HTS22", "planning.presets.HTS22_BLOCK",
                 [new ScenarioChangeDto(ScenarioChangeType.BLOCK_LOT, LotNumber: steelLot)],
                 site.FeaturedScenarioKey == "BLOCK_LOT_HTS22"));
 
-        // --- raise the priority of the plant's most urgent non-frozen order
-        var order = await db.ProductionOrders.AsNoTracking()
-            .Where(o => o.SiteId == site.Id && !o.Frozen && o.Status != ProductionOrderStatus.Completed && o.Status != ProductionOrderStatus.Cancelled)
-            .OrderByDescending(o => o.Priority).ThenBy(o => o.DueDate).ThenBy(o => o.Code)
-            .Select(o => o.Code).FirstOrDefaultAsync(ct);
+        // --- expedite the most urgent order that is NOT already top priority.
+        // Promoting the plant's highest-priority order was provably a no-op: it is already first in
+        // the ranking, so the plan cannot change and the tile did nothing when clicked. The order also
+        // has to be one the engine may still move, so anything already in progress is excluded.
+        var candidates = await db.ProductionOrders.AsNoTracking()
+            .Where(o => o.SiteId == site.Id && !o.Frozen
+                        && o.Status != ProductionOrderStatus.Completed && o.Status != ProductionOrderStatus.Cancelled
+                        && o.Status != ProductionOrderStatus.InProgress)
+            .Select(o => new { o.Code, o.Priority, o.DueDate })
+            .ToListAsync(ct);
+        var topPriority = candidates.Count == 0 ? 0 : candidates.Max(c => c.Priority);
+        var order = candidates
+            .Where(c => c.Priority < topPriority)
+            .OrderByDescending(c => c.Priority).ThenBy(c => c.DueDate).ThenBy(c => c.Code, StringComparer.Ordinal)
+            .Select(c => c.Code).FirstOrDefault();
         if (order is not null)
             // The title names the order, which differs per plant — pass it in rather than baking
             // Kielce's WO-2026-014 into the translation, where it was simply wrong elsewhere.

@@ -608,6 +608,25 @@
   color: var(--fg-3);
   font-size: var(--fs-xs);
 }
+
+/* Form-level failure: shown above the fields when the problem belongs to the whole form
+   (a required field left blank, or a rejection the server did not attribute to one input). */
+.formAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--crit);
+  border-radius: var(--r-sm, 4px);
+  background: var(--crit-bg, transparent);
+  color: var(--crit-fg);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+.formAlert svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

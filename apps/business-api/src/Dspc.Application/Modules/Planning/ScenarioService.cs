@@ -299,6 +299,36 @@ public sealed class ScenarioService(
                 Params = new Dictionary<string, object?> { ["fromHours"] = beforeH, ["toHours"] = afterH }
             });
 
+        // The engine only explains what its own improvement pass did. A re-sequencing that falls out of
+        // the initial placement (expediting a promoted order, for instance) left the list empty, so a
+        // scenario that visibly moved operations still reported "no change" — the screen contradicted
+        // its own Gantt. Say what actually happened before falling back to the no-op message.
+        if (list.Count == 0)
+        {
+            var beforeStart = before.Operations
+                .GroupBy(o => o.OrderCode, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Min(o => o.Start), StringComparer.OrdinalIgnoreCase);
+            var pulled = outcome.Response.Operations
+                .GroupBy(o => o.OrderCode, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new { Order = g.Key, Start = g.Min(o => o.Start), WorkCenters = g.Select(o => o.WorkCenterCode).Distinct().OrderBy(c => c, StringComparer.Ordinal).ToList() })
+                .Where(x => beforeStart.TryGetValue(x.Order, out var b) && x.Start < b)
+                .OrderBy(x => x.Start).ThenBy(x => x.Order, StringComparer.Ordinal)
+                .FirstOrDefault();
+            if (pulled is not null)
+                list.Add(new Explanation
+                {
+                    ReasonCode = ReasonCodes.OrderPulledForward, OrderCode = pulled.Order,
+                    Params = new Dictionary<string, object?>
+                    {
+                        ["orderCode"] = pulled.Order,
+                        ["lineCode"] = outcome.Response.Orders.FirstOrDefault(o => string.Equals(o.OrderCode, pulled.Order, StringComparison.OrdinalIgnoreCase))?.LineCode ?? "",
+                        ["days"] = (int)Math.Round((beforeStart[pulled.Order] - pulled.Start).TotalDays),
+                        ["materialCompleteness"] = 1.0,
+                        ["workCenters"] = pulled.WorkCenters
+                    }
+                });
+        }
+
         if (list.Count == 0)
             list.Add(new Explanation
             {

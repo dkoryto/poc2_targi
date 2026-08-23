@@ -52,7 +52,7 @@ public class MultiSiteTests(ApiFixture fx)
     }
 
     [Fact]
-    public async Task Block_lot_preset_targets_a_lot_the_plant_actually_consumed()
+    public async Task Block_lot_preset_targets_a_lot_an_open_order_still_depends_on()
     {
         using var c = await fx.AsAsync("ProductionPlanner");
         async Task<string?> BlockLotOf(string plant)
@@ -61,9 +61,25 @@ public class MultiSiteTests(ApiFixture fx)
             var tile = presets.EnumerateArray().FirstOrDefault(p => p.GetProperty("key").GetString() == "BLOCK_LOT_HTS22");
             return tile.ValueKind == JsonValueKind.Undefined ? null : tile.GetProperty("changes")[0].GetProperty("lotNumber").GetString();
         }
-        // blocking a lot that was never built into a product would invalidate nothing
-        (await BlockLotOf("SITE-01")).Should().Be("HTS-22-2608");
-        (await BlockLotOf("SITE-03")).Should().Be("HTS-22-3110");
+
+        // This assertion used to require the lot already consumed by a finished product, on the
+        // reasoning that blocking anything else would invalidate no passport. That reasoning does not
+        // apply to this tile: the What-If BLOCK_LOT change is a simulation and never alters lot status,
+        // so it cannot invalidate a passport at all — that happens only through POST /lots/{lot}/block.
+        // What the tile can show is production starving, so it must target a lot an open order is
+        // still counting on. On Kielce the consumed lot (HTS-22-2608) was needed so late that the plan
+        // did not move and the tile reported "no change" when clicked.
+        using var quality = await fx.AsAsync("QualityInspector");
+        foreach (var plant in new[] { "SITE-01", "SITE-03" })
+        {
+            var lotNumber = await BlockLotOf(plant);
+            lotNumber.Should().NotBeNullOrWhiteSpace("{0} stocks HTS-22 and must offer the tile", plant);
+
+            var lot = await quality.GetFromJsonAsync<JsonElement>($"/api/v1/lots/{lotNumber}", ApiFixture.Json);
+            lot.GetProperty("siteCode").GetString().Should().Be(plant, "the tile must target this plant's own lot");
+            lot.GetProperty("reservedBy").EnumerateArray().Should().NotBeEmpty(
+                "blocking a lot nothing is waiting for starves no operation, so the tile would do nothing");
+        }
     }
 
     [Fact]

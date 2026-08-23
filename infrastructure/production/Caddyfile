@@ -9,7 +9,11 @@
 	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
-{$DSPC_DOMAIN} {
+# The site answers on DSPC_DOMAIN, plus anything listed in DSPC_EXTRA_HOSTS (space separated).
+# A request arriving under any other name has no certificate to offer and the browser reports
+# ERR_SSL_PROTOCOL_ERROR, so add every hostname people will actually type — including localhost
+# and the machine's IP for a local rehearsal.
+{$DSPC_DOMAIN} {$DSPC_EXTRA_HOSTS} {
 	# Certificate source. Leave DSPC_TLS_MODE empty in production and Caddy obtains a
 	# certificate from Let's Encrypt automatically; set it to "tls internal" to rehearse
 	# the whole stack locally with a self-signed certificate.
@@ -41,4 +45,10 @@
 		# SignalR websockets and long-polling fallback
 		flush_interval -1
 	}
+}
+
+# Anything addressed to a hostname this deployment does not serve. Without this block such a
+# request fails in the TLS handshake with no explanation; here it at least says what is wrong.
+http:// {
+	respond "This deployment serves {$DSPC_DOMAIN}. You reached it under a different hostname, so no certificate matches. Use https://{$DSPC_DOMAIN}, or add this name to DSPC_EXTRA_HOSTS." 421
 }

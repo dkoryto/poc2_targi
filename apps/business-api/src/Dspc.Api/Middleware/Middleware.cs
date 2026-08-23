@@ -165,7 +165,7 @@ public sealed class ValidationFilter<T> : IEndpointFilter where T : class
         {
             var result = await validator.ValidateAsync(arg, ctx.HttpContext.RequestAborted);
             if (!result.IsValid)
-                throw new ValidationException(result.Errors.GroupBy(e => char.ToLowerInvariant(e.PropertyName[0]) + e.PropertyName[1..]).ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+                throw new ValidationException(ValidationErrors.ToProblemDetails(result.Errors));
         }
         return await next(ctx);
     }

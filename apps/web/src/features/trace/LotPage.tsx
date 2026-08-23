@@ -7,9 +7,10 @@ import { useAddInspection, useBlockLot, useLot, useLotForward } from './api';
 import { Hash } from './SerialPage';
 import { nodeStatusLabel, nodeStatusTone } from './GenealogyTree';
 import type { BlockLotResponse, InspectionResult } from '@/api/types';
-import { Button, Card, ConfirmDialog, Dialog, DocStatusChip, ErrorState, FormField, Input, LoadingState, Select, StatusChip, Textarea, Timeline, useToast } from '@/components/ui';
+import { Button, Card, ConfirmDialog, Dialog, DocStatusChip, ErrorState, FormAlert, FormField, Input, LoadingState, Select, StatusChip, Textarea, Timeline, useToast } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth';
 import { downloadFile } from '@/lib/download';
+import { useFormErrors } from '@/lib/formErrors';
 import { dateInputValue, fmtDate, fmtDateTime, fmtNumber } from '@/lib/format';
 import { RecordSite } from '@/features/sites/SiteSwitch';
 
@@ -34,27 +35,35 @@ export function LotPage() {
   const [ncrTitle, setNcrTitle] = useState('');
   const [result, setResult] = useState<BlockLotResponse | null>(null);
   const [inspOpen, setInspOpen] = useState(false);
+  const blockErrors = useFormErrors();
+  const inspErrors = useFormErrors();
   const [insp, setInsp] = useState<{ result: InspectionResult; notes: string; inspectedAt: string }>({ result: 'Passed', notes: '', inspectedAt: dateInputValue(new Date()) });
   const canQuality = !!user && CAN_QUALITY.includes(user.role);
   const d = lot.data;
 
   const doBlock = async () => {
+    // Both fields are required by the API. Checking here means the presenter is told which one is
+    // missing instead of watching the dialog sit there after a silent 400.
+    if (!blockErrors.requireFields({ reason, ncrTitle }, t('common.required'))) return;
     try {
       const r = await block.mutateAsync({ reason, ncrTitle });
       setResult(r);
       setBlockOpen(false);
+      blockErrors.clear();
       toast.critical(t('trace.blocked', { lot: lotNumber }), t('trace.blockedDetail', { orders: r.affected.orders.length, serials: r.affected.serials.length, passports: r.affected.passports.length }));
     } catch (e) {
-      toast.critical(t('common.error'), e instanceof Error ? e.message : undefined);
+      blockErrors.fromApi(e, t('common.error'));
     }
   };
   const doInspect = async () => {
+    if (!inspErrors.requireFields({ inspectedAt: insp.inspectedAt }, t('common.required'))) return;
     try {
       await inspect.mutateAsync({ result: insp.result, notes: insp.notes || undefined, inspectedAt: new Date(insp.inspectedAt).toISOString() });
       setInspOpen(false);
+      inspErrors.clear();
       toast.ok(t('trace.inspectionAdded'));
     } catch (e) {
-      toast.critical(t('common.error'), e instanceof Error ? e.message : undefined);
+      inspErrors.fromApi(e, t('common.error'));
     }
   };
 
@@ -72,8 +81,8 @@ export function LotPage() {
             <LotStatusChip status={d.status} />
             {canQuality && (
               <>
-                <Button icon={<ClipboardPlus size={14} />} onClick={() => setInspOpen(true)} data-testid="btn-add-inspection">{t('trace.addInspection')}</Button>
-                <Button variant="danger" icon={<Ban size={14} />} onClick={() => setBlockOpen(true)} disabled={d.status === 'Blocked' || d.status === 'Recalled'} data-testid="btn-block-lot">{t('trace.blockLot')}</Button>
+                <Button icon={<ClipboardPlus size={14} />} onClick={() => { inspErrors.clear(); setInspOpen(true); }} data-testid="btn-add-inspection">{t('trace.addInspection')}</Button>
+                <Button variant="danger" icon={<Ban size={14} />} onClick={() => { blockErrors.clear(); setBlockOpen(true); }} disabled={d.status === 'Blocked' || d.status === 'Recalled'} data-testid="btn-block-lot">{t('trace.blockLot')}</Button>
               </>
             )}
           </div>
@@ -170,13 +179,15 @@ export function LotPage() {
         }
       >
         <div className="stack">
-          <FormField label={t('trace.blockReason')} required>{(id) => <Textarea id={id} rows={3} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="block-reason" />}</FormField>
-          <FormField label={t('trace.ncrTitle')} required>{(id) => <Input id={id} value={ncrTitle} onChange={(e) => setNcrTitle(e.target.value)} data-testid="block-ncr" />}</FormField>
+          <FormAlert message={blockErrors.formError} />
+          <FormField label={t('trace.blockReason')} required error={blockErrors.fields.reason}>{(id) => <Textarea id={id} rows={3} value={reason} onChange={(e) => setReason(e.target.value)} invalid={!!blockErrors.fields.reason} data-testid="block-reason" />}</FormField>
+          <FormField label={t('trace.ncrTitle')} required error={blockErrors.fields.ncrTitle}>{(id) => <Input id={id} value={ncrTitle} onChange={(e) => setNcrTitle(e.target.value)} invalid={!!blockErrors.fields.ncrTitle} data-testid="block-ncr" />}</FormField>
         </div>
       </ConfirmDialog>
 
       <Dialog open={inspOpen} onClose={() => setInspOpen(false)} title={t('trace.addInspection')} footer={<><Button variant="ghost" onClick={() => setInspOpen(false)}>{t('common.cancel')}</Button><Button variant="primary" onClick={() => void doInspect()} loading={inspect.isPending} data-testid="submit-inspection">{t('common.save')}</Button></>}>
         <div className="stack">
+          <FormAlert message={inspErrors.formError} />
           <FormField label={t('trace.inspectionResult')}>{(id) => <Select id={id} value={insp.result} onChange={(e) => setInsp({ ...insp, result: e.target.value as InspectionResult })}>{(['Passed', 'Failed', 'Conditional'] as const).map((r) => <option key={r} value={r}>{t(`status.inspection.${r}`)}</option>)}</Select>}</FormField>
           <FormField label={t('trace.inspectedAt')}>{(id) => <Input id={id} type="date" value={insp.inspectedAt} onChange={(e) => setInsp({ ...insp, inspectedAt: e.target.value })} />}</FormField>
           <FormField label={t('trace.notes')}>{(id) => <Textarea id={id} rows={3} value={insp.notes} onChange={(e) => setInsp({ ...insp, notes: e.target.value })} />}</FormField>

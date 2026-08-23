@@ -70,6 +70,10 @@ flowchart LR
 
 Dokumentacja: [przegląd i decyzje](docs/architecture/overview.md) · [ADR](docs/adr) · [model ryzyka](docs/architecture/risk-model.md) · [silnik planowania: ograniczenia i funkcja celu](docs/architecture/planning-engine.md) · [liczby scenariusza demo](docs/architecture/demo-scenario.md) · [API](docs/api/endpoints.md) · [demonstrator vs produkcja](docs/architecture/demo-vs-production.md) · [SECURITY.md](SECURITY.md) · [licencje](docs/licenses.md) · [troubleshooting](docs/troubleshooting.md).
 
+## Wdrożenie pod domeną
+
+Uruchomienie na serwerze z certyfikatem TLS, wyłączonym trybem demo i logowaniem hasłem: [`docs/deployment.md`](docs/deployment.md). W skrócie: `cp .env.prod.example .env.prod`, uzupełnij sekrety i domenę, `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`.
+
 ## Praca deweloperska
 
 Polecenia per aplikacja i uruchamianie pojedynczych testów: [`DEVELOPMENT.md`](DEVELOPMENT.md) oraz README w `apps/*`. Profil `dev` (`docker compose --profile dev up`) uruchamia tylko Postgres, MinIO, silnik i API — frontend z `pnpm dev` (proxy na :5080).

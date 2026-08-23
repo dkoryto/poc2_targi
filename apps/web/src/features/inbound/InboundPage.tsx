@@ -10,10 +10,11 @@ import { useAddShipmentEvent, useLogisticsEvents, useRaiseLogisticsEvent, useShi
 import { useMapData } from '@/features/dashboard/api';
 import { DeliveryMap } from '@/features/dashboard/DeliveryMap';
 import { useSuppliers } from '@/features/supply/api';
-import { Button, Card, DataTable, Drawer, ErrorState, FormField, FormGrid, Input, LoadingState, ProgressBar, RiskBadge, Select, ShipmentStatusChip, StatusChip, Textarea, Timeline, useToast, type Column } from '@/components/ui';
+import { Button, Card, DataTable, Drawer, ErrorState, FormField, FormGrid, Input, LoadingState, ProgressBar, RiskBadge, Select, ShipmentStatusChip, StatusChip, Textarea, Timeline, useToast, type Column, FormAlert } from '@/components/ui';
 import { LOGISTICS_EVENT_TYPES, type LogisticsEventType, type Severity, type Shipment } from '@/api/types';
 import { fmtDate, fmtDateTime } from '@/lib/format';
 import { useAuth } from '@/features/auth/auth';
+import { useFormErrors } from '@/lib/formErrors';
 
 const simSchema = z.object({
   type: z.enum(LOGISTICS_EVENT_TYPES as [string, ...string[]]),
@@ -76,6 +77,7 @@ export function InboundPage() {
   const suppliers = useSuppliers();
   const map = useMapData();
   const raise = useRaiseLogisticsEvent();
+  const simErrors = useFormErrors();
   const canSimulate = user?.role === 'InboundCoordinator' || user?.role === 'DemoPresenter' || user?.role === 'Administrator';
   const form = useForm<SimForm>({ resolver: zodResolver(simSchema), defaultValues: { type: 'BORDER_DELAY', severity: 'MEDIUM', targetKind: 'shipment', target: '', description: '' } });
   const targetKind = form.watch('targetKind');
@@ -85,8 +87,9 @@ export function InboundPage() {
       await raise.mutateAsync({ type: v.type as LogisticsEventType, severity: v.severity as Severity, description: v.description, ...(v.targetKind === 'shipment' ? { shipmentCode: v.target } : { supplierCode: v.target }) });
       toast.ok(t('inbound.raised'));
       form.reset({ type: 'BORDER_DELAY', severity: 'MEDIUM', targetKind: 'shipment', target: '', description: '' });
-    } catch {
-      toast.critical(t('common.error'));
+      simErrors.clear();
+    } catch (e) {
+      simErrors.fromApi(e, t('common.error'));
     }
   });
 
@@ -120,6 +123,7 @@ export function InboundPage() {
           {canSimulate && (
             <Card title={t('inbound.simulator')} definition={t('inbound.simulatorHint')}>
               <form onSubmit={submit} noValidate className="stack" data-testid="simulator-form">
+                <FormAlert message={simErrors.formError} />
                 <FormGrid>
                   <FormField label={t('inbound.eventType')} required>{(id) => <Select id={id} {...form.register('type')}>{LOGISTICS_EVENT_TYPES.map((x) => <option key={x} value={x}>{t(`logisticsEvent.${x}`)}</option>)}</Select>}</FormField>
                   <FormField label={t('inbound.severity')} required>{(id) => <Select id={id} {...form.register('severity')}>{(['LOW', 'MEDIUM', 'HIGH'] as const).map((x) => <option key={x} value={x}>{t(`logisticsEvent.severity.${x}`)}</option>)}</Select>}</FormField>

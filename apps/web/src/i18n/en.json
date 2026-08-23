@@ -410,7 +410,8 @@
     "late_one": "{{count}} day late",
     "late_other": "{{count}} days late",
     "early_one": "{{count}} day early",
-    "early_other": "{{count}} days early"
+    "early_other": "{{count}} days early",
+    "selectAtLeastOneLine": "Select at least one order line."
   },
   "inbound": {
     "title": "Inbound logistics",

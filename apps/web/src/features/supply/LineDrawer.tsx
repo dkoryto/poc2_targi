@@ -7,9 +7,10 @@ import { Upload } from 'lucide-react';
 import s from './supply.module.css';
 import { useChangeEta, useLineImpact, usePatchLine, useUploadDocument } from './api';
 import { RiskExplain } from './RiskExplain';
-import { Button, DateInput, DocStatusChip, Drawer, FileInput, FormField, FormGrid, Input, PoStatusChip, RiskBadge, Select, Tabs, Textarea, useToast } from '@/components/ui';
+import { Button, DateInput, DocStatusChip, Drawer, FileInput, FormField, FormGrid, Input, PoStatusChip, RiskBadge, Select, Tabs, Textarea, useToast, FormAlert } from '@/components/ui';
 import { DOCUMENT_TYPES, ETA_REASONS, PO_LINE_STATUSES, type EtaChangeResponse, type EtaReason, type PurchaseOrderLine, type RiskSummary } from '@/api/types';
 import { isConflict } from '@/api/client';
+import { useFormErrors } from '@/lib/formErrors';
 import { dateInputValue, fmtBytes, fmtDate, fmtDateTime } from '@/lib/format';
 import { useAuth } from '@/features/auth/auth';
 
@@ -57,6 +58,9 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
   const [issuedOn, setIssuedOn] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const docErrors = useFormErrors();
+  const etaErrors = useFormErrors();
+  const statusErrors = useFormErrors();
 
   if (!line) return null;
 
@@ -66,8 +70,10 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
       const res = await changeEta.mutateAsync({ lineId: line.id, body: { eta: v.eta, reason: v.reason as EtaReason, comment: v.comment } });
       setEtaResult({ before, res });
       toast.ok(t('supply.etaUpdated', { category: t(`risk.${res.risk.category}`), score: Math.round(res.risk.score) }));
+      etaErrors.clear();
     } catch (e) {
-      toast.critical(isConflict(e) ? t('common.conflict') : t('common.error'));
+      if (isConflict(e)) etaErrors.setFormError(t('common.conflict'));
+      else etaErrors.fromApi(e, t('common.error'));
     }
   });
 
@@ -75,8 +81,10 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
     try {
       await patch.mutateAsync({ lineId: line.id, rowVersion: line.rowVersion, patch: { status: v.status as PurchaseOrderLine['status'], progressPercent: v.progressPercent, lotNumber: v.lotNumber || undefined, heatNumber: v.heatNumber || undefined, producedOn: v.producedOn || undefined, expiresOn: v.expiresOn || undefined, quantity: v.quantity, comment: v.comment || undefined } });
       toast.ok(t('common.saved'));
+      statusErrors.clear();
     } catch (e) {
-      toast.critical(isConflict(e) ? t('common.conflict') : t('common.error'));
+      if (isConflict(e)) statusErrors.setFormError(t('common.conflict'));
+      else statusErrors.fromApi(e, t('common.error'));
     }
   });
 
@@ -89,7 +97,12 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
     setFile(f);
   };
   const submitDoc = async () => {
-    if (!file || !docNumber || !issuedOn) { setFileError(t('common.required')); return; }
+    // Previously any missing field put "required" on the file input, which pointed at the wrong
+    // control when it was the document number or the issue date that was blank.
+    const ok = docErrors.requireFields({ documentNumber: docNumber, issuedOn }, t('common.required'));
+    if (!file) setFileError(t('common.required'));
+    if (!file || !ok) return;
+    setFileError(null);
     const fd = new FormData();
     fd.append('file', file);
     fd.append('type', docType);
@@ -101,8 +114,9 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
       const d = await upload.mutateAsync(fd);
       toast.ok(t('supply.uploaded', { status: t(`status.doc.${d.status}`) }));
       setFile(null); setDocNumber(''); setIssuedOn('');
-    } catch {
-      toast.critical(t('common.error'));
+      docErrors.clear();
+    } catch (e) {
+      docErrors.fromApi(e, t('common.error'));
     }
   };
 
@@ -125,9 +139,10 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
       {tab === 'eta' && (
         <div className={s.section}>
           <form onSubmit={submitEta} noValidate data-testid="eta-form">
+            <FormAlert message={etaErrors.formError} />
             <FormGrid>
-              <FormField label={t('supply.newEta')} required error={etaForm.formState.errors.eta && t('common.required')}>{(id) => <DateInput id={id} invalid={!!etaForm.formState.errors.eta} disabled={!canEdit} {...etaForm.register('eta')} />}</FormField>
-              <FormField label={t('supply.reason')} required error={etaForm.formState.errors.reason && t('common.required')}>
+              <FormField label={t('supply.newEta')} required error={etaErrors.fields.eta ?? (etaForm.formState.errors.eta && t('common.required'))}>{(id) => <DateInput id={id} invalid={!!etaForm.formState.errors.eta} disabled={!canEdit} {...etaForm.register('eta')} />}</FormField>
+              <FormField label={t('supply.reason')} required error={etaErrors.fields.reason ?? (etaForm.formState.errors.reason && t('common.required'))}>
                 {(id) => (
                   <Select id={id} disabled={!canEdit} {...etaForm.register('reason')}>
                     {ETA_REASONS.map((r) => <option key={r} value={r}>{t(`etaReason.${r}`)}</option>)}
@@ -147,6 +162,7 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
 
       {tab === 'status' && (
         <form className={s.section} onSubmit={submitStatus} noValidate data-testid="status-form">
+          <FormAlert message={statusErrors.formError} />
           <FormGrid>
             <FormField label={t('supply.status')} required>{(id) => <Select id={id} disabled={!canEdit} {...statusForm.register('status')}>{PO_LINE_STATUSES.map((st) => <option key={st} value={st}>{t(`status.po.${st}`)}</option>)}</Select>}</FormField>
             <FormField label={`${t('supply.progress')} (%)`} error={statusForm.formState.errors.progressPercent?.message}>{(id) => <Input id={id} type="number" min={0} max={100} disabled={!canEdit} {...statusForm.register('progressPercent')} />}</FormField>
@@ -181,11 +197,12 @@ export function LineDrawer({ poCode, line, onClose }: { poCode: string; line: Pu
           {canEdit && (
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }} data-testid="doc-upload">
               <h3 style={{ marginBottom: 8 }}>{t('supply.addDocument')}</h3>
+              <FormAlert message={docErrors.formError} />
               <FormGrid>
                 <FormField label={t('supply.docType')} required>{(id) => <Select id={id} value={docType} onChange={(e) => setDocType(e.target.value)}>{DOCUMENT_TYPES.map((d) => <option key={d} value={d}>{t(`docType.${d}`)}</option>)}</Select>}</FormField>
-                <FormField label={t('supply.docNumber')} required>{(id) => <Input id={id} value={docNumber} onChange={(e) => setDocNumber(e.target.value)} />}</FormField>
-                <FormField label={t('supply.issuedOn')} required>{(id) => <DateInput id={id} value={issuedOn} onChange={(e) => setIssuedOn(e.target.value)} />}</FormField>
-                <FormField label={t('supply.file')} required hint={t('supply.fileHint')} error={fileError ?? undefined}>{(id) => <FileInput id={id} accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => onFile(e.target.files?.[0] ?? null)} invalid={!!fileError} />}</FormField>
+                <FormField label={t('supply.docNumber')} required error={docErrors.fields.documentNumber}>{(id) => <Input id={id} value={docNumber} onChange={(e) => setDocNumber(e.target.value)} invalid={!!docErrors.fields.documentNumber} />}</FormField>
+                <FormField label={t('supply.issuedOn')} required error={docErrors.fields.issuedOn}>{(id) => <DateInput id={id} value={issuedOn} onChange={(e) => setIssuedOn(e.target.value)} invalid={!!docErrors.fields.issuedOn} />}</FormField>
+                <FormField label={t('supply.file')} required hint={t('supply.fileHint')} error={fileError ?? docErrors.fields.file}>{(id) => <FileInput id={id} accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => onFile(e.target.files?.[0] ?? null)} invalid={!!fileError || !!docErrors.fields.file} />}</FormField>
               </FormGrid>
               <div className="row" style={{ justifyContent: 'flex-end', marginTop: 10 }}>
                 <Button variant="primary" icon={<Upload size={14} />} onClick={submitDoc} loading={upload.isPending} disabled={!file}>{t('supply.upload')}</Button>

@@ -416,7 +416,8 @@
     "early_one": "{{count}} dzień przed terminem",
     "early_few": "{{count}} dni przed terminem",
     "early_many": "{{count}} dni przed terminem",
-    "early_other": "{{count}} dnia przed terminem"
+    "early_other": "{{count}} dnia przed terminem",
+    "selectAtLeastOneLine": "Wybierz co najmniej jedną pozycję zamówienia."
   },
   "inbound": {
     "title": "Logistyka wjazdowa",

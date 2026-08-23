@@ -219,10 +219,16 @@ public sealed class BaselineImpactEvaluator
         {
             var res = response.Orders.First(o => o.OrderCode == order.Code);
             var boundOp = order.Operations.OrderBy(o => o.Sequence).FirstOrDefault(o => waiting.Contains(o.Code));
-            if (boundOp is not null)
-            {
-                var alloc = opMaterial[boundOp.Code].Where(kv => kv.Value.Unmet > 0 || kv.Value.FromLaterInbound > 0)
+            // An operation can be flagged as waiting without any single part being attributable
+            // (every requirement is met, just not early enough to matter). FirstOrDefault then yields
+            // a pair whose Value is null, and naming a missing part is impossible — so say nothing
+            // rather than dereferencing it, which used to fail the whole scenario with a 500.
+            var alloc = boundOp is null
+                ? default
+                : opMaterial[boundOp.Code].Where(kv => kv.Value.Unmet > 0 || kv.Value.FromLaterInbound > 0)
                     .OrderByDescending(kv => kv.Value.Unmet).ThenByDescending(kv => kv.Value.AvailableAt).ThenBy(kv => kv.Key).FirstOrDefault();
+            if (boundOp is not null && alloc.Value is not null)
+            {
                 var opRes = response.Operations.First(o => o.OperationCode == boundOp.Code);
                 response.Explanations.Add(new Explanation
                 {

@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useCreateAdvice } from './api';
-import { Button, Dialog, FormField, FormGrid, Input, useToast } from '@/components/ui';
+import { Button, Dialog, FormAlert, FormField, FormGrid, Input, useToast } from '@/components/ui';
+import { useFormErrors } from '@/lib/formErrors';
 import type { PurchaseOrderDetail } from '@/api/types';
 
 const schema = z.object({ carrier: z.string().min(1), vehicle: z.string().min(1), plannedDeparture: z.string().min(1), eta: z.string().min(1) });
@@ -16,14 +17,20 @@ export function AdviceDialog({ open, onClose, po }: { open: boolean; onClose: ()
   const create = useCreateAdvice();
   const [selected, setSelected] = useState<string[]>(po.lines.filter((l) => !l.shipmentCode).map((l) => l.id));
   const { register, handleSubmit, formState } = useForm<Form>({ resolver: zodResolver(schema) });
+  const errors = useFormErrors();
   const submit = handleSubmit(async (v) => {
-    if (selected.length === 0) return;
+    // Submitting with nothing selected used to return silently, so the button looked broken.
+    if (selected.length === 0) {
+      errors.setFormError(t('supply.selectAtLeastOneLine'));
+      return;
+    }
     try {
       const sh = await create.mutateAsync({ poCode: po.code, lineIds: selected, ...v });
+      errors.clear();
       toast.ok(t('supply.adviceCreated', { code: sh.code }));
       onClose();
-    } catch {
-      toast.critical(t('common.error'));
+    } catch (e) {
+      errors.fromApi(e, t('common.error'));
     }
   });
   return (
@@ -39,6 +46,7 @@ export function AdviceDialog({ open, onClose, po }: { open: boolean; onClose: ()
       }
     >
       <form onSubmit={submit} noValidate className="stack">
+        <FormAlert message={errors.formError} />
         <fieldset style={{ border: '1px solid var(--border)', borderRadius: 4, padding: 10 }}>
           <legend style={{ fontSize: 'var(--fs-xs)', color: 'var(--fg-2)' }}>{t('supply.selectLines')}</legend>
           {po.lines.map((l) => (
@@ -49,10 +57,10 @@ export function AdviceDialog({ open, onClose, po }: { open: boolean; onClose: ()
           ))}
         </fieldset>
         <FormGrid>
-          <FormField label={t('supply.carrier')} required error={formState.errors.carrier && t('common.required')}>{(id) => <Input id={id} {...register('carrier')} />}</FormField>
-          <FormField label={t('supply.vehicle')} required error={formState.errors.vehicle && t('common.required')}>{(id) => <Input id={id} {...register('vehicle')} />}</FormField>
-          <FormField label={t('supply.plannedDeparture')} required error={formState.errors.plannedDeparture && t('common.required')}>{(id) => <Input id={id} type="datetime-local" {...register('plannedDeparture')} />}</FormField>
-          <FormField label={t('supply.eta')} required error={formState.errors.eta && t('common.required')}>{(id) => <Input id={id} type="date" {...register('eta')} />}</FormField>
+          <FormField label={t('supply.carrier')} required error={errors.fields.carrier ?? (formState.errors.carrier && t('common.required'))}>{(id) => <Input id={id} {...register('carrier')} />}</FormField>
+          <FormField label={t('supply.vehicle')} required error={errors.fields.vehicle ?? (formState.errors.vehicle && t('common.required'))}>{(id) => <Input id={id} {...register('vehicle')} />}</FormField>
+          <FormField label={t('supply.plannedDeparture')} required error={errors.fields.plannedDeparture ?? (formState.errors.plannedDeparture && t('common.required'))}>{(id) => <Input id={id} type="datetime-local" {...register('plannedDeparture')} />}</FormField>
+          <FormField label={t('supply.eta')} required error={errors.fields.eta ?? (formState.errors.eta && t('common.required'))}>{(id) => <Input id={id} type="date" {...register('eta')} />}</FormField>
         </FormGrid>
       </form>
     </Dialog>
