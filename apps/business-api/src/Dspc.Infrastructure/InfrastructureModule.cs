@@ -92,7 +92,9 @@ public sealed class MigrateAndSeedHostedService(IServiceScopeFactory scopes, ICo
                 using var scope = scopes.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 await db.Database.MigrateAsync(ct);
-                if (config.GetValue<bool>("Demo:Enabled") || env.IsDevelopment())
+                // Seed:Force lets a production deployment carry the demonstration content without
+                // exposing the demo endpoints (auto-login, role switching, reset).
+                if (config.GetValue<bool>("Demo:Enabled") || config.GetValue<bool>("Seed:Force") || env.IsDevelopment())
                 {
                     var seeder = scope.ServiceProvider.GetRequiredService<IDemoSeeder>();
                     var result = await seeder.SeedIfEmptyAsync(ct);

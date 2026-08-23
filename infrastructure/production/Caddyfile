@@ -1,0 +1,44 @@
+# Caddy terminates TLS and forwards to the web container, which already proxies
+# /api, /hubs, /health and /swagger to business-api. One origin, so no CORS in production.
+#
+# DSPC_DOMAIN and DSPC_ACME_EMAIL come from the environment (see .env.prod.example).
+
+{
+	email {$DSPC_ACME_EMAIL}
+	# Uncomment while testing to avoid Let's Encrypt rate limits:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$DSPC_DOMAIN} {
+	# Certificate source. Leave DSPC_TLS_MODE empty in production and Caddy obtains a
+	# certificate from Let's Encrypt automatically; set it to "tls internal" to rehearse
+	# the whole stack locally with a self-signed certificate.
+	{$DSPC_TLS_MODE}
+
+	encode zstd gzip
+
+	# HSTS is not set by the app; add it here, where TLS is terminated.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Optional gate for a publicly reachable demonstrator. Generate the hash with:
+	#   docker run --rm caddy caddy hash-password --plaintext 'your-password'
+	# then set DSPC_BASIC_AUTH_USER / DSPC_BASIC_AUTH_HASH and uncomment this block.
+	# basic_auth {
+	# 	{$DSPC_BASIC_AUTH_USER} {$DSPC_BASIC_AUTH_HASH}
+	# }
+
+	# Swagger is developer documentation, not part of the demo. Blocked by default.
+	handle /swagger* {
+		respond 404
+	}
+
+	reverse_proxy web:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-For {remote_host}
+		# SignalR websockets and long-polling fallback
+		flush_interval -1
+	}
+}

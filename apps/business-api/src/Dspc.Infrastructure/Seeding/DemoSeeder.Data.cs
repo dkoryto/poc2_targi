@@ -107,7 +107,7 @@ public sealed partial class DemoSeeder
         {
             var user = new User
             {
-                Id = Id("USER", S(u, "username")), Username = S(u, "username").ToLowerInvariant(), DisplayName = S(u, "displayName"), PasswordHash = hasher.Hash(S(u, "password", "demo")),
+                Id = Id("USER", S(u, "username")), Username = S(u, "username").ToLowerInvariant(), DisplayName = S(u, "displayName"), PasswordHash = hasher.Hash(options.Value.AccountPassword ?? S(u, "password", "demo")),
                 Role = Enum.Parse<Role>(S(u, "role"), true), SupplierId = SN(u, "supplier") is { } sc ? suppliers[sc].Id : null, SiteId = site0.Id, Locale = "pl", IsActive = true, Description = SN(u, "description")
             };
             Stamp(user); db.Users.Add(user); users[user.Username] = user;

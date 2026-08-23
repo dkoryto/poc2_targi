@@ -1,0 +1,132 @@
+# Production deployment behind a domain. Usage:
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Differences from docker-compose.yml (the trade-show stand file):
+#   - Caddy terminates TLS for ${DSPC_DOMAIN} and is the only published service
+#   - Postgres and MinIO publish no host ports at all
+#   - demo endpoints are off by default; seeding is forced so the database is not empty
+#   - every secret comes from .env.prod and has no default
+name: dspc-prod
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DSPC_DOMAIN: ${DSPC_DOMAIN:?required}
+      DSPC_ACME_EMAIL: ${DSPC_ACME_EMAIL:?required}
+      DSPC_TLS_MODE: ${DSPC_TLS_MODE:-}
+      DSPC_BASIC_AUTH_USER: ${DSPC_BASIC_AUTH_USER:-}
+      DSPC_BASIC_AUTH_HASH: ${DSPC_BASIC_AUTH_HASH:-}
+    volumes:
+      - ./infrastructure/production/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web: { condition: service_healthy }
+
+  web:
+    build:
+      context: ./apps/web
+    restart: unless-stopped
+    depends_on:
+      business-api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  business-api:
+    build:
+      context: .
+      dockerfile: apps/business-api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:?required};Username=${POSTGRES_USER:?required};Password=${POSTGRES_PASSWORD:?required}
+      Identity__Jwt__Key: ${JWT_KEY:?required}
+      Identity__Jwt__Issuer: dspc
+      Identity__Jwt__Audience: dspc
+      Demo__Enabled: ${DEMO_ENABLED:-false}
+      Demo__ClockAnchor: ${DEMO_CLOCK_ANCHOR:-}
+      Seed__Force: ${SEED_FORCE:-true}
+      Seed__AccountPassword: ${DEMO_ACCOUNT_PASSWORD:?required}
+      Seed__Path: /app/demo-data
+      Storage__Provider: Minio
+      Storage__Minio__Endpoint: http://minio:9000
+      Storage__Minio__AccessKey: ${MINIO_ROOT_USER:?required}
+      Storage__Minio__SecretKey: ${MINIO_ROOT_PASSWORD:?required}
+      Storage__Minio__Bucket: ${MINIO_BUCKET:-dspc-documents}
+      PlanningEngine__BaseUrl: http://planning-engine:8081
+      PlanningEngine__TimeoutMs: "3000"
+      LocalAi__Enabled: ${LOCAL_AI_ENABLED:-false}
+      LocalAi__BaseUrl: ${LOCAL_AI_BASE_URL:-}
+      LocalAi__Model: ${LOCAL_AI_MODEL:-}
+      Cors__Origins: https://${DSPC_DOMAIN}
+      ForwardedHeaders__Enabled: "true"
+      ForwardedHeaders__TrustedNetworks: ${TRUSTED_PROXY_NETWORKS:-172.16.0.0/12}
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio: { condition: service_healthy }
+      planning-engine: { condition: service_started }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5080/health/ready >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  planning-engine:
+    build:
+      context: ./apps/planning-engine
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8081"
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?required}
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  miniodata:
+  caddy_data:
+  caddy_config:

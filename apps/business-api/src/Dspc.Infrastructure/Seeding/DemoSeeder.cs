@@ -23,6 +23,22 @@ public sealed class SeedOptions
     public const string Section = "Seed";
     /// <summary>Directory with the demo JSON files. Relative paths resolve against the content root; when unset the seeder walks up to find packages/demo-data.</summary>
     public string? Path { get; set; }
+
+    /// <summary>
+    /// Seed the demonstration content even when <c>Demo:Enabled</c> is false. Without this a
+    /// production deployment migrates an empty database and nobody can log in, because the
+    /// accounts themselves come from the seed.
+    /// </summary>
+    public bool Force { get; set; }
+
+    /// <summary>Skip seeding entirely (used by tests that build their own fixture).</summary>
+    public bool Skip { get; set; }
+
+    /// <summary>
+    /// Password for every seeded account. The built-in "demo" is fine on a closed stand, but a
+    /// deployment reachable from the internet must set its own.
+    /// </summary>
+    public string? AccountPassword { get; set; }
 }
 
 /// <summary>Process-wide seed state (seeder itself is scoped).</summary>

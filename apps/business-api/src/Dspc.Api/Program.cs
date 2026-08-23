@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Net;
 using System.Threading.RateLimiting;
 using Dspc.Api.Auth;
 using Dspc.Api.Endpoints;
@@ -11,6 +12,7 @@ using Dspc.Infrastructure;
 using Dspc.Infrastructure.Identity;
 using Dspc.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -114,8 +116,31 @@ builder.Services.AddSwaggerGen(o =>
     if (File.Exists(xml)) o.IncludeXmlComments(xml);
 });
 
+// Behind a reverse proxy (Caddy, then the web container's nginx) the socket address is the
+// proxy, not the client. Without honouring X-Forwarded-* the per-IP rate limits collapse into a
+// single shared bucket and the audit trail records the proxy address for every user.
+if (config.GetValue<bool>("ForwardedHeaders:Enabled"))
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(o =>
+    {
+        o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+        o.ForwardLimit = 2;
+        o.KnownNetworks.Clear();
+        o.KnownProxies.Clear();
+        foreach (var cidr in (config["ForwardedHeaders:TrustedNetworks"] ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var parts = cidr.Split('/');
+            if (parts.Length == 2 && IPAddress.TryParse(parts[0], out var prefix) && int.TryParse(parts[1], out var length))
+                o.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(prefix, length));
+            else if (IPAddress.TryParse(cidr, out var proxy))
+                o.KnownProxies.Add(proxy);
+        }
+    });
+}
+
 var app = builder.Build();
 
+if (config.GetValue<bool>("ForwardedHeaders:Enabled")) app.UseForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging(o =>
 {
