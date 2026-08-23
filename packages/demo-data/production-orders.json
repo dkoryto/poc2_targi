@@ -1,0 +1,37 @@
+{
+  "_comment": "Operations, baseline times and material requirements for active orders come from baseline.json (fixture T0=2026-09-07, shifted to the live T0). This file adds status, lines, serials, reservations and the completed historical order WO-2026-011.",
+  "orders": [
+    { "code": "WO-2026-011", "product": "P-MOB-03", "line": "LINE-1", "quantity": 2, "priority": 4, "releaseDate": "T0-30", "dueDate": "T0-5", "status": "Completed", "frozen": false, "customerReference": "KONTRAKT-DEMO-2025/11",
+      "operations": [
+        { "seq": 10, "wc": "WC-CUT",  "hours": 32, "start": "T0-28 06:00", "end": "T0-27 22:00", "status": "Completed", "materials": [ { "part": "HTS-22", "qty": 400 }, { "part": "SEAL-3", "qty": 20 }, { "part": "FAS-1", "qty": 240 }, { "part": "HRN-8", "qty": 6 }, { "part": "PSU-6", "qty": 2 }, { "part": "CBL-3", "qty": 60 }, { "part": "SNS-4", "qty": 8 }, { "part": "CON-5", "qty": 24 }, { "part": "BAT-9", "qty": 2 } ] },
+        { "seq": 20, "wc": "WC-WELD", "hours": 48, "start": "T0-26 06:00", "end": "T0-22 22:00", "status": "Completed", "materials": [ { "part": "ARM-2", "qty": 8 } ] },
+        { "seq": 30, "wc": "WC-INT",  "hours": 32, "start": "T0-21 06:00", "end": "T0-20 22:00", "status": "Completed", "materials": [ { "part": "ACT-40", "qty": 4 }, { "part": "MCU-X7", "qty": 2 }, { "part": "WHL-1", "qty": 8 }, { "part": "GBX-7", "qty": 2 } ] },
+        { "seq": 40, "wc": "WC-TEST", "hours": 16, "start": "T0-19 06:00", "end": "T0-19 22:00", "status": "Completed", "materials": [] } ],
+      "serials": [ { "serial": "PMV-2026-0007", "status": "Completed", "completedAt": "T0-19 22:00" }, { "serial": "PMV-2026-0008", "status": "Completed", "completedAt": "T0-19 22:00" } ],
+      "consumptions": [
+        { "lot": "HTS-22-2608", "qty": 200, "serial": "PMV-2026-0007", "opSeq": 10, "at": "T0-28 08:00" }, { "lot": "HTS-22-2608", "qty": 200, "serial": "PMV-2026-0008", "opSeq": 10, "at": "T0-28 09:00" },
+        { "lot": "ARM-2-0077",  "qty": 4,   "serial": "PMV-2026-0007", "opSeq": 20, "at": "T0-26 07:00" }, { "lot": "ARM-2-0077",  "qty": 4,   "serial": "PMV-2026-0008", "opSeq": 20, "at": "T0-26 08:00" },
+        { "lot": "ACT-40-0371", "qty": 2,   "serial": "PMV-2026-0007", "opSeq": 30, "at": "T0-21 07:00" }, { "lot": "ACT-40-0371", "qty": 2,   "serial": "PMV-2026-0008", "opSeq": 30, "at": "T0-21 08:00" },
+        { "lot": "MCU-X7-0440", "qty": 1,   "serial": "PMV-2026-0007", "opSeq": 30, "at": "T0-21 07:30" }, { "lot": "MCU-X7-0440", "qty": 1,   "serial": "PMV-2026-0008", "opSeq": 30, "at": "T0-21 08:30" },
+        { "lot": "WHL-1-0066",  "qty": 4,   "serial": "PMV-2026-0007", "opSeq": 30, "at": "T0-21 09:00" }, { "lot": "WHL-1-0066",  "qty": 4,   "serial": "PMV-2026-0008", "opSeq": 30, "at": "T0-21 10:00" },
+        { "lot": "GBX-7-0145",  "qty": 1,   "serial": "PMV-2026-0007", "opSeq": 30, "at": "T0-21 11:00" }, { "lot": "GBX-7-0145",  "qty": 1,   "serial": "PMV-2026-0008", "opSeq": 30, "at": "T0-21 12:00" } ] },
+    { "code": "WO-2026-012", "line": "LINE-2", "status": "InProgress", "customerReference": "KONTRAKT-DEMO-2026/02",
+      "reservations": [ { "part": "MCU-X7", "qty": 7, "lot": "MCU-X7-0455" }, { "part": "ENC-4", "qty": 7, "lot": "ENC-4-0058" } ],
+      "serials": [ { "serial": "SCM-2026-0101", "status": "InProduction" }, { "serial": "SCM-2026-0102", "status": "InProduction" }, { "serial": "SCM-2026-0103", "status": "InProduction" }, { "serial": "SCM-2026-0104", "status": "InProduction" }, { "serial": "SCM-2026-0105", "status": "InProduction" }, { "serial": "SCM-2026-0106", "status": "InProduction" }, { "serial": "SCM-2026-0107", "status": "InProduction" }, { "serial": "SCM-2026-0108", "status": "InProduction" }, { "serial": "SCM-2026-0109", "status": "InProduction" }, { "serial": "SCM-2026-0110", "status": "InProduction" } ],
+      "operationStatus": { "10": "InProgress" },
+      "consumptions": [ { "lot": "MCU-X7-0455", "qty": 3, "serial": "SCM-2026-0101", "opSeq": 10, "at": "T0 08:00" }, { "lot": "ENC-4-0058", "qty": 3, "serial": "SCM-2026-0101", "opSeq": 10, "at": "T0 08:10" } ] },
+    { "code": "WO-2026-013", "line": "LINE-1", "status": "Released", "customerReference": "KONTRAKT-DEMO-2026/03",
+      "reservations": [ { "part": "ACT-40", "qty": 4, "lot": "ACT-40-0388" }, { "part": "MCU-X7", "qty": 2, "lot": "MCU-X7-0455" }, { "part": "HTS-22", "qty": 400, "lot": "HTS-22-2607" } ],
+      "serials": [ { "serial": "PMV-2026-0009", "status": "InProduction" }, { "serial": "PMV-2026-0010", "status": "InProduction" } ], "operationStatus": { "10": "InProgress" } },
+    { "code": "WO-2026-014", "line": "LINE-2", "status": "Released", "customerReference": "KONTRAKT-DEMO-2026/04-PRIORYTET",
+      "reservations": [ { "part": "MCU-X7", "qty": 4, "lot": "MCU-X7-0455" }, { "part": "OPT-12", "qty": 4, "lot": "OPT-12-0091" } ],
+      "serials": [ { "serial": "UOP-2026-0021", "status": "Planned" }, { "serial": "UOP-2026-0022", "status": "Planned" }, { "serial": "UOP-2026-0023", "status": "Planned" }, { "serial": "UOP-2026-0024", "status": "Planned" } ] },
+    { "code": "WO-2026-015", "line": "LINE-1", "status": "Released", "reservations": [ { "part": "MCU-X7", "qty": 1, "lot": "MCU-X7-0455" }, { "part": "HTS-22", "qty": 200, "lot": "HTS-22-2607" } ], "serials": [ { "serial": "PMV-2026-0011", "status": "Planned" } ] },
+    { "code": "WO-2026-016", "line": "LINE-2", "status": "Planned", "reservations": [], "serials": [ { "serial": "UOP-2026-0025", "status": "Planned" }, { "serial": "UOP-2026-0026", "status": "Planned" } ] },
+    { "code": "WO-2026-017", "line": "LINE-2", "status": "Planned", "reservations": [], "serials": [] },
+    { "code": "WO-2026-018", "line": "LINE-1", "status": "Planned", "reservations": [ { "part": "HTS-22", "qty": 400, "lot": "HTS-22-2608" } ], "serials": [] },
+    { "code": "WO-2026-019", "line": "LINE-2", "status": "Planned", "customerReference": "KONTRAKT-DEMO-2026/07",
+      "reservations": [ { "part": "MCU-X7", "qty": 6, "lot": "MCU-X7-0455" }, { "part": "ENC-4", "qty": 6, "lot": "ENC-4-0058" }, { "part": "ANT-2", "qty": 12, "lot": "ANT-2-0171" }, { "part": "PSU-6", "qty": 6, "lot": "PSU-6-0320" }, { "part": "PCB-11", "qty": 18, "lot": "PCB-11-0612" }, { "part": "DSP-2", "qty": 6, "lot": "DSP-2-0033" }, { "part": "CON-5", "qty": 48, "lot": "CON-5-1150" }, { "part": "HRN-8", "qty": 6, "lot": "HRN-8-0440" }, { "part": "FAS-1", "qty": 120, "lot": "FAS-1-0901" } ],
+      "serials": [] }
+  ]
+}

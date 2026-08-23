@@ -1,0 +1,18 @@
+[
+  { "code": "SUP-01", "name": "Nordstal Sp. z o.o.",          "country": "PL", "city": "Gdańsk",    "lat": 54.35, "lon": 18.65, "otif": 94, "qualityScore": 92,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 17, "onTimeInFullLines": 16, "qualityRejections": 1, "otifPercent": 94 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 15, "onTimeInFullLines": 14, "qualityRejections": 0, "otifPercent": 93 } ] },
+  { "code": "SUP-02", "name": "Hydromech Actuators GmbH",     "country": "DE", "city": "Stuttgart", "lat": 48.78, "lon": 9.18,  "otif": 88, "qualityScore": 90,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 8, "onTimeInFullLines": 7, "qualityRejections": 0, "otifPercent": 88 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 9, "onTimeInFullLines": 8, "qualityRejections": 1, "otifPercent": 89 } ] },
+  { "code": "SUP-03", "name": "Vistula Electronics S.A.",      "country": "PL", "city": "Kraków",    "lat": 50.06, "lon": 19.94, "otif": 91, "qualityScore": 88,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 11, "onTimeInFullLines": 10, "qualityRejections": 1, "otifPercent": 91 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 12, "onTimeInFullLines": 11, "qualityRejections": 1, "otifPercent": 92 } ] },
+  { "code": "SUP-04", "name": "Baltic Optics OÜ",              "country": "EE", "city": "Tallinn",   "lat": 59.44, "lon": 24.75, "otif": 82, "qualityScore": 91,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 6, "onTimeInFullLines": 5, "qualityRejections": 0, "otifPercent": 82 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 7, "onTimeInFullLines": 6, "qualityRejections": 0, "otifPercent": 86 } ] },
+  { "code": "SUP-05", "name": "Carpathia Composites s.r.o.",   "country": "CZ", "city": "Brno",      "lat": 49.19, "lon": 16.61, "otif": 90, "qualityScore": 93,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 10, "onTimeInFullLines": 9, "qualityRejections": 0, "otifPercent": 90 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 10, "onTimeInFullLines": 9, "qualityRejections": 0, "otifPercent": 90 } ] },
+  { "code": "SUP-06", "name": "Rhône Connectique SAS",         "country": "FR", "city": "Lyon",      "lat": 45.76, "lon": 4.84,  "otif": 96, "qualityScore": 85,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 24, "onTimeInFullLines": 23, "qualityRejections": 2, "otifPercent": 96 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 22, "onTimeInFullLines": 21, "qualityRejections": 1, "otifPercent": 95 } ] },
+  { "code": "SUP-07", "name": "Silesia Precision Sp. z o.o.", "country": "PL", "city": "Gliwice",   "lat": 50.29, "lon": 18.67, "otif": 97, "qualityScore": 95,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 30, "onTimeInFullLines": 29, "qualityRejections": 0, "otifPercent": 97 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 28, "onTimeInFullLines": 27, "qualityRejections": 1, "otifPercent": 96 } ] },
+  { "code": "SUP-08", "name": "Iberia Power Systems S.L.",     "country": "ES", "city": "Zaragoza",  "lat": 41.65, "lon": -0.89, "otif": 85, "qualityScore": 89,
+    "performance": [ { "periodStart": "T0-90", "periodEnd": "T0-1", "deliveredLines": 13, "onTimeInFullLines": 11, "qualityRejections": 1, "otifPercent": 85 }, { "periodStart": "T0-180", "periodEnd": "T0-91", "deliveredLines": 12, "onTimeInFullLines": 10, "qualityRejections": 1, "otifPercent": 83 } ] }
+]

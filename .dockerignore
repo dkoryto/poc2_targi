@@ -1,0 +1,8 @@
+**/node_modules
+**/bin
+**/obj
+**/target
+**/dist
+**/.git
+**/storage
+infrastructure/data

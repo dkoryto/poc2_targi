@@ -1,0 +1,68 @@
+[
+  { "code": "PO-2026-0001", "supplier": "SUP-01", "status": "Delivered", "orderedOn": "T0-75", "lines": [
+      { "lineNo": 1, "part": "HTS-22", "qty": 800, "requiredDate": "T0-40", "eta": "T0-42", "status": "Delivered", "deliveredOn": "T0-42", "progress": 100, "lotNumber": "HTS-22-2608", "heatNumber": "H-2608", "producedOn": "T0-55" },
+      { "lineNo": 2, "part": "HTS-22", "qty": 600, "requiredDate": "T0-40", "eta": "T0-41", "status": "Delivered", "deliveredOn": "T0-41", "progress": 100, "lotNumber": "HTS-22-2607", "heatNumber": "H-2607", "producedOn": "T0-56" } ] },
+  { "code": "PO-2026-0002", "supplier": "SUP-07", "status": "Delivered", "orderedOn": "T0-70", "lines": [
+      { "lineNo": 1, "part": "GBX-7", "qty": 27, "requiredDate": "T0-35", "eta": "T0-36", "status": "Delivered", "deliveredOn": "T0-36", "progress": 100, "lotNumber": "GBX-7-0145" },
+      { "lineNo": 2, "part": "WHL-1", "qty": 32, "requiredDate": "T0-35", "eta": "T0-36", "status": "Delivered", "deliveredOn": "T0-36", "progress": 100, "lotNumber": "WHL-1-0066" },
+      { "lineNo": 3, "part": "FAS-1", "qty": 2000, "requiredDate": "T0-35", "eta": "T0-36", "status": "Delivered", "deliveredOn": "T0-33", "progress": 100, "lotNumber": "FAS-1-0901" },
+      { "lineNo": 4, "part": "SEAL-3", "qty": 80, "requiredDate": "T0-35", "eta": "T0-36", "status": "Delivered", "deliveredOn": "T0-36", "progress": 100, "lotNumber": "SEAL-3-0012" } ] },
+  { "code": "PO-2026-0003", "supplier": "SUP-02", "status": "Delivered", "orderedOn": "T0-80", "lines": [
+      { "lineNo": 1, "part": "ACT-40", "qty": 4, "requiredDate": "T0-30", "eta": "T0-31", "status": "Delivered", "deliveredOn": "T0-31", "progress": 100, "lotNumber": "ACT-40-0388" },
+      { "lineNo": 2, "part": "ACT-40", "qty": 4, "requiredDate": "T0-30", "eta": "T0-31", "status": "Delivered", "deliveredOn": "T0-31", "progress": 100, "lotNumber": "ACT-40-0371" } ] },
+  { "code": "PO-2026-0004", "supplier": "SUP-03", "status": "Delivered", "orderedOn": "T0-60", "lines": [
+      { "lineNo": 1, "part": "MCU-X7", "qty": 29, "requiredDate": "T0-25", "eta": "T0-25", "status": "Delivered", "deliveredOn": "T0-26", "progress": 100, "lotNumber": "MCU-X7-0455" },
+      { "lineNo": 2, "part": "ENC-4", "qty": 30, "requiredDate": "T0-25", "eta": "T0-25", "status": "Delivered", "deliveredOn": "T0-26", "progress": 100, "lotNumber": "ENC-4-0058" },
+      { "lineNo": 3, "part": "ANT-2", "qty": 70, "requiredDate": "T0-25", "eta": "T0-25", "status": "Delivered", "deliveredOn": "T0-26", "progress": 100, "lotNumber": "ANT-2-0171" },
+      { "lineNo": 4, "part": "PCB-11", "qty": 120, "requiredDate": "T0-25", "eta": "T0-25", "status": "Delivered", "deliveredOn": "T0-26", "progress": 100, "lotNumber": "PCB-11-0612" },
+      { "lineNo": 5, "part": "MCU-X7", "qty": 2, "requiredDate": "T0-25", "eta": "T0-25", "status": "Delivered", "deliveredOn": "T0-22", "progress": 100, "lotNumber": "MCU-X7-0440" } ] },
+  { "code": "PO-2026-0005", "supplier": "SUP-06", "status": "Delivered", "orderedOn": "T0-50", "lines": [
+      { "lineNo": 1, "part": "CON-5", "qty": 400, "requiredDate": "T0-20", "eta": "T0-21", "status": "Delivered", "deliveredOn": "T0-21", "progress": 100, "lotNumber": "CON-5-1150" },
+      { "lineNo": 2, "part": "CON-5", "qty": 200, "requiredDate": "T0-20", "eta": "T0-21", "status": "Delivered", "deliveredOn": "T0-21", "progress": 100, "lotNumber": "CON-5-1142" },
+      { "lineNo": 3, "part": "HRN-8", "qty": 80, "requiredDate": "T0-20", "eta": "T0-21", "status": "Delivered", "deliveredOn": "T0-21", "progress": 100, "lotNumber": "HRN-8-0440" },
+      { "lineNo": 4, "part": "CBL-3", "qty": 260, "requiredDate": "T0-20", "eta": "T0-21", "status": "Delivered", "deliveredOn": "T0-18", "progress": 100, "lotNumber": "CBL-3-0230" } ] },
+  { "code": "PO-2026-0006", "supplier": "SUP-08", "status": "Delivered", "orderedOn": "T0-45", "lines": [
+      { "lineNo": 1, "part": "BAT-9", "qty": 32, "requiredDate": "T0-15", "eta": "T0-15", "status": "Delivered", "deliveredOn": "T0-15", "progress": 100, "lotNumber": "BAT-9-0510" },
+      { "lineNo": 2, "part": "PSU-6", "qty": 42, "requiredDate": "T0-15", "eta": "T0-15", "status": "Delivered", "deliveredOn": "T0-15", "progress": 100, "lotNumber": "PSU-6-0320" } ] },
+  { "code": "PO-2026-0007", "supplier": "SUP-02", "status": "Open", "orderedOn": "T0-35", "notes": "Siłowniki dla WO-2026-014 / WO-2026-015", "lines": [
+      { "lineNo": 1, "part": "ACT-40", "qty": 12, "requiredDate": "T0+9", "eta": "T0+8", "status": "Shipped", "progress": 100, "lotNumber": "ACT-40-0412", "producedOn": "T0-6", "shipment": "SHP-2026-0031",
+        "documents": [ { "type": "INSPECTION_REPORT", "status": "Accepted", "number": "IR-HYD-2026-118", "fileName": "IR-HYD-2026-118.pdf", "issuedOn": "T0-5", "verifiedBy": "quality", "verifiedAt": "T0-4 10:00" }, { "type": "MATERIAL_CERT", "status": "Pending", "number": "MC-HYD-2026-0407", "fileName": "MC-HYD-2026-0407.pdf", "issuedOn": "T0-3" }, { "type": "TRANSPORT_DOC", "status": "Accepted", "number": "CMR-2026-55120", "fileName": "CMR-2026-55120.pdf", "issuedOn": "T0-1", "verifiedBy": "inbound", "verifiedAt": "T0-1 16:00" } ] } ] },
+  { "code": "PO-2026-0008", "supplier": "SUP-05", "status": "Open", "orderedOn": "T0-30", "lines": [
+      { "lineNo": 1, "part": "FRM-3", "qty": 6, "requiredDate": "T0+12", "eta": "T0+6", "status": "Shipped", "progress": 100, "lotNumber": "FRM-3-0214", "shipment": "SHP-2026-0033", "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-CAR-2026-0214", "fileName": "MC-CAR-2026-0214.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 09:00" } ] },
+      { "lineNo": 2, "part": "ARM-2", "qty": 12, "requiredDate": "T0+12", "eta": "T0+6", "status": "Shipped", "progress": 100, "lotNumber": "ARM-2-0081", "shipment": "SHP-2026-0033", "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-CAR-2026-0081", "fileName": "MC-CAR-2026-0081.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 09:05" } ] } ] },
+  { "code": "PO-2026-0009", "supplier": "SUP-03", "status": "Open", "orderedOn": "T0-20", "notes": "Moduły dla WO-2026-016 / WO-2026-017", "lines": [
+      { "lineNo": 1, "part": "MCU-X7", "qty": 12, "requiredDate": "T0+22", "eta": "T0+25", "status": "InProduction", "progress": 60, "lotNumber": "MCU-X7-0471",
+        "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-VIS-2026-221", "fileName": "MC-VIS-2026-221.pdf", "issuedOn": "T0-3", "verifiedBy": "quality", "verifiedAt": "T0-2 11:00" }, { "type": "INSPECTION_REPORT", "status": "Rejected", "number": "IR-VIS-2026-090", "fileName": "IR-VIS-2026-090.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 14:30", "comment": "Brak wyników testu temperaturowego (-40°C). Wymagane uzupełnienie raportu." } ] },
+      { "lineNo": 2, "part": "ENC-4", "qty": 10, "requiredDate": "T0+22", "eta": "T0+7", "status": "Shipped", "progress": 100, "lotNumber": "ENC-4-0063", "shipment": "SHP-2026-0039",
+        "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-VIS-2026-222", "fileName": "MC-VIS-2026-222.pdf", "issuedOn": "T0-3", "verifiedBy": "quality", "verifiedAt": "T0-2 11:10" }, { "type": "INSPECTION_REPORT", "status": "Accepted", "number": "IR-VIS-2026-091", "fileName": "IR-VIS-2026-091.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 14:40" } ] } ] },
+  { "code": "PO-2026-0010", "supplier": "SUP-04", "status": "Open", "orderedOn": "T0-25", "lines": [
+      { "lineNo": 1, "part": "OPT-12", "qty": 4, "requiredDate": "T0+12", "eta": "T0+16", "status": "Shipped", "progress": 100, "lotNumber": "OPT-12-0097", "shipment": "SHP-2026-0032",
+        "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-BAL-2026-0097", "fileName": "MC-BAL-2026-0097.pdf", "issuedOn": "T0-4", "verifiedBy": "quality", "verifiedAt": "T0-3 09:00" }, { "type": "INSPECTION_REPORT", "status": "Pending", "number": "IR-BAL-2026-0097", "fileName": "IR-BAL-2026-0097.pdf", "issuedOn": "T0-2" } ] },
+      { "lineNo": 2, "part": "SNS-4", "qty": 30, "requiredDate": "T0+20", "eta": "T0+16", "status": "Shipped", "progress": 100, "lotNumber": "SNS-4-0290", "shipment": "SHP-2026-0035" } ] },
+  { "code": "PO-2026-0011", "supplier": "SUP-06", "status": "Open", "orderedOn": "T0-18", "lines": [
+      { "lineNo": 1, "part": "HRN-8", "qty": 40, "requiredDate": "T0+14", "eta": "T0+9", "status": "Shipped", "progress": 100, "lotNumber": "HRN-8-0452", "shipment": "SHP-2026-0034" },
+      { "lineNo": 2, "part": "CON-5", "qty": 400, "requiredDate": "T0+2", "eta": "T0+10", "status": "Confirmed", "progress": 40, "supplierConfirmed": false,
+        "documents": [ { "type": "DECLARATION_OF_CONFORMITY", "status": "Missing", "number": "DOC-RHC-2026-0411", "fileName": "", "issuedOn": null } ] },
+      { "lineNo": 3, "part": "CBL-3", "qty": 200, "requiredDate": "T0+30", "eta": "T0+24", "status": "ReadyToShip", "progress": 100, "lotNumber": "CBL-3-0241", "shipment": "SHP-2026-0036" } ] },
+  { "code": "PO-2026-0012", "supplier": "SUP-02", "status": "Open", "orderedOn": "T0-12", "notes": "Siłowniki dla WO-2026-016 / WO-2026-018", "lines": [
+      { "lineNo": 1, "part": "ACT-40", "qty": 10, "requiredDate": "T0+22", "eta": "T0+20", "status": "ReadyToShip", "progress": 100, "lotNumber": "ACT-40-0419", "shipment": "SHP-2026-0038",
+        "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-HYD-2026-0419", "fileName": "MC-HYD-2026-0419.pdf", "issuedOn": "T0-1", "verifiedBy": "quality", "verifiedAt": "T0 09:00" }, { "type": "INSPECTION_REPORT", "status": "Accepted", "number": "IR-HYD-2026-121", "fileName": "IR-HYD-2026-121.pdf", "issuedOn": "T0-1", "verifiedBy": "quality", "verifiedAt": "T0 09:05" } ] } ] },
+  { "code": "PO-2026-0013", "supplier": "SUP-01", "status": "Open", "orderedOn": "T0-10", "notes": "Stal dla WO-2026-018", "lines": [
+      { "lineNo": 1, "part": "HTS-22", "qty": 600, "requiredDate": "T0+25", "eta": "T0+24", "status": "Confirmed", "progress": 30, "lotNumber": "HTS-22-2615", "heatNumber": "H-2615", "shipment": "SHP-2026-0037",
+        "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-NOR-2026-2615", "fileName": "MC-NOR-2026-2615.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 12:00" } ] } ] },
+  { "code": "PO-2026-0014", "supplier": "SUP-08", "status": "Open", "orderedOn": "T0-5", "lines": [
+      { "lineNo": 1, "part": "BAT-9", "qty": 20, "requiredDate": "T0+35", "eta": "T0+30", "status": "Confirmed", "progress": 10, "shipment": "SHP-2026-0040", "documents": [ { "type": "DECLARATION_OF_CONFORMITY", "status": "Accepted", "number": "DOC-IBE-2026-0301", "fileName": "DOC-IBE-2026-0301.pdf", "issuedOn": "T0-4", "verifiedBy": "quality", "verifiedAt": "T0-3 10:00" } ] },
+      { "lineNo": 2, "part": "PSU-6", "qty": 20, "requiredDate": "T0+35", "eta": "T0+30", "status": "Confirmed", "progress": 10 } ] },
+  { "code": "PO-2026-0015", "supplier": "SUP-07", "status": "Open", "orderedOn": "T0-4", "lines": [
+      { "lineNo": 1, "part": "GBX-7", "qty": 20, "requiredDate": "T0+40", "eta": "T0+36", "status": "Confirmed", "progress": 0, "shipment": "SHP-2026-0041", "documents": [ { "type": "DECLARATION_OF_CONFORMITY", "status": "Accepted", "number": "DOC-SIL-2026-0512", "fileName": "DOC-SIL-2026-0512.pdf", "issuedOn": "T0-3", "verifiedBy": "quality", "verifiedAt": "T0-2 10:00" } ] },
+      { "lineNo": 2, "part": "WHL-1", "qty": 16, "requiredDate": "T0+40", "eta": "T0+36", "status": "Confirmed", "progress": 0, "documents": [ { "type": "DECLARATION_OF_CONFORMITY", "status": "Accepted", "number": "DOC-SIL-2026-0513", "fileName": "DOC-SIL-2026-0513.pdf", "issuedOn": "T0-3", "verifiedBy": "quality", "verifiedAt": "T0-2 10:05" } ] } ] },
+  { "code": "PO-2026-0016", "supplier": "SUP-05", "status": "Open", "orderedOn": "T0-3", "lines": [
+      { "lineNo": 1, "part": "ARM-2", "qty": 16, "requiredDate": "T0+45", "eta": "T0+40", "status": "Confirmed", "progress": 0, "shipment": "SHP-2026-0042", "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-CAR-2026-0099", "fileName": "MC-CAR-2026-0099.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 10:00" } ] },
+      { "lineNo": 2, "part": "FRM-3", "qty": 4, "requiredDate": "T0+45", "eta": "T0+40", "status": "Confirmed", "progress": 0, "documents": [ { "type": "MATERIAL_CERT", "status": "Accepted", "number": "MC-CAR-2026-0100", "fileName": "MC-CAR-2026-0100.pdf", "issuedOn": "T0-2", "verifiedBy": "quality", "verifiedAt": "T0-1 10:05" } ] } ] },
+  { "code": "PO-2026-0017", "supplier": "SUP-03", "status": "Open", "orderedOn": "T0-2", "lines": [
+      { "lineNo": 1, "part": "PCB-11", "qty": 100, "requiredDate": "T0+50", "eta": "T0+45", "status": "Confirmed", "progress": 0 },
+      { "lineNo": 2, "part": "ANT-2", "qty": 30, "requiredDate": "T0+50", "eta": "T0+45", "status": "Confirmed", "progress": 0, "documents": [ { "type": "DECLARATION_OF_CONFORMITY", "status": "Accepted", "number": "DOC-VIS-2026-0330", "fileName": "DOC-VIS-2026-0330.pdf", "issuedOn": "T0-1", "verifiedBy": "quality", "verifiedAt": "T0 08:00" } ] } ] },
+  { "code": "PO-2026-0018", "supplier": "SUP-04", "status": "Open", "orderedOn": "T0-1", "lines": [
+      { "lineNo": 1, "part": "DSP-2", "qty": 20, "requiredDate": "T0+55", "eta": "T0+50", "status": "Confirmed", "progress": 0 },
+      { "lineNo": 2, "part": "SNS-4", "qty": 40, "requiredDate": "T0+55", "eta": "T0+50", "status": "Confirmed", "progress": 0 } ] }
+]

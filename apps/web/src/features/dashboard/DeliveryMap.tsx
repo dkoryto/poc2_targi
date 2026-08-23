@@ -149,7 +149,8 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const ro = new ResizeObserver(() => map.resize());
+    // resize alone can leave the canvas blank when the panel was laid out after map init (focus mode, first paint)
+    const ro = new ResizeObserver(() => { map.resize(); map.triggerRepaint(); });
     if (el.current) ro.observe(el.current);
     return () => ro.disconnect();
   }, []);

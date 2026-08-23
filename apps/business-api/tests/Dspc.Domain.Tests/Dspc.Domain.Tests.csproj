@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Dspc.Infrastructure/Dspc.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Dspc.Application/Dspc.Application.csproj" />
   </ItemGroup>
   <ItemGroup><Using Include="Xunit" /></ItemGroup>
 </Project>

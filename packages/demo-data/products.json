@@ -1,0 +1,19 @@
+[
+  { "code": "P-OBS-01", "namePl": "Bezzałogowa platforma obserwacyjna", "nameEn": "Unmanned observation platform", "serialPrefix": "UOP", "family": "Observation",
+    "bom": { "version": "A", "items": [
+      { "part": "ACT-40", "qty": 2, "op": 30, "key": true }, { "part": "MCU-X7", "qty": 1, "op": 30, "key": true }, { "part": "OPT-12", "qty": 1, "op": 30, "key": true }, { "part": "GBX-7", "qty": 2, "op": 30, "key": true },
+      { "part": "FRM-3", "qty": 1, "op": 10, "key": true }, { "part": "FAS-1", "qty": 40, "op": 10, "key": false },
+      { "part": "PCB-11", "qty": 2, "op": 20, "key": false }, { "part": "HRN-8", "qty": 2, "op": 20, "key": false }, { "part": "ANT-2", "qty": 1, "op": 20, "key": true }, { "part": "SNS-4", "qty": 3, "op": 20, "key": false }, { "part": "BAT-9", "qty": 2, "op": 20, "key": true }, { "part": "CON-5", "qty": 6, "op": 20, "key": false } ] },
+    "routing": [ { "seq": 10, "wc": "WC-CUT", "namePl": "Obróbka ramy", "nameEn": "Frame machining" }, { "seq": 20, "wc": "WC-ELEC", "namePl": "Montaż elektroniki", "nameEn": "Electronics assembly" }, { "seq": 30, "wc": "WC-INT", "namePl": "Integracja napędów i optyki", "nameEn": "Drive & optics integration" }, { "seq": 40, "wc": "WC-TEST", "namePl": "Test końcowy", "nameEn": "Final test" } ] },
+  { "code": "P-COM-02", "namePl": "Moduł bezpiecznej łączności", "nameEn": "Secure communications module", "serialPrefix": "SCM", "family": "Communications",
+    "bom": { "version": "A", "items": [
+      { "part": "MCU-X7", "qty": 1, "op": 10, "key": true }, { "part": "ENC-4", "qty": 1, "op": 10, "key": true }, { "part": "PCB-11", "qty": 3, "op": 10, "key": false }, { "part": "DSP-2", "qty": 1, "op": 10, "key": false }, { "part": "HRN-8", "qty": 1, "op": 10, "key": false }, { "part": "FAS-1", "qty": 20, "op": 10, "key": false },
+      { "part": "ANT-2", "qty": 2, "op": 20, "key": true }, { "part": "PSU-6", "qty": 1, "op": 20, "key": false }, { "part": "CON-5", "qty": 8, "op": 20, "key": false } ] },
+    "routing": [ { "seq": 10, "wc": "WC-ELEC", "namePl": "Montaż elektroniki", "nameEn": "Electronics assembly" }, { "seq": 20, "wc": "WC-INT", "namePl": "Integracja i konfiguracja", "nameEn": "Integration & configuration" }, { "seq": 30, "wc": "WC-TEST", "namePl": "Test końcowy", "nameEn": "Final test" } ] },
+  { "code": "P-MOB-03", "namePl": "Pojazd chronionej mobilności", "nameEn": "Protected mobility vehicle", "serialPrefix": "PMV", "family": "Mobility",
+    "bom": { "version": "A", "items": [
+      { "part": "HTS-22", "qty": 200, "op": 10, "key": true }, { "part": "FAS-1", "qty": 120, "op": 10, "key": false }, { "part": "SEAL-3", "qty": 10, "op": 10, "key": false }, { "part": "CBL-3", "qty": 30, "op": 10, "key": false },
+      { "part": "ARM-2", "qty": 4, "op": 20, "key": true },
+      { "part": "ACT-40", "qty": 2, "op": 30, "key": true }, { "part": "MCU-X7", "qty": 1, "op": 30, "key": true }, { "part": "WHL-1", "qty": 4, "op": 30, "key": true }, { "part": "GBX-7", "qty": 1, "op": 30, "key": true }, { "part": "PSU-6", "qty": 1, "op": 30, "key": false }, { "part": "BAT-9", "qty": 1, "op": 30, "key": false }, { "part": "SNS-4", "qty": 4, "op": 30, "key": false }, { "part": "CON-5", "qty": 12, "op": 30, "key": false }, { "part": "HRN-8", "qty": 3, "op": 30, "key": false } ] },
+    "routing": [ { "seq": 10, "wc": "WC-CUT", "namePl": "Cięcie i obróbka stali", "nameEn": "Steel cutting & machining" }, { "seq": 20, "wc": "WC-WELD", "namePl": "Spawanie konstrukcji", "nameEn": "Structure welding" }, { "seq": 30, "wc": "WC-INT", "namePl": "Integracja układów", "nameEn": "Systems integration" }, { "seq": 40, "wc": "WC-TEST", "namePl": "Test końcowy", "nameEn": "Final test" } ] }
+]

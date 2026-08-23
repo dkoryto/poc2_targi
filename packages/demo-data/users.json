@@ -1,0 +1,12 @@
+[
+  { "username": "presenter", "displayName": "Prezenter Demo", "role": "DemoPresenter", "password": "demo", "description": "Pełna ścieżka demonstracyjna i reset danych" },
+  { "username": "planner", "displayName": "Anna Kowalczyk", "role": "ProductionPlanner", "password": "demo", "description": "Plan bazowy, scenariusze What-If, zatwierdzanie" },
+  { "username": "inbound", "displayName": "Marek Zieliński", "role": "InboundCoordinator", "password": "demo", "description": "Wszystkie dostawy i awizacje" },
+  { "username": "quality", "displayName": "Ewa Nowicka", "role": "QualityInspector", "password": "demo", "description": "Kontrola partii, dokumenty, paszporty" },
+  { "username": "director", "displayName": "Tomasz Baran", "role": "OperationsDirector", "password": "demo", "description": "Dashboard, KPI i raporty" },
+  { "username": "auditor", "displayName": "Joanna Wróbel", "role": "Auditor", "password": "demo", "description": "Odczyt historii i eksport audytu" },
+  { "username": "admin", "displayName": "Administrator Systemu", "role": "Administrator", "password": "demo", "description": "Słowniki, progi, wagi, użytkownicy" },
+  { "username": "supplier.hydromech", "displayName": "Klaus Reinhardt (Hydromech)", "role": "SupplierUser", "supplier": "SUP-02", "password": "demo", "description": "Dostawca siłowników ACT-40" },
+  { "username": "supplier.nordstal", "displayName": "Piotr Gdański (Nordstal)", "role": "SupplierUser", "supplier": "SUP-01", "password": "demo", "description": "Dostawca stali HTS-22" },
+  { "username": "supplier.vistula", "displayName": "Magda Krakowska (Vistula)", "role": "SupplierUser", "supplier": "SUP-03", "password": "demo", "description": "Dostawca modułów MCU-X7" }
+]

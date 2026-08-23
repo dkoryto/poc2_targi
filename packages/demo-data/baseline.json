@@ -1,0 +1,994 @@
+{
+  "scenarioId": "SCN-BASELINE",
+  "baselineId": "BASELINE-2026-W37-v1",
+  "horizonStart": "2026-09-07",
+  "horizonEnd": "2026-11-30",
+  "timeLimitMs": 2500,
+  "workCenters": [
+    {
+      "code": "WC-CUT",
+      "lineCode": "LINE-1",
+      "hoursPerDay": 16,
+      "capacityFactor": 1,
+      "calendar": []
+    },
+    {
+      "code": "WC-WELD",
+      "lineCode": "LINE-1",
+      "hoursPerDay": 16,
+      "capacityFactor": 1,
+      "calendar": []
+    },
+    {
+      "code": "WC-ELEC",
+      "lineCode": "LINE-2",
+      "hoursPerDay": 16,
+      "capacityFactor": 1,
+      "calendar": []
+    },
+    {
+      "code": "WC-INT",
+      "lineCode": "LINE-2",
+      "hoursPerDay": 16,
+      "capacityFactor": 1,
+      "calendar": []
+    },
+    {
+      "code": "WC-TEST",
+      "lineCode": "LINE-1",
+      "hoursPerDay": 16,
+      "capacityFactor": 1,
+      "calendar": []
+    }
+  ],
+  "orders": [
+    {
+      "code": "WO-2026-012",
+      "productCode": "P-COM-02",
+      "priority": 3,
+      "quantity": 10,
+      "dueDate": "2026-09-16",
+      "releaseDate": "2026-09-05",
+      "frozen": true,
+      "lineCode": "LINE-2",
+      "operations": [
+        {
+          "code": "WO-2026-012/10",
+          "sequence": 10,
+          "workCenterCode": "WC-ELEC",
+          "durationHours": 24,
+          "frozen": true,
+          "baselineStart": "2026-09-07T06:00:00",
+          "baselineEnd": "2026-09-08T14:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "MCU-X7",
+              "quantity": 10
+            },
+            {
+              "partCode": "PCB-11",
+              "quantity": 30
+            },
+            {
+              "partCode": "ENC-4",
+              "quantity": 10
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 10
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 200
+            },
+            {
+              "partCode": "DSP-2",
+              "quantity": 10
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-012/20",
+          "sequence": 20,
+          "workCenterCode": "WC-INT",
+          "durationHours": 16,
+          "frozen": true,
+          "baselineStart": "2026-09-09T06:00:00",
+          "baselineEnd": "2026-09-09T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ANT-2",
+              "quantity": 20
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 10
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 80
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-012/30",
+          "sequence": 30,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 8,
+          "frozen": true,
+          "baselineStart": "2026-09-10T06:00:00",
+          "baselineEnd": "2026-09-10T14:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-013",
+      "productCode": "P-MOB-03",
+      "priority": 4,
+      "quantity": 2,
+      "dueDate": "2026-09-25",
+      "releaseDate": "2026-09-07",
+      "frozen": false,
+      "lineCode": "LINE-1",
+      "operations": [
+        {
+          "code": "WO-2026-013/10",
+          "sequence": 10,
+          "workCenterCode": "WC-CUT",
+          "durationHours": 32,
+          "frozen": true,
+          "baselineStart": "2026-09-07T06:00:00",
+          "baselineEnd": "2026-09-08T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "HTS-22",
+              "quantity": 400
+            },
+            {
+              "partCode": "SEAL-3",
+              "quantity": 20
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 240
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 6
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 2
+            },
+            {
+              "partCode": "CBL-3",
+              "quantity": 60
+            },
+            {
+              "partCode": "SNS-4",
+              "quantity": 8
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 24
+            },
+            {
+              "partCode": "BAT-9",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-013/20",
+          "sequence": 20,
+          "workCenterCode": "WC-WELD",
+          "durationHours": 48,
+          "frozen": false,
+          "baselineStart": "2026-09-09T06:00:00",
+          "baselineEnd": "2026-09-11T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ARM-2",
+              "quantity": 8
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-013/30",
+          "sequence": 30,
+          "workCenterCode": "WC-INT",
+          "durationHours": 32,
+          "frozen": false,
+          "baselineStart": "2026-09-14T06:00:00",
+          "baselineEnd": "2026-09-15T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ACT-40",
+              "quantity": 4
+            },
+            {
+              "partCode": "MCU-X7",
+              "quantity": 2
+            },
+            {
+              "partCode": "WHL-1",
+              "quantity": 8
+            },
+            {
+              "partCode": "GBX-7",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-013/40",
+          "sequence": 40,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-09-16T06:00:00",
+          "baselineEnd": "2026-09-16T22:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-014",
+      "productCode": "P-OBS-01",
+      "priority": 5,
+      "quantity": 4,
+      "dueDate": "2026-09-25",
+      "releaseDate": "2026-09-07",
+      "frozen": false,
+      "lineCode": "LINE-2",
+      "operations": [
+        {
+          "code": "WO-2026-014/10",
+          "sequence": 10,
+          "workCenterCode": "WC-CUT",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-09-09T06:00:00",
+          "baselineEnd": "2026-09-09T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "FRM-3",
+              "quantity": 4
+            },
+            {
+              "partCode": "BAT-9",
+              "quantity": 8
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 24
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 8
+            },
+            {
+              "partCode": "ANT-2",
+              "quantity": 4
+            },
+            {
+              "partCode": "PCB-11",
+              "quantity": 8
+            },
+            {
+              "partCode": "SNS-4",
+              "quantity": 12
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 160
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-014/20",
+          "sequence": 20,
+          "workCenterCode": "WC-ELEC",
+          "durationHours": 32,
+          "frozen": false,
+          "baselineStart": "2026-09-11T06:00:00",
+          "baselineEnd": "2026-09-14T22:00:00",
+          "materialRequirements": []
+        },
+        {
+          "code": "WO-2026-014/30",
+          "sequence": 30,
+          "workCenterCode": "WC-INT",
+          "durationHours": 36,
+          "frozen": false,
+          "baselineStart": "2026-09-16T06:00:00",
+          "baselineEnd": "2026-09-18T10:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ACT-40",
+              "quantity": 8
+            },
+            {
+              "partCode": "MCU-X7",
+              "quantity": 4
+            },
+            {
+              "partCode": "OPT-12",
+              "quantity": 4
+            },
+            {
+              "partCode": "GBX-7",
+              "quantity": 8
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-014/40",
+          "sequence": 40,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 12,
+          "frozen": false,
+          "baselineStart": "2026-09-21T06:00:00",
+          "baselineEnd": "2026-09-21T18:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-015",
+      "productCode": "P-MOB-03",
+      "priority": 3,
+      "quantity": 1,
+      "dueDate": "2026-10-09",
+      "releaseDate": "2026-09-07",
+      "frozen": false,
+      "lineCode": "LINE-1",
+      "operations": [
+        {
+          "code": "WO-2026-015/10",
+          "sequence": 10,
+          "workCenterCode": "WC-CUT",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-09-10T06:00:00",
+          "baselineEnd": "2026-09-10T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "HTS-22",
+              "quantity": 200
+            },
+            {
+              "partCode": "SEAL-3",
+              "quantity": 10
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 120
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 3
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 1
+            },
+            {
+              "partCode": "CBL-3",
+              "quantity": 30
+            },
+            {
+              "partCode": "SNS-4",
+              "quantity": 4
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 12
+            },
+            {
+              "partCode": "BAT-9",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-015/20",
+          "sequence": 20,
+          "workCenterCode": "WC-WELD",
+          "durationHours": 24,
+          "frozen": false,
+          "baselineStart": "2026-09-15T06:00:00",
+          "baselineEnd": "2026-09-16T14:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ARM-2",
+              "quantity": 4
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-015/30",
+          "sequence": 30,
+          "workCenterCode": "WC-INT",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-09-28T06:00:00",
+          "baselineEnd": "2026-09-28T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ACT-40",
+              "quantity": 2
+            },
+            {
+              "partCode": "MCU-X7",
+              "quantity": 1
+            },
+            {
+              "partCode": "WHL-1",
+              "quantity": 4
+            },
+            {
+              "partCode": "GBX-7",
+              "quantity": 1
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-015/40",
+          "sequence": 40,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 8,
+          "frozen": false,
+          "baselineStart": "2026-09-29T06:00:00",
+          "baselineEnd": "2026-09-29T14:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-016",
+      "productCode": "P-OBS-01",
+      "priority": 2,
+      "quantity": 2,
+      "dueDate": "2026-10-16",
+      "releaseDate": "2026-09-14",
+      "frozen": false,
+      "lineCode": "LINE-2",
+      "operations": [
+        {
+          "code": "WO-2026-016/10",
+          "sequence": 10,
+          "workCenterCode": "WC-CUT",
+          "durationHours": 8,
+          "frozen": false,
+          "baselineStart": "2026-09-22T06:00:00",
+          "baselineEnd": "2026-09-22T14:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "FRM-3",
+              "quantity": 2
+            },
+            {
+              "partCode": "BAT-9",
+              "quantity": 4
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 12
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 4
+            },
+            {
+              "partCode": "ANT-2",
+              "quantity": 2
+            },
+            {
+              "partCode": "PCB-11",
+              "quantity": 4
+            },
+            {
+              "partCode": "SNS-4",
+              "quantity": 6
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 80
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-016/20",
+          "sequence": 20,
+          "workCenterCode": "WC-ELEC",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-09-23T06:00:00",
+          "baselineEnd": "2026-09-23T22:00:00",
+          "materialRequirements": []
+        },
+        {
+          "code": "WO-2026-016/30",
+          "sequence": 30,
+          "workCenterCode": "WC-INT",
+          "durationHours": 24,
+          "frozen": false,
+          "baselineStart": "2026-09-30T06:00:00",
+          "baselineEnd": "2026-10-01T14:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ACT-40",
+              "quantity": 4
+            },
+            {
+              "partCode": "MCU-X7",
+              "quantity": 2
+            },
+            {
+              "partCode": "OPT-12",
+              "quantity": 2
+            },
+            {
+              "partCode": "GBX-7",
+              "quantity": 4
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-016/40",
+          "sequence": 40,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 8,
+          "frozen": false,
+          "baselineStart": "2026-10-02T06:00:00",
+          "baselineEnd": "2026-10-02T14:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-017",
+      "productCode": "P-COM-02",
+      "priority": 3,
+      "quantity": 8,
+      "dueDate": "2026-10-23",
+      "releaseDate": "2026-09-21",
+      "frozen": false,
+      "lineCode": "LINE-2",
+      "operations": [
+        {
+          "code": "WO-2026-017/10",
+          "sequence": 10,
+          "workCenterCode": "WC-ELEC",
+          "durationHours": 20,
+          "frozen": false,
+          "baselineStart": "2026-10-06T06:00:00",
+          "baselineEnd": "2026-10-07T10:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "MCU-X7",
+              "quantity": 8
+            },
+            {
+              "partCode": "PCB-11",
+              "quantity": 24
+            },
+            {
+              "partCode": "ENC-4",
+              "quantity": 8
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 8
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 160
+            },
+            {
+              "partCode": "DSP-2",
+              "quantity": 8
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-017/20",
+          "sequence": 20,
+          "workCenterCode": "WC-INT",
+          "durationHours": 12,
+          "frozen": false,
+          "baselineStart": "2026-10-08T06:00:00",
+          "baselineEnd": "2026-10-08T18:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ANT-2",
+              "quantity": 16
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 8
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 64
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-017/30",
+          "sequence": 30,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 8,
+          "frozen": false,
+          "baselineStart": "2026-10-09T06:00:00",
+          "baselineEnd": "2026-10-09T14:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-018",
+      "productCode": "P-MOB-03",
+      "priority": 4,
+      "quantity": 2,
+      "dueDate": "2026-11-06",
+      "releaseDate": "2026-09-28",
+      "frozen": false,
+      "lineCode": "LINE-1",
+      "operations": [
+        {
+          "code": "WO-2026-018/10",
+          "sequence": 10,
+          "workCenterCode": "WC-CUT",
+          "durationHours": 32,
+          "frozen": false,
+          "baselineStart": "2026-10-07T06:00:00",
+          "baselineEnd": "2026-10-08T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "HTS-22",
+              "quantity": 400
+            },
+            {
+              "partCode": "SEAL-3",
+              "quantity": 20
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 240
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 6
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 2
+            },
+            {
+              "partCode": "CBL-3",
+              "quantity": 60
+            },
+            {
+              "partCode": "SNS-4",
+              "quantity": 8
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 24
+            },
+            {
+              "partCode": "BAT-9",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-018/20",
+          "sequence": 20,
+          "workCenterCode": "WC-WELD",
+          "durationHours": 48,
+          "frozen": false,
+          "baselineStart": "2026-10-09T06:00:00",
+          "baselineEnd": "2026-10-13T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ARM-2",
+              "quantity": 8
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-018/30",
+          "sequence": 30,
+          "workCenterCode": "WC-INT",
+          "durationHours": 32,
+          "frozen": false,
+          "baselineStart": "2026-10-14T06:00:00",
+          "baselineEnd": "2026-10-15T22:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ACT-40",
+              "quantity": 4
+            },
+            {
+              "partCode": "MCU-X7",
+              "quantity": 2
+            },
+            {
+              "partCode": "WHL-1",
+              "quantity": 8
+            },
+            {
+              "partCode": "GBX-7",
+              "quantity": 2
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-018/40",
+          "sequence": 40,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 16,
+          "frozen": false,
+          "baselineStart": "2026-10-16T06:00:00",
+          "baselineEnd": "2026-10-16T22:00:00",
+          "materialRequirements": []
+        }
+      ]
+    },
+    {
+      "code": "WO-2026-019",
+      "productCode": "P-COM-02",
+      "priority": 2,
+      "quantity": 6,
+      "dueDate": "2026-10-30",
+      "releaseDate": "2026-09-07",
+      "frozen": false,
+      "lineCode": "LINE-2",
+      "operations": [
+        {
+          "code": "WO-2026-019/10",
+          "sequence": 10,
+          "workCenterCode": "WC-ELEC",
+          "durationHours": 24,
+          "frozen": false,
+          "baselineStart": "2026-10-14T06:00:00",
+          "baselineEnd": "2026-10-15T14:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "MCU-X7",
+              "quantity": 6
+            },
+            {
+              "partCode": "PCB-11",
+              "quantity": 18
+            },
+            {
+              "partCode": "ENC-4",
+              "quantity": 6
+            },
+            {
+              "partCode": "HRN-8",
+              "quantity": 6
+            },
+            {
+              "partCode": "FAS-1",
+              "quantity": 120
+            },
+            {
+              "partCode": "DSP-2",
+              "quantity": 6
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-019/20",
+          "sequence": 20,
+          "workCenterCode": "WC-INT",
+          "durationHours": 28,
+          "frozen": false,
+          "baselineStart": "2026-10-16T06:00:00",
+          "baselineEnd": "2026-10-19T18:00:00",
+          "materialRequirements": [
+            {
+              "partCode": "ANT-2",
+              "quantity": 12
+            },
+            {
+              "partCode": "PSU-6",
+              "quantity": 6
+            },
+            {
+              "partCode": "CON-5",
+              "quantity": 48
+            }
+          ]
+        },
+        {
+          "code": "WO-2026-019/30",
+          "sequence": 30,
+          "workCenterCode": "WC-TEST",
+          "durationHours": 8,
+          "frozen": false,
+          "baselineStart": "2026-10-20T06:00:00",
+          "baselineEnd": "2026-10-20T14:00:00",
+          "materialRequirements": []
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "partCode": "ACT-40",
+      "onHand": 4,
+      "reserved": 0,
+      "inbound": [
+        {
+          "quantity": 12,
+          "eta": "2026-09-15",
+          "reference": "PO-2026-0007/1",
+          "riskScore": 44
+        },
+        {
+          "quantity": 10,
+          "eta": "2026-09-27",
+          "reference": "PO-2026-0012/1",
+          "riskScore": 22
+        }
+      ]
+    },
+    {
+      "partCode": "MCU-X7",
+      "onHand": 26,
+      "reserved": 0,
+      "inbound": [
+        {
+          "quantity": 12,
+          "eta": "2026-10-02",
+          "reference": "PO-2026-0009/1",
+          "riskScore": 58
+        }
+      ]
+    },
+    {
+      "partCode": "HTS-22",
+      "onHand": 900,
+      "reserved": 0,
+      "inbound": [
+        {
+          "quantity": 600,
+          "eta": "2026-10-01",
+          "reference": "PO-2026-0013/1",
+          "riskScore": 18
+        }
+      ]
+    },
+    {
+      "partCode": "OPT-12",
+      "onHand": 6,
+      "reserved": 0,
+      "inbound": [
+        {
+          "quantity": 4,
+          "eta": "2026-09-23",
+          "reference": "PO-2026-0010/1",
+          "riskScore": 55
+        }
+      ]
+    },
+    {
+      "partCode": "CON-5",
+      "onHand": 400,
+      "reserved": 0,
+      "inbound": [
+        {
+          "quantity": 400,
+          "eta": "2026-09-17",
+          "reference": "PO-2026-0011/2",
+          "riskScore": 52
+        }
+      ]
+    },
+    {
+      "partCode": "SNS-4",
+      "onHand": 60,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "BAT-9",
+      "onHand": 30,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "PSU-6",
+      "onHand": 40,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "FRM-3",
+      "onHand": 10,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "ARM-2",
+      "onHand": 24,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "HRN-8",
+      "onHand": 80,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "CBL-3",
+      "onHand": 200,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "GBX-7",
+      "onHand": 25,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "WHL-1",
+      "onHand": 24,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "SEAL-3",
+      "onHand": 60,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "FAS-1",
+      "onHand": 2000,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "ANT-2",
+      "onHand": 70,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "ENC-4",
+      "onHand": 30,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "PCB-11",
+      "onHand": 120,
+      "reserved": 0,
+      "inbound": []
+    },
+    {
+      "partCode": "DSP-2",
+      "onHand": 30,
+      "reserved": 0,
+      "inbound": []
+    }
+  ],
+  "weights": {
+    "latenessPerDayPerPriority": 10,
+    "shortagePerUnit": 5,
+    "downtimePerHour": 20,
+    "deliveryBreachPerOrder": 100,
+    "changePerMovedOperation": 2,
+    "changeoverPerSwitch": 8
+  }
+}
