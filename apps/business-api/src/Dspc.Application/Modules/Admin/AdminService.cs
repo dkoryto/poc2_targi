@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace Dspc.Application.Modules.Admin;
 
-public sealed record AdminSettingsDto(RiskWeights RiskWeights, int RiskNotifyThreshold, ObjectiveWeights ObjectiveWeights, int SolverTimeLimitMs, int HorizonWeeks, bool DemoMode, bool LocalAiEnabled, string StorageProvider, string TimeZone);
+public sealed record WeightRow(string Code, double Weight);
+public sealed record AdminSettingsDto(IReadOnlyList<WeightRow> RiskWeights, double RiskWeightsSum, int RiskNotifyThreshold, IReadOnlyList<WeightRow> ObjectiveWeights, int SolverTimeLimitMs, int HorizonWeeks, bool DemoMode, bool LocalAiEnabled, string StorageProvider, string TimeZone);
 public sealed record AdminStatusDto(IReadOnlyList<ServiceStatus> Services, IReadOnlyList<RecentError> RecentErrors, DateTime ServerTime, string Version);
 
 public sealed class LocalAiOptions
@@ -17,11 +18,38 @@ public sealed class LocalAiOptions
     public bool Enabled { get; set; }
     public string BaseUrl { get; set; } = "http://local-ai:8000/v1";
     public string? Model { get; set; }
+    /// <summary>Answer from the bundled deterministic fixture instead of calling the model (stable stand demo).</summary>
+    public bool Simulator { get; set; }
 }
 
 public sealed class AdminService(IAppDbContext db, IOptions<RiskOptions> risk, IOptions<PlanningOptions> planning, IOptions<Identity.DemoOptions> demo, IOptions<LocalAiOptions> ai, IDocumentStorage storage, IRecentErrors errors, IExternalServiceProbe probe, IDemoClock clock)
 {
-    public AdminSettingsDto Settings() => new(risk.Value.Weights, risk.Value.NotifyThreshold, planning.Value.Weights, planning.Value.TimeLimitMs, planning.Value.HorizonWeeks, demo.Value.Enabled, ai.Value.Enabled, storage.Provider, clock.SiteTimeZone.Id);
+    public AdminSettingsDto Settings()
+    {
+        var rw = risk.Value.Weights;
+        var ow = planning.Value.Weights;
+        // Canonical factor codes, see docs/architecture/risk-model.md — the UI localises them by code.
+        IReadOnlyList<WeightRow> riskRows =
+        [
+            new("ETA_DEVIATION", rw.EtaDeviation),
+            new("CRITICALITY", rw.Criticality),
+            new("NO_ALTERNATIVE", rw.NoAlternative),
+            new("DOC_COMPLETENESS", rw.DocCompleteness),
+            new("SUPPLIER_RELIABILITY", rw.SupplierReliability),
+            new("COVERAGE", rw.Coverage),
+            new("LOGISTICS_EVENTS", rw.LogisticsEvents),
+        ];
+        IReadOnlyList<WeightRow> objectiveRows =
+        [
+            new("LATENESS_PER_DAY_PER_PRIORITY", ow.LatenessPerDayPerPriority),
+            new("SHORTAGE_PER_UNIT", ow.ShortagePerUnit),
+            new("DOWNTIME_PER_HOUR", ow.DowntimePerHour),
+            new("DELIVERY_BREACH_PER_ORDER", ow.DeliveryBreachPerOrder),
+            new("CHANGE_PER_MOVED_OPERATION", ow.ChangePerMovedOperation),
+            new("CHANGEOVER_PER_SWITCH", ow.ChangeoverPerSwitch),
+        ];
+        return new(riskRows, rw.Sum, risk.Value.NotifyThreshold, objectiveRows, planning.Value.TimeLimitMs, planning.Value.HorizonWeeks, demo.Value.Enabled, ai.Value.Enabled, storage.Provider, clock.SiteTimeZone.Id);
+    }
 
     public async Task<AdminStatusDto> StatusAsync(CancellationToken ct)
     {

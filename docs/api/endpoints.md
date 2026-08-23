@@ -64,7 +64,7 @@ SignalR hub `/hubs/live`, server→client method `DomainEvent(event: { name: str
 - `GET /notifications?unreadOnly`, `POST /notifications/{id}/read`
 - `GET /audit?entity&code&user&from&to&page` → `{ items:[{ id, occurredAt, user, action, entity, entityCode, before, after, correlationId, source }] }`
 - `POST /demo/reset` (DemoPresenter/Administrator, demo only) → `{ durationMs, seedVersion, counts:{...} }`; `GET /demo/script` → presenter steps; `GET /demo/status` → `{ demoMode, seedVersion, seededAt, lastResetMs }`
-- `GET /admin/settings` → risk weights, objective weights, thresholds (read-only v1); `GET /admin/status` → `{ services:[{name:'postgres'|'minio'|'planning-engine'|'local-ai', status:'up'|'down'|'disabled', latencyMs}] , recentErrors:[{at, operation, message}] }`
+- `GET /admin/settings` → `{ riskWeights: [{code, weight}], riskWeightsSum, riskNotifyThreshold, objectiveWeights: [{code, weight}], solverTimeLimitMs, horizonWeeks, demoMode, localAiEnabled, storageProvider, timeZone }` (read-only v1; weight codes are the canonical upper-snake codes from `docs/architecture/risk-model.md` and the objective keys `LATENESS_PER_DAY_PER_PRIORITY`, `SHORTAGE_PER_UNIT`, `DOWNTIME_PER_HOUR`, `DELIVERY_BREACH_PER_ORDER`, `CHANGE_PER_MOVED_OPERATION`, `CHANGEOVER_PER_SWITCH` — the UI localises them by code); `GET /admin/status` → `{ services:[{name:'postgres'|'minio'|'planning-engine'|'local-ai', status:'up'|'down'|'disabled', latencyMs}] , recentErrors:[{at, operation, message}] }`
 - `GET /health/live`, `GET /health/ready`
 
 ## Added by web (wave 1) — assumptions the UI relies on; backend must honour or adjust `apps/web/src/api/types.ts`
