@@ -17,6 +17,11 @@ target/
 # env / local
 .env
 .env.local
+# Every environment file except the committed templates: docs/deployment.md tells operators
+# to create .env.prod with real secrets, and it must never be committable.
+.env.*
+!.env.example
+!.env.prod.example
 *.log
 .DS_Store
 .idea/
