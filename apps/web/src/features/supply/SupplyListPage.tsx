@@ -16,7 +16,7 @@ export function EtaCell({ eta, required }: { eta: string; required: string }) {
     <span className={s.etaCell}>
       <span>{fmtDate(eta)}</span>
       <span className={s.etaDelta} style={{ color }}>
-        {d > 0 ? t('supply.late', { days: d }) : d < 0 ? t('supply.early', { days: -d }) : t('supply.onTime')}
+        {d > 0 ? t('supply.late', { count: d }) : d < 0 ? t('supply.early', { count: -d }) : t('supply.onTime')}
       </span>
     </span>
   );

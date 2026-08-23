@@ -6,6 +6,25 @@ import { resetMockState } from '@/mocks/handlers';
 import i18n, { setLocale } from '@/i18n';
 
 // jsdom lacks these
+class MemoryStorage implements Storage {
+  private m = new Map<string, string>();
+  get length() { return this.m.size; }
+  clear() { this.m.clear(); }
+  getItem(k: string) { return this.m.has(k) ? this.m.get(k)! : null; }
+  key(i: number) { return [...this.m.keys()][i] ?? null; }
+  removeItem(k: string) { this.m.delete(k); }
+  setItem(k: string, v: string) { this.m.set(k, String(v)); }
+}
+for (const name of ['localStorage', 'sessionStorage'] as const) {
+  let usable = false;
+  try { usable = !!(window as unknown as Record<string, Storage>)[name]?.setItem; } catch { usable = false; }
+  if (!usable) {
+    const store = new MemoryStorage();
+    Object.defineProperty(window, name, { value: store, writable: true, configurable: true });
+    Object.defineProperty(globalThis, name, { value: store, writable: true, configurable: true });
+  }
+}
+
 class RO { observe() {} unobserve() {} disconnect() {} }
 Object.defineProperty(globalThis, 'ResizeObserver', { value: RO, writable: true });
 Object.defineProperty(window, 'matchMedia', { writable: true, value: (q: string) => ({ matches: false, media: q, onchange: null, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn() }) });

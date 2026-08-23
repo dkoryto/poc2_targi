@@ -91,7 +91,7 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
           />
           <div className={s.legend} style={{ marginLeft: 'auto' }}>
             <span className={s.legendItem}><span className={s.swatch} style={{ background: 'var(--info)' }} />{t('gantt.op')}</span>
-            <span className={s.legendItem}><span className={s.swatch} style={{ background: 'repeating-linear-gradient(45deg,#8d9bb0 0 2px,transparent 2px 5px)', border: '1px solid #8d9bb0' }} />{t('gantt.frozen')}</span>
+            <span className={s.legendItem}><span className={s.swatch} style={{ background: 'repeating-linear-gradient(45deg,var(--hatch-fill) 0 2px,transparent 2px 5px)', border: '1px solid var(--hatch-fill)' }} />{t('gantt.frozen')}</span>
             <span className={s.legendItem}><span className={s.swatch} style={{ background: 'repeating-linear-gradient(-45deg,var(--crit) 0 2px,transparent 2px 5px)', border: '1px solid var(--crit)' }} />{t('gantt.materialWait')}</span>
             {compare && <span className={s.legendItem}><span className={s.swatch} style={{ border: '1px dashed var(--fg-3)' }} />{t('gantt.ghost')}</span>}
             {compare && <span className={s.legendItem}><span className={s.swatch} style={{ background: 'var(--warn)' }} />{t('gantt.changed')}</span>}
@@ -105,15 +105,15 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
         <svg className={s.svg} width={width} height={HEADER_H + layout.rows.length * rowH} role="img" aria-label={t('dashboard.plan')}>
           <defs>
             <pattern id="g-frozen" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="6" height="6" fill="#6b7a90" />
-              <line x1="0" y1="0" x2="0" y2="6" stroke="#9aa8bb" strokeWidth="2" />
+              <rect width="6" height="6" fill="var(--hatch-fill)" />
+              <line x1="0" y1="0" x2="0" y2="6" stroke="var(--hatch-line)" strokeWidth="2" />
             </pattern>
             <pattern id="g-wait" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
               <rect width="6" height="6" fill="rgba(240,82,82,0.35)" />
               <line x1="0" y1="0" x2="0" y2="6" stroke="var(--crit)" strokeWidth="2" />
             </pattern>
             <marker id="g-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 z" fill="#62718a" />
+              <path d="M0,0 L6,3 L0,6 z" fill="var(--arrow)" />
             </marker>
           </defs>
           {/* weekend shading + grid */}
@@ -202,7 +202,7 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
                       {label.length * 6.5 > b.width - 8 ? label.slice(0, Math.max(2, Math.floor((b.width - 8) / 6.5))) : label}
                     </text>
                   )}
-                  {conflict && <circle cx={b.x + b.width - 6} cy={y + 6} r={4} fill="var(--crit)" stroke="#fff" strokeWidth={1} />}
+                  {conflict && <circle cx={b.x + b.width - 6} cy={y + 6} r={4} fill="var(--crit)" stroke="var(--surface-paper)" strokeWidth={1} />}
                   {compare && b.changed && b.shiftDays !== 0 && (
                     <text x={b.x + b.width + 4} y={y + h / 2 + 4} className={s.shiftLabel} data-testid="gantt-shift">
                       {fmtSigned(b.shiftDays, 1)} d

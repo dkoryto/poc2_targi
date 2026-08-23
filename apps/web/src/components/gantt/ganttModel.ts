@@ -23,7 +23,7 @@ export interface GanttLayout {
 export type GanttRowMode = 'workCenter' | 'order';
 
 export function productColor(productCode: string): string {
-  const palette = ['#5aa7ff', '#2dd4bf', '#c084fc', '#f59e0b', '#34d399', '#fb7185'];
+  const palette = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)'];
   let h = 0;
   for (const ch of productCode) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return palette[h % palette.length]!;

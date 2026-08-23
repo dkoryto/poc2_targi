@@ -11,3 +11,4 @@ export * from './Drawer';
 export * from './Toast';
 export * from './Form';
 export * from './Misc';
+export * from './ErrorBoundary';

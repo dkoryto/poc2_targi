@@ -4,6 +4,31 @@
   grid-template-columns: var(--nav-w) 1fr;
   height: 100vh;
   overflow: hidden;
+  transition: grid-template-columns var(--dur) var(--ease);
+}
+.shellRail {
+  grid-template-columns: var(--nav-w-rail) 1fr;
+}
+.navToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--fg-1);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.navToggle:hover {
+  background: var(--bg-2);
+  border-color: var(--border);
+  color: var(--fg-0);
 }
 .topbar {
   grid-column: 1 / -1;
@@ -126,7 +151,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-width: 0;
+}
+.navRail {
+  padding: 10px 6px;
+  align-items: center;
 }
 .navLink {
   display: flex;
@@ -137,7 +168,49 @@
   color: var(--fg-1);
   font-size: var(--fs-sm);
   font-weight: 500;
+  white-space: nowrap;
   transition: background var(--dur) var(--ease);
+}
+.navLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.navRail .navLink {
+  position: relative;
+  gap: 0;
+  padding: 9px;
+  justify-content: center;
+  width: 42px;
+}
+.navRail .navLabel {
+  display: none;
+}
+/* Rail tooltip — shown on hover/focus of the icon-only link. */
+.navTip {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-elev);
+  color: var(--fg-0);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 4px 8px;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 60;
+  transition:
+    opacity var(--dur) var(--ease),
+    visibility var(--dur) var(--ease);
+}
+.navRail .navLink:hover .navTip,
+.navRail .navLink:focus-visible .navTip {
+  opacity: 1;
+  visibility: visible;
 }
 .navLink:hover {
   background: var(--bg-2);
@@ -219,7 +292,7 @@
 }
 .step[aria-current='step'] .stepNo {
   background: var(--info);
-  color: #061021;
+  color: var(--on-accent);
   border-color: var(--info);
 }
 .stepTitle {

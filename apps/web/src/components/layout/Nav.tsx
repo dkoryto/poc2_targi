@@ -15,17 +15,35 @@ const ITEMS = [
   { to: '/admin', key: 'admin', icon: Settings2 },
 ] as const;
 
-export function Nav() {
+export function Nav({ collapsed = false }: { collapsed?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   return (
-    <nav className={s.nav} aria-label="main" data-testid="main-nav">
-      {ITEMS.filter((it) => canAccess(user?.role, it.to)).map((it) => (
-        <NavLink key={it.to} to={it.to} end={it.to === '/'} className={s.navLink} data-testid={`nav-${it.key}`}>
-          <it.icon size={17} aria-hidden />
-          {t(`nav.${it.key}`)}
-        </NavLink>
-      ))}
+    <nav
+      id="main-nav"
+      className={[s.nav, collapsed && s.navRail].filter(Boolean).join(' ')}
+      aria-label="main"
+      data-testid="main-nav"
+      data-collapsed={collapsed ? 'true' : 'false'}
+    >
+      {ITEMS.filter((it) => canAccess(user?.role, it.to)).map((it) => {
+        const label = t(`nav.${it.key}`);
+        return (
+          <NavLink
+            key={it.to}
+            to={it.to}
+            end={it.to === '/'}
+            className={s.navLink}
+            data-testid={`nav-${it.key}`}
+            title={collapsed ? label : undefined}
+          >
+            <it.icon size={17} aria-hidden />
+            <span className={s.navLabel}>{label}</span>
+            {collapsed && <span className={s.navTip} aria-hidden>{label}</span>}
+            {collapsed && <span className="sr-only">{label}</span>}
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }

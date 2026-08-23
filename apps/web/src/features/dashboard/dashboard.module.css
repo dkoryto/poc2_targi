@@ -39,12 +39,14 @@
 .map {
   position: absolute;
   inset: 0;
+  /* markers near the viewport edge must be clipped to the panel, not spill over it */
+  overflow: hidden;
 }
 .mapLegend {
   position: absolute;
   left: 8px;
   bottom: 8px;
-  background: rgba(17, 24, 35, 0.9);
+  background: var(--map-overlay-bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 6px 8px;
@@ -79,12 +81,30 @@
   border-top: 2px dashed var(--fg-2);
   display: inline-block;
 }
+/*
+ * MapLibre centres the marker element on its coordinate, so the element must be exactly
+ * dot-sized. The label is absolutely positioned and therefore contributes no width —
+ * a plain block wrapper would stretch to the map width and drag the dot off position.
+ */
+.markerWrap {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  line-height: 0;
+}
+.markerWrapShipment {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  line-height: 0;
+}
 .marker {
   width: 14px;
   height: 14px;
+  padding: 0;
   border-radius: 50%;
-  border: 2px solid #0b1018;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+  border: 2px solid var(--map-marker-stroke);
+  box-shadow: 0 0 0 1px var(--map-marker-ring);
   cursor: pointer;
 }
 .markerSite {
@@ -93,27 +113,31 @@
   background: var(--info);
   transform: rotate(45deg);
   border-radius: 2px;
-  border: 2px solid #0b1018;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+  border: 2px solid var(--map-marker-stroke);
+  box-shadow: 0 0 0 1px var(--map-marker-ring);
 }
 .markerShipment {
   width: 12px;
   height: 12px;
+  padding: 0;
   border-radius: 2px;
-  border: 2px solid #0b1018;
+  border: 2px solid var(--map-marker-stroke);
   cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 1px var(--map-marker-ring);
 }
 .markerLabel {
   font-size: 10px;
   color: var(--fg-1);
-  background: rgba(11, 16, 24, 0.75);
+  background: var(--map-label-bg);
   padding: 1px 4px;
   border-radius: 2px;
   white-space: nowrap;
-  transform: translate(10px, -50%);
   position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translate(6px, -50%);
   pointer-events: none;
+  line-height: 1.3;
 }
 .heat {
   width: 100%;

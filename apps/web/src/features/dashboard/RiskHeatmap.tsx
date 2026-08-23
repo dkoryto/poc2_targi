@@ -4,10 +4,10 @@ import s from './dashboard.module.css';
 import type { RiskHeatmap as RiskHeatmapData } from '@/api/types';
 
 function heatColor(score: number): string {
-  if (score >= 75) return '#f05252';
-  if (score >= 50) return '#f0843c';
-  if (score >= 25) return '#f5b544';
-  return '#2dd4bf';
+  if (score >= 75) return 'var(--risk-critical)';
+  if (score >= 50) return 'var(--risk-high)';
+  if (score >= 25) return 'var(--risk-medium)';
+  return 'var(--risk-low)';
 }
 
 export function RiskHeatmap({ data }: { data: RiskHeatmapData }) {
@@ -45,7 +45,7 @@ export function RiskHeatmap({ data }: { data: RiskHeatmapData }) {
                 <rect x={x} y={y} width={cw - 4} height={ch - 4} rx={3} fill={has ? heatColor(v.score) : 'var(--bg-2)'} stroke="var(--border)" />
                 {has && (
                   <>
-                    <text x={x + (cw - 4) / 2} y={y + (ch - 4) / 2 + 1} textAnchor="middle" className={s.heatText} fill="#061021">
+                    <text x={x + (cw - 4) / 2} y={y + (ch - 4) / 2 + 1} textAnchor="middle" className={s.heatText} fill="var(--on-accent)">
                       {Math.round(v.score)}
                     </text>
                     <text x={x + (cw - 4) / 2} y={y + (ch - 4) / 2 + 14} textAnchor="middle" className={s.heatSub}>

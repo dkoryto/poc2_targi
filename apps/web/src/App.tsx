@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '@/components/ui';
+import { ThemeProvider } from '@/theme/theme';
 import { AuthProvider } from '@/features/auth/auth';
 import { RequireAuth } from '@/features/auth/RequireRole';
 import { LoginPage } from '@/features/auth/LoginPage';
@@ -69,6 +70,7 @@ export function App({ queryClient }: { queryClient?: QueryClient }) {
   const qc = queryClient ?? createQueryClient();
   return (
     <QueryClientProvider client={qc}>
+      <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           <BrowserRouter>
@@ -76,6 +78,7 @@ export function App({ queryClient }: { queryClient?: QueryClient }) {
           </BrowserRouter>
         </AuthProvider>
       </ToastProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

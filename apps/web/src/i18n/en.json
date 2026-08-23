@@ -31,7 +31,13 @@
     "user": "User",
     "switchRole": "Switch role (demo)",
     "logout": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "theme": "Theme",
+    "themeAuto": "Automatic theme (system)",
+    "themeLight": "Light theme",
+    "themeDark": "Dark theme",
+    "collapseNav": "Collapse side menu",
+    "expandNav": "Expand side menu"
   },
   "roles": {
     "SupplierUser": "Supplier",
@@ -155,7 +161,16 @@
       "ReadyToShip": "Ready to ship",
       "Shipped": "Shipped",
       "Delivered": "Delivered",
-      "OnHold": "On hold"
+      "OnHold": "On hold",
+      "Open": "Open",
+      "Closed": "Closed",
+      "Cancelled": "Cancelled",
+      "Partial": "Partially fulfilled",
+      "Draft": "Draft",
+      "Planned": "Planned",
+      "InTransit": "In transit",
+      "Delayed": "Delayed",
+      "Completed": "Completed"
     },
     "doc": {
       "Pending": "Pending",
@@ -377,12 +392,14 @@
     "adviceCreated": "Advice {{code}} created",
     "shipment": "Shipment",
     "etaVsRequired": "ETA vs required",
-    "late": "{{days}} days late",
-    "early": "{{days}} days early",
     "onTime": "on time",
     "etaMustBeFuture": "ETA cannot be in the past",
     "site": "Site",
-    "ownDataOnly": "You only see data of your own organisation."
+    "ownDataOnly": "You only see data of your own organisation.",
+    "late_one": "{{count}} day late",
+    "late_other": "{{count}} days late",
+    "early_one": "{{count}} day early",
+    "early_other": "{{count}} days early"
   },
   "inbound": {
     "title": "Inbound logistics",
@@ -506,7 +523,13 @@
       "downtimePerHour": "Downtime (per hour)",
       "deliveryBreachPerOrder": "Due-date breach (per order)",
       "changePerMovedOperation": "Change cost (per operation)",
-      "changeoverPerSwitch": "Changeover"
+      "changeoverPerSwitch": "Changeover",
+      "LATENESS_PER_DAY_PER_PRIORITY": "Lateness (day × priority)",
+      "SHORTAGE_PER_UNIT": "Material shortage (unit)",
+      "DOWNTIME_PER_HOUR": "Downtime (hour)",
+      "DELIVERY_BREACH_PER_ORDER": "Deadline breach (order)",
+      "CHANGE_PER_MOVED_OPERATION": "Plan change (operation)",
+      "CHANGEOVER_PER_SWITCH": "Changeover"
     },
     "threshold": {
       "RISK_MEDIUM": "Medium risk from",
@@ -514,7 +537,10 @@
       "RISK_CRITICAL": "Critical risk from",
       "NOTIFY_RISK": "Notify planner from",
       "SOLVER_TIMEOUT_MS": "Solver time limit",
-      "DEMO_RESET_MS": "Demo reset limit"
+      "DEMO_RESET_MS": "Demo reset limit",
+      "RISK_NOTIFY_THRESHOLD": "Risk notification threshold",
+      "SOLVER_TIME_LIMIT_MS": "Solver time limit",
+      "HORIZON_WEEKS": "Planning horizon (weeks)"
     },
     "readOnly": "Editing weights and thresholds arrives in a later version; values come from server configuration."
   },
@@ -843,5 +869,11 @@
     "chainText": "Supplier delay → risk increase → plan at risk → simulation → new schedule → production continuity → lot genealogy → complete digital passport.",
     "fromScenario": "Values computed from the latest scenario: {{name}}.",
     "demoValues": "Demo values — run the ACT-40 scenario to see engine data."
+  },
+  "error": {
+    "boundaryTitle": "This view could not be displayed",
+    "boundaryBody": "An unexpected error occurred. The rest of the application still works — retry or move to another screen.",
+    "correlationId": "Correlation ID",
+    "reload": "Reload page"
   }
 }

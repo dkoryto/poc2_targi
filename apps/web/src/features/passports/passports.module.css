@@ -48,7 +48,7 @@
 .qr {
   width: 160px;
   height: 160px;
-  background: #fff;
+  background: var(--surface-paper);
   border-radius: var(--radius-sm);
   padding: 6px;
   display: block;

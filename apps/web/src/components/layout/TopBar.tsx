@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
-import { Bell, Play, RotateCcw, ShieldCheck, ChevronDown, LogOut, UserCog, Wifi, WifiOff } from 'lucide-react';
+import { Bell, Play, RotateCcw, ShieldCheck, ChevronDown, LogOut, UserCog, Wifi, WifiOff, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import s from './layout.module.css';
 import { useAuth } from '@/features/auth/auth';
 import { useDemoAccounts, useHealth, useResetDemo, useDemoStatus } from '@/features/demo/api';
 import { useNotifications } from '@/features/notifications/api';
 import { Badge, Button, ConfirmDialog, IconButton, SegmentedControl, useToast } from '@/components/ui';
 import { setLocale, currentLocale } from '@/i18n';
+import { ThemeSwitch } from '@/theme/theme';
 import { fmtClock } from '@/lib/format';
 import type { LiveStatus } from '@/realtime/useLive';
 import { ALL_ROLES, type Role } from '@/api/types';
@@ -25,7 +26,7 @@ function Clock() {
   );
 }
 
-export function TopBar({ live, onOpenPresenter }: { live: LiveStatus; onOpenPresenter: () => void }) {
+export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { live: LiveStatus; onOpenPresenter: () => void; navCollapsed: boolean; onToggleNav: () => void }) {
   const { t } = useTranslation();
   const { user, demoMode, demoLogin, logout } = useAuth();
   const navigate = useNavigate();
@@ -67,6 +68,18 @@ export function TopBar({ live, onOpenPresenter }: { live: LiveStatus; onOpenPres
 
   return (
     <header className={s.topbar}>
+      <button
+        type="button"
+        className={s.navToggle}
+        onClick={onToggleNav}
+        aria-expanded={!navCollapsed}
+        aria-controls="main-nav"
+        aria-label={navCollapsed ? t('topbar.expandNav') : t('topbar.collapseNav')}
+        title={navCollapsed ? t('topbar.expandNav') : t('topbar.collapseNav')}
+        data-testid="nav-toggle"
+      >
+        {navCollapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
+      </button>
       <Link to="/" className={s.brand} aria-label={t('app.name')}>
         <ShieldCheck size={22} color="var(--ok)" aria-hidden />
         <span>
@@ -88,8 +101,10 @@ export function TopBar({ live, onOpenPresenter }: { live: LiveStatus; onOpenPres
         <select id="site-select" className={s.siteSelect} defaultValue="SITE-01">
           <option value="SITE-01">SITE-01 · Zakład Centralny</option>
         </select>
+        <ThemeSwitch />
         <SegmentedControl
           label={t('topbar.language')}
+          data-testid="lang-switch"
           value={locale}
           onChange={(v) => setLocale(v)}
           options={[

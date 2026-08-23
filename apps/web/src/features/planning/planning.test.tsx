@@ -23,7 +23,9 @@ describe('Planning / What-If', () => {
     const user = userEvent.setup();
     renderWithProviders(<App />, { route: '/planning', auth: true });
     await waitFor(() => expect(screen.getByTestId('baseline-meta')).toHaveTextContent('v1'));
-    const tile = await screen.findByTestId('scenario-tile-ACT40_DELAY');
+    const tile = await screen.findByTestId('scenario-tile-DELAY_ACT40_10D');
+    // bare titleKey from the API must still resolve to the localized preset name
+    expect(tile).toHaveTextContent('Opóźnij siłowniki ACT-40 o 10 dni');
     await waitFor(() => expect(tile).toBeEnabled());
     await user.click(tile);
     await waitFor(() => expect(screen.getByTestId('scenario-detail')).toBeInTheDocument());
@@ -47,7 +49,7 @@ describe('Planning / What-If', () => {
     setToken(null);
     server.use(http.get('/api/v1/auth/demo-login', () => HttpResponse.json({ accessToken: 'tok', expiresAt: '2099-01-01', user: { id: 'u-a', username: 'auditor', displayName: 'Auditor', role: 'Auditor', siteId: 'SITE-01', locale: 'pl', demoMode: true } })));
     const { unmount } = renderWithProviders(<App />, { route: '/planning', auth: true });
-    const tile = await screen.findByTestId('scenario-tile-ACT40_DELAY');
+    const tile = await screen.findByTestId('scenario-tile-DELAY_ACT40_10D');
     await waitFor(() => expect(screen.getByText(/tylko na przeglądanie/)).toBeInTheDocument());
     expect(tile).toBeDisabled();
     unmount();
@@ -55,7 +57,7 @@ describe('Planning / What-If', () => {
     setToken(null);
 
     renderWithProviders(<App />, { route: '/planning', auth: true });
-    const tile2 = await screen.findByTestId('scenario-tile-ACT40_DELAY');
+    const tile2 = await screen.findByTestId('scenario-tile-DELAY_ACT40_10D');
     await waitFor(() => expect(tile2).toBeEnabled());
     await user.click(tile2);
     await waitFor(() => expect(screen.getByTestId('btn-approve-plan')).toBeEnabled(), { timeout: 5000 });

@@ -12,7 +12,7 @@ export function QualityPanel({ data }: { data: QualityStatus }) {
   const dTotal = d.pending + d.verifying + d.accepted + d.rejected + d.requiresCompletion || 1;
   const pSegs = [
     { k: 'Generated', v: p.generated, c: 'var(--ok)' },
-    { k: 'Approved', v: p.approved, c: '#34d399' },
+    { k: 'Approved', v: p.approved, c: 'var(--chart-5)' },
     { k: 'PendingReview', v: p.pendingReview, c: 'var(--info)' },
     { k: 'Draft', v: p.draft, c: 'var(--fg-3)' },
     { k: 'Invalidated', v: p.invalidated, c: 'var(--crit)' },

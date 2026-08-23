@@ -6,8 +6,22 @@ import type { MapData, RiskCategory } from '@/api/types';
 import { riskColorVar } from '@/components/ui';
 import { fmtDate } from '@/lib/format';
 import i18n from '@/i18n';
+import { readThemeColor, THEME_EVENT } from '@/theme/theme';
 
-const RISK_HEX: Record<RiskCategory, string> = { Low: '#2dd4bf', Medium: '#f5b544', High: '#f0843c', Critical: '#f05252' };
+const RISK_TOKEN: Record<RiskCategory, string> = {
+  Low: '--risk-low',
+  Medium: '--risk-medium',
+  High: '--risk-high',
+  Critical: '--risk-critical',
+};
+
+/**
+ * MapLibre paints with WebGL and cannot resolve `var()`, so the palette is read from
+ * the CSS custom properties at render time and refreshed on `dspc:themechange`.
+ */
+function riskHex(c: RiskCategory): string {
+  return readThemeColor(RISK_TOKEN[c], '#888888');
+}
 
 function pointAlong(route: [number, number][], progress: number): [number, number] {
   if (route.length === 0) return [0, 0];
@@ -50,9 +64,9 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
         version: 8,
         sources: { europe: { type: 'geojson', data: '/geo/europe.geojson' } },
         layers: [
-          { id: 'bg', type: 'background', paint: { 'background-color': '#0b1018' } },
-          { id: 'land', type: 'fill', source: 'europe', paint: { 'fill-color': '#18212e', 'fill-opacity': 1 } },
-          { id: 'borders', type: 'line', source: 'europe', paint: { 'line-color': '#2f3c4f', 'line-width': 1 } },
+          { id: 'bg', type: 'background', paint: { 'background-color': readThemeColor('--map-bg', '#0b1018') } },
+          { id: 'land', type: 'fill', source: 'europe', paint: { 'fill-color': readThemeColor('--map-land', '#18212e'), 'fill-opacity': 1 } },
+          { id: 'borders', type: 'line', source: 'europe', paint: { 'line-color': readThemeColor('--map-border', '#2f3c4f'), 'line-width': 1 } },
         ],
       },
       center: [14, 51],
@@ -81,11 +95,11 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
   const render = (map: MlMap) => {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
-    const routeFeatures = data.shipments.map((sh) => ({ type: 'Feature' as const, properties: { color: RISK_HEX[sh.riskCategory] }, geometry: { type: 'LineString' as const, coordinates: sh.route.length >= 2 ? sh.route : [sh.route[0] ?? [sh.lon, sh.lat], [data.site.lon, data.site.lat]] } }));
+    const routeFeatures = data.shipments.map((sh) => ({ type: 'Feature' as const, properties: { color: riskHex(sh.riskCategory) }, geometry: { type: 'LineString' as const, coordinates: sh.route.length >= 2 ? sh.route : [sh.route[0] ?? [sh.lon, sh.lat], [data.site.lon, data.site.lat]] } }));
     const doneFeatures = data.shipments.map((sh) => {
       const route = sh.route.length >= 2 ? sh.route : [[sh.lon, sh.lat] as [number, number], [data.site.lon, data.site.lat] as [number, number]];
       const p = pointAlong(route, sh.progress);
-      return { type: 'Feature' as const, properties: { color: RISK_HEX[sh.riskCategory] }, geometry: { type: 'LineString' as const, coordinates: [route[0]!, p] } };
+      return { type: 'Feature' as const, properties: { color: riskHex(sh.riskCategory) }, geometry: { type: 'LineString' as const, coordinates: [route[0]!, p] } };
     });
     (map.getSource('routes') as maplibregl.GeoJSONSource | undefined)?.setData({ type: 'FeatureCollection', features: routeFeatures });
     (map.getSource('done') as maplibregl.GeoJSONSource | undefined)?.setData({ type: 'FeatureCollection', features: doneFeatures });
@@ -94,15 +108,17 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
     site.className = s.markerSite ?? "";
     site.setAttribute('aria-label', data.site.name);
     site.title = `${data.site.code} · ${data.site.name}`;
-    markersRef.current.push(new Marker({ element: site }).setLngLat([data.site.lon, data.site.lat]).addTo(map));
+    markersRef.current.push(new Marker({ element: site, anchor: 'center' }).setLngLat([data.site.lon, data.site.lat]).addTo(map));
 
     for (const sup of data.suppliers) {
+      // The marker element must stay exactly dot-sized: MapLibre centres it on the coordinate,
+      // so any element that stretches (a bare block div) drags the dot off its true position.
       const wrap = document.createElement('div');
-      wrap.style.position = 'relative';
+      wrap.className = s.markerWrap ?? '';
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = s.marker ?? "";
-      dot.style.background = RISK_HEX[sup.riskCategory];
+      dot.style.background = riskHex(sup.riskCategory);
       dot.setAttribute('aria-label', `${sup.code} ${sup.name} ${i18n.t(`risk.${sup.riskCategory}`)}`);
       dot.dataset.testid = `map-supplier-${sup.code}`;
       if (pulseCodes.has(sup.code)) dot.classList.add('pulse');
@@ -111,31 +127,34 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
       label.textContent = `${sup.code} · ${sup.city}`;
       wrap.append(dot, label);
       const popup = new Popup({ offset: 12, closeButton: true }).setHTML(
-        `<div><strong>${sup.name}</strong><br/><span style="color:var(--fg-2)">${sup.code} · ${sup.city}, ${sup.country}</span><br/>${i18n.t('risk.score')}: <strong style="color:${RISK_HEX[sup.riskCategory]}">${i18n.t(`risk.${sup.riskCategory}`)} · ${Math.round(sup.riskScore)}</strong></div>`,
+        `<div><strong>${sup.name}</strong><br/><span style="color:var(--fg-2)">${sup.code} · ${sup.city}, ${sup.country}</span><br/>${i18n.t('risk.score')}: <strong style="color:${riskHex(sup.riskCategory)}">${i18n.t(`risk.${sup.riskCategory}`)} · ${Math.round(sup.riskScore)}</strong></div>`,
       );
-      markersRef.current.push(new Marker({ element: wrap }).setLngLat([sup.lon, sup.lat]).setPopup(popup).addTo(map));
+      markersRef.current.push(new Marker({ element: wrap, anchor: 'center' }).setLngLat([sup.lon, sup.lat]).setPopup(popup).addTo(map));
     }
 
     for (const sh of data.shipments) {
       const route = sh.route.length >= 2 ? sh.route : [[sh.lon, sh.lat] as [number, number], [data.site.lon, data.site.lat] as [number, number]];
       const [lon, lat] = pointAlong(route, sh.progress);
+      const shipWrap = document.createElement('div');
+      shipWrap.className = s.markerWrapShipment ?? '';
       const m = document.createElement('button');
       m.type = 'button';
       m.className = s.markerShipment ?? "";
-      m.style.background = RISK_HEX[sh.riskCategory];
+      m.style.background = riskHex(sh.riskCategory);
       m.setAttribute('aria-label', `${sh.code} ${sh.partCode} ${i18n.t(`risk.${sh.riskCategory}`)}`);
       m.dataset.testid = `map-shipment-${sh.code}`;
       if (pulseCodes.has(sh.code) || pulseCodes.has(sh.poCode)) m.classList.add('pulse');
       const popupEl = document.createElement('div');
-      popupEl.innerHTML = `<div><strong>${sh.code}</strong> · ${sh.poCode}<br/><span style="color:var(--fg-2)">${sh.partCode} × ${sh.quantity}</span><br/>${i18n.t('dashboard.popupEta')}: <strong>${fmtDate(sh.eta)}</strong> · ${i18n.t('dashboard.popupRequired')}: ${fmtDate(sh.requiredDate)}<br/>${i18n.t('risk.score')}: <strong style="color:${RISK_HEX[sh.riskCategory]}">${i18n.t(`risk.${sh.riskCategory}`)} · ${Math.round(sh.riskScore)}</strong> <span style="color:var(--fg-3)">(${i18n.t('app.ruleBased')})</span></div>`;
+      popupEl.innerHTML = `<div><strong>${sh.code}</strong> · ${sh.poCode}<br/><span style="color:var(--fg-2)">${sh.partCode} × ${sh.quantity}</span><br/>${i18n.t('dashboard.popupEta')}: <strong>${fmtDate(sh.eta)}</strong> · ${i18n.t('dashboard.popupRequired')}: ${fmtDate(sh.requiredDate)}<br/>${i18n.t('risk.score')}: <strong style="color:${riskHex(sh.riskCategory)}">${i18n.t(`risk.${sh.riskCategory}`)} · ${Math.round(sh.riskScore)}</strong> <span style="color:var(--fg-3)">(${i18n.t('app.ruleBased')})</span></div>`;
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = i18n.t('dashboard.openPo');
-      btn.style.cssText = 'margin-top:6px;background:var(--info);color:#061021;border:0;border-radius:4px;padding:4px 8px;font-size:12px;font-weight:600;cursor:pointer';
+      btn.style.cssText = 'margin-top:6px;background:var(--info);color:var(--on-accent);border:0;border-radius:4px;padding:4px 8px;font-size:12px;font-weight:600;cursor:pointer';
       btn.onclick = () => onOpenPo(sh.poCode);
       popupEl.appendChild(btn);
+      shipWrap.appendChild(m);
       const popup = new Popup({ offset: 10 }).setDOMContent(popupEl);
-      markersRef.current.push(new Marker({ element: m }).setLngLat([lon, lat]).setPopup(popup).addTo(map));
+      markersRef.current.push(new Marker({ element: shipWrap, anchor: 'center' }).setLngLat([lon, lat]).setPopup(popup).addTo(map));
     }
   };
 
@@ -152,8 +171,30 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
     // resize alone can leave the canvas blank when the panel was laid out after map init (focus mode, first paint)
     const ro = new ResizeObserver(() => { map.resize(); map.triggerRepaint(); });
     if (el.current) ro.observe(el.current);
-    return () => ro.disconnect();
+    const onWindowResize = () => { map.resize(); map.triggerRepaint(); };
+    window.addEventListener('resize', onWindowResize);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', onWindowResize);
+    };
   }, []);
+
+  // WebGL keeps its own copy of the palette: repaint the style layers and re-render the
+  // markers/routes with the new theme colours instead of recreating the map.
+  useEffect(() => {
+    const onThemeChange = () => {
+      const map = mapRef.current;
+      if (!map || !readyRef.current) return;
+      map.setPaintProperty('bg', 'background-color', readThemeColor('--map-bg', '#0b1018'));
+      map.setPaintProperty('land', 'fill-color', readThemeColor('--map-land', '#18212e'));
+      map.setPaintProperty('borders', 'line-color', readThemeColor('--map-border', '#2f3c4f'));
+      render(map);
+      map.triggerRepaint();
+    };
+    document.addEventListener(THEME_EVENT, onThemeChange);
+    return () => document.removeEventListener(THEME_EVENT, onThemeChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, pulseCodes]);
 
   return (
     <>

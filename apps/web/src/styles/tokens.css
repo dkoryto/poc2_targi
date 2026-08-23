@@ -1,5 +1,19 @@
+/*
+ * Design tokens — two themes.
+ *
+ * `:root` carries the DARK palette (the default control-room look).
+ * `[data-theme='light']` overrides it with the light palette.
+ * The inline snippet in index.html stamps the resolved theme on <html> before React mounts,
+ * so there is no flash; the media query below only covers the (rare) no-JS / slow-JS case.
+ *
+ * Rule: components must not hard-code colours. Every colour lives here.
+ * SVG can use `var(--token)` directly; WebGL (MapLibre) reads the computed value
+ * at runtime via `readThemeColor()` and repaints on `dspc:themechange`.
+ */
+
 :root {
   color-scheme: dark;
+
   /* surfaces: matte navy / graphite */
   --bg-0: #0b1018;
   --bg-1: #111823;
@@ -15,21 +29,60 @@
   --fg-2: #8d9bb0;
   --fg-3: #62718a;
 
+  /* semantic accents */
   --ok: #2dd4bf;
   --ok-bg: rgba(45, 212, 191, 0.12);
+  --ok-border: rgba(45, 212, 191, 0.45);
+  --ok-fg: #2dd4bf;
   --warn: #f5b544;
   --warn-bg: rgba(245, 181, 68, 0.14);
+  --warn-border: rgba(245, 181, 68, 0.45);
+  --warn-fg: #f5b544;
   --crit: #f05252;
   --crit-bg: rgba(240, 82, 82, 0.14);
+  --crit-border: rgba(240, 82, 82, 0.5);
+  --crit-fg: #ff8a8a;
+  --crit-hover-bg: rgba(240, 82, 82, 0.28);
   --info: #5aa7ff;
   --info-bg: rgba(90, 167, 255, 0.14);
+  --info-border: rgba(90, 167, 255, 0.5);
+  --info-hover: #7dbaff;
   --neutral: #8d9bb0;
   --neutral-bg: rgba(141, 155, 176, 0.14);
 
   --risk-low: var(--ok);
   --risk-medium: var(--warn);
   --risk-high: #f0843c;
+  --risk-high-bg: rgba(240, 132, 60, 0.14);
+  --risk-high-border: rgba(240, 132, 60, 0.45);
   --risk-critical: var(--crit);
+
+  /* text drawn on top of a saturated accent fill (buttons, gantt bars, heatmap cells) */
+  --on-accent: #061021;
+  /* always-white surfaces that must stay white in both themes (QR codes, printed docs) */
+  --surface-paper: #ffffff;
+  --on-paper: #16202e;
+  --badge-fg: #ffffff;
+
+  /* map (WebGL — read at runtime, cannot use var() inside a MapLibre style) */
+  --map-bg: #0b1018;
+  --map-land: #18212e;
+  --map-border: #2f3c4f;
+  --map-marker-stroke: #0b1018;
+  --map-marker-ring: rgba(255, 255, 255, 0.4);
+  --map-label-bg: rgba(11, 16, 24, 0.75);
+  --map-overlay-bg: rgba(17, 24, 35, 0.9);
+
+  /* categorical chart palette (gantt order colours) */
+  --chart-1: #5aa7ff;
+  --chart-2: #2dd4bf;
+  --chart-3: #c084fc;
+  --chart-4: #f59e0b;
+  --chart-5: #34d399;
+  --chart-6: #fb7185;
+  --hatch-fill: #6b7a90;
+  --hatch-line: #9aa8bb;
+  --arrow: #62718a;
 
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
@@ -52,10 +105,150 @@
 
   --topbar-h: 52px;
   --nav-w: 208px;
+  --nav-w-rail: 56px;
   --dur: 180ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
   --focus: 0 0 0 2px var(--bg-0), 0 0 0 4px var(--info);
+}
+
+/*
+ * Light theme — a real control-room light palette (cool neutrals, saturated accents
+ * dark enough for WCAG 2.2 AA body text on the surfaces they sit on), not an inversion.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-0: #eaeef4;
+  --bg-1: #ffffff;
+  --bg-2: #f4f7fa;
+  --bg-3: #e5ebf3;
+  --bg-elev: #ffffff;
+  --border: #d4dbe6;
+  --border-strong: #b4c0d0;
+  --grid: rgba(70, 95, 130, 0.07);
+
+  --fg-0: #16202e;
+  --fg-1: #33445c;
+  --fg-2: #56687f;
+  --fg-3: #74859c;
+
+  --ok: #0e7c70;
+  --ok-bg: rgba(14, 124, 112, 0.1);
+  --ok-border: rgba(14, 124, 112, 0.4);
+  --ok-fg: #0b6459;
+  --warn: #9a6400;
+  --warn-bg: rgba(154, 100, 0, 0.12);
+  --warn-border: rgba(154, 100, 0, 0.4);
+  --warn-fg: #7d5100;
+  --crit: #c62828;
+  --crit-bg: rgba(198, 40, 40, 0.1);
+  --crit-border: rgba(198, 40, 40, 0.45);
+  --crit-fg: #a81f1f;
+  --crit-hover-bg: rgba(198, 40, 40, 0.2);
+  --info: #1a63c0;
+  --info-bg: rgba(26, 99, 192, 0.1);
+  --info-border: rgba(26, 99, 192, 0.45);
+  --info-hover: #14509e;
+  --neutral: #56687f;
+  --neutral-bg: rgba(86, 104, 127, 0.12);
+
+  --risk-low: var(--ok);
+  --risk-medium: var(--warn);
+  --risk-high: #b0560c;
+  --risk-high-bg: rgba(176, 86, 12, 0.12);
+  --risk-high-border: rgba(176, 86, 12, 0.4);
+  --risk-critical: var(--crit);
+
+  --on-accent: #ffffff;
+  --badge-fg: #ffffff;
+
+  --map-bg: #dde4ee;
+  --map-land: #ffffff;
+  --map-border: #a9b6c8;
+  --map-marker-stroke: #ffffff;
+  --map-marker-ring: rgba(22, 32, 46, 0.35);
+  --map-label-bg: rgba(255, 255, 255, 0.85);
+  --map-overlay-bg: rgba(255, 255, 255, 0.92);
+
+  --chart-1: #1a63c0;
+  --chart-2: #0e7c70;
+  --chart-3: #7e3ff2;
+  --chart-4: #9a6400;
+  --chart-5: #0f7a4d;
+  --chart-6: #c2255c;
+  --hatch-fill: #9fadc0;
+  --hatch-line: #6a7b91;
+  --arrow: #74859c;
+
+  --shadow: 0 4px 18px rgba(22, 32, 46, 0.14);
+}
+
+/* Fallback for the moment before the inline theme snippet runs (or if JS is disabled). */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    color-scheme: light;
+
+    --bg-0: #eaeef4;
+    --bg-1: #ffffff;
+    --bg-2: #f4f7fa;
+    --bg-3: #e5ebf3;
+    --bg-elev: #ffffff;
+    --border: #d4dbe6;
+    --border-strong: #b4c0d0;
+    --grid: rgba(70, 95, 130, 0.07);
+
+    --fg-0: #16202e;
+    --fg-1: #33445c;
+    --fg-2: #56687f;
+    --fg-3: #74859c;
+
+    --ok: #0e7c70;
+    --ok-bg: rgba(14, 124, 112, 0.1);
+    --ok-border: rgba(14, 124, 112, 0.4);
+    --ok-fg: #0b6459;
+    --warn: #9a6400;
+    --warn-bg: rgba(154, 100, 0, 0.12);
+    --warn-border: rgba(154, 100, 0, 0.4);
+    --warn-fg: #7d5100;
+    --crit: #c62828;
+    --crit-bg: rgba(198, 40, 40, 0.1);
+    --crit-border: rgba(198, 40, 40, 0.45);
+    --crit-fg: #a81f1f;
+    --crit-hover-bg: rgba(198, 40, 40, 0.2);
+    --info: #1a63c0;
+    --info-bg: rgba(26, 99, 192, 0.1);
+    --info-border: rgba(26, 99, 192, 0.45);
+    --info-hover: #14509e;
+    --neutral: #56687f;
+    --neutral-bg: rgba(86, 104, 127, 0.12);
+
+    --risk-high: #b0560c;
+    --risk-high-bg: rgba(176, 86, 12, 0.12);
+    --risk-high-border: rgba(176, 86, 12, 0.4);
+
+    --on-accent: #ffffff;
+
+    --map-bg: #dde4ee;
+    --map-land: #ffffff;
+    --map-border: #a9b6c8;
+    --map-marker-stroke: #ffffff;
+    --map-marker-ring: rgba(22, 32, 46, 0.35);
+    --map-label-bg: rgba(255, 255, 255, 0.85);
+  --map-overlay-bg: rgba(255, 255, 255, 0.92);
+
+    --chart-1: #1a63c0;
+    --chart-2: #0e7c70;
+    --chart-3: #7e3ff2;
+    --chart-4: #9a6400;
+    --chart-5: #0f7a4d;
+    --chart-6: #c2255c;
+    --hatch-fill: #9fadc0;
+    --hatch-line: #6a7b91;
+    --arrow: #74859c;
+
+    --shadow: 0 4px 18px rgba(22, 32, 46, 0.14);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

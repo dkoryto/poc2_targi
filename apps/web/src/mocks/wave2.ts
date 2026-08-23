@@ -11,11 +11,11 @@ export const kpiBeforeAct40: PlanKpi = { downtimeHours: 36, lateOrders: 1, total
 export const kpiAfterAct40: PlanKpi = { downtimeHours: 8, lateOrders: 1, totalLatenessDays: 4, movedOperations: 7, ordersWithShortage: 1, onTimeRate: 0.875 };
 
 export const presets: ScenarioPreset[] = [
-  { key: 'ACT40_DELAY', titleKey: 'planning.presets.ACT40_DELAY', changes: [{ type: 'DELAY_INBOUND', poLineId: 'line-0007-1', days: 10, poCode: 'PO-2026-0007', partCode: 'ACT-40' }] },
-  { key: 'MCU_X7_DELAY', titleKey: 'planning.presets.MCU_X7_DELAY', changes: [{ type: 'DELAY_INBOUND', poLineId: 'line-0009-1', days: 14, poCode: 'PO-2026-0009', partCode: 'MCU-X7' }] },
-  { key: 'HTS22_BLOCK', titleKey: 'planning.presets.HTS22_BLOCK', changes: [{ type: 'BLOCK_LOT', lotNumber: 'HTS-22-2608' }] },
-  { key: 'WO014_PRIORITY', titleKey: 'planning.presets.WO014_PRIORITY', changes: [{ type: 'PRIORITY', orderCode: 'WO-2026-014', priority: 5 }] },
-  { key: 'WC_INT_CAPACITY', titleKey: 'planning.presets.WC_INT_CAPACITY', changes: [{ type: 'CAPACITY', workCenterCode: 'WC-INT', factor: 0.5 }] },
+  { key: 'DELAY_ACT40_10D', titleKey: 'ACT40_DELAY', changes: [{ type: 'DELAY_INBOUND', poLineId: 'line-0007-1', days: 10, poCode: 'PO-2026-0007', partCode: 'ACT-40' }] },
+  { key: 'DELAY_MCUX7_14D', titleKey: 'MCU_X7_DELAY', changes: [{ type: 'DELAY_INBOUND', poLineId: 'line-0009-1', days: 14, poCode: 'PO-2026-0009', partCode: 'MCU-X7' }] },
+  { key: 'BLOCK_LOT_HTS22', titleKey: 'HTS22_BLOCK', changes: [{ type: 'BLOCK_LOT', lotNumber: 'HTS-22-2608' }] },
+  { key: 'PRIORITY_WO014', titleKey: 'WO014_PRIORITY', changes: [{ type: 'PRIORITY', orderCode: 'WO-2026-014', priority: 5 }] },
+  { key: 'CAPACITY_INT_50', titleKey: 'WC_INT_CAPACITY', changes: [{ type: 'CAPACITY', workCenterCode: 'WC-INT', factor: 0.5 }] },
 ];
 
 /** Baseline + ACT-40 delay with NO re-sequencing ("Przed"). */

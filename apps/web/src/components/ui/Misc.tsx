@@ -38,11 +38,32 @@ export function Badge({ count }: { count: number }) {
   return <span className={s.badge}>{count > 99 ? '99+' : count}</span>;
 }
 
-export function SegmentedControl<T extends string>({ options, value, onChange, label }: { options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; label: string }) {
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+  'data-testid': testId,
+}: {
+  options: { value: T; label: ReactNode; title?: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  label: string;
+  'data-testid'?: string;
+}) {
   return (
-    <div className={s.segmented} role="group" aria-label={label}>
+    <div className={s.segmented} role="group" aria-label={label} data-testid={testId}>
       {options.map((o) => (
-        <button key={o.value} type="button" className={s.segment} aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
+        <button
+          key={o.value}
+          type="button"
+          className={s.segment}
+          aria-pressed={value === o.value}
+          aria-label={o.title}
+          title={o.title}
+          onClick={() => onChange(o.value)}
+          data-testid={testId ? `${testId}-${o.value}` : undefined}
+        >
           {o.label}
         </button>
       ))}

@@ -7,6 +7,7 @@ React 19 + TypeScript (strict, `noUncheckedIndexedAccess`) + Vite 6. PL default,
 ```bash
 pnpm install
 pnpm dev          # http://localhost:5173, proxies /api, /hubs, /health → http://localhost:5080
+                  # override the API with VITE_API_TARGET=http://localhost:5180 pnpm dev
 pnpm dev:mock     # same, but MSW intercepts the API with fixtures from src/mocks (no backend needed)
 pnpm test         # vitest (jsdom + msw)
 pnpm test -- src/components/gantt/Gantt.test.tsx   # single file
@@ -31,9 +32,19 @@ src/
 public/geo/europe.geojson   Natural Earth 110m countries clipped to Europe (public domain) — the only map data; no tiles, no internet
 ```
 
-## Design tokens
+## Design tokens and theming
 
-`src/styles/tokens.css`: `--bg-0..3`, `--fg-0..3`, `--ok` (teal), `--warn` (amber), `--crit` (red), `--info` (blue), `--risk-*`, radii 4–6 px, `--dur` 180 ms (0 under `prefers-reduced-motion`). Font stack is `system-ui, "Segoe UI", Roboto, …` — no web font download (offline). Status is never colour-only: use `StatusChip`/`RiskBadge` (icon + label).
+`src/styles/tokens.css` holds **both palettes**: `:root` is dark (the default control-room look), `:root[data-theme='light']` is the light palette, and a `prefers-color-scheme` block covers the pre-hydration moment. Tokens: `--bg-0..3`, `--fg-0..3`, `--ok`/`--warn`/`--crit`/`--info` (+ `-bg`/`-border`/`-fg` variants), `--risk-*`, `--on-accent` (text on a saturated fill), `--surface-paper` (stays white in both themes, e.g. QR codes), `--map-*` (map surfaces, marker stroke/ring, overlays), `--chart-1..6`, radii 4–6 px, `--dur` 180 ms (0 under `prefers-reduced-motion`). Font stack is `system-ui, "Segoe UI", Roboto, …` — no web font download (offline). Status is never colour-only: use `StatusChip`/`RiskBadge` (icon + label).
+
+**No component may hard-code a colour.** SVG (Gantt, heatmap) can use `var(--token)` directly. WebGL cannot, so `DeliveryMap` reads concrete values with `readThemeColor()` from `src/theme/theme.tsx` and repaints its layers via `setPaintProperty` when the `dspc:themechange` event fires — the map is never recreated.
+
+`ThemeProvider` / `useTheme()` / `ThemeSwitch` live in `src/theme/theme.tsx`. The preference is `auto | light | dark` (persisted in `localStorage` under `dspc.theme`, all access wrapped in try/catch); `auto` follows `prefers-color-scheme` live. An inline snippet in `index.html` stamps the resolved theme on `<html>` before React mounts, so there is no flash.
+
+## Layout
+
+The side nav collapses to a 56 px icon rail (`data-testid="nav-toggle"` in the top bar, `aria-expanded` + `aria-controls="main-nav"`). The choice persists in `localStorage` (`dspc.nav.collapsed`); below 1200 px the rail is the default. Collapsing dispatches a window `resize` so the map and Gantt re-measure. Rail items keep an accessible name and show a tooltip on hover/focus.
+
+A global `ErrorBoundary` (in `components/ui`) wraps the routed content in `AppShell`, keyed on the route path: a component failure renders a localized error card (with the Problem Details `traceId` when present) instead of blanking the page.
 
 ## Adding a screen
 
@@ -62,11 +73,12 @@ public/geo/europe.geojson   Natural Earth 110m countries clipped to Europe (publ
 | Screen | Test ids |
 |---|---|
 | Control room | `kpi-<CODE>`, `kpi-row`, `panel-map/heatmap/plan/quality`, `open-whatif`, `open-blocked-lots` |
-| Planning | `planning-page`, `baseline-meta`, `scenario-tile-<presetKey>` (`ACT40_DELAY`, `MCU_X7_DELAY`, `HTS22_BLOCK`, `WO014_PRIORITY`, `WC_INT_CAPACITY`, `custom`), `btn-custom-scenario`, `btn-add-change`, `btn-create-scenario`, `scenario-list` |
+| Planning | `planning-page`, `baseline-meta`, `scenario-tile-<presetKey>` (`DELAY_ACT40_10D`, `DELAY_MCUX7_14D`, `BLOCK_LOT_HTS22`, `PRIORITY_WO014`, `CAPACITY_INT_50`, `custom` — the API's `key`; its `titleKey` is the i18n name, resolved bare or fully qualified), `btn-custom-scenario`, `btn-add-change`, `btn-create-scenario`, `scenario-list` |
 | Scenario detail | `scenario-detail`, `scenario-status` (raw status text, sr-only), `scenario-running`, `scenario-changes`, `solver-badge`, `kpi-compare`, `kpi-delta-downtime`, `gantt`, `gantt-bar-<opCode>` (`data-changed`), `gantt-ghost`, `gantt-shift`, `explanation-<reasonCode>`, `moved-ops`, `btn-run-scenario`, `btn-approve-plan`, `btn-reject-plan`, `btn-save-scenario`, `confirm-button` |
 | Trace | `trace-page`, `trace-search`, `trace-quick-<code>`, `trace-hit-<code>`, `serial-page`, `genealogy-tree`, `trace-node-<code>`, `trace-toggle-<code>`, `trace-node-panel`, `trace-node-open`, `trace-node-download`, `trace-components`, `audit-export`, `open-passport` |
 | Lots | `lots-page`, `lots-table`, `lot-page`, `trace-forward`, `btn-block-lot`, `block-reason`, `block-ncr`, `block-result`, `btn-add-inspection`, `submit-inspection` |
 | Passports | `passports-page`, `passports-table`, `passport-filter-<Status>`, `passport-page`, `passport-status`, `passport-completeness`, `passport-missing`, `passport-complete`, `passport-req-<CODE>`, `passport-versions`, `passport-pdf-<v>`, `passport-qr`, `passport-invalidated`, `btn-approve-passport`, `btn-generate-passport` |
+| Shell | `nav-toggle`, `main-nav` (`data-collapsed`), `theme-switch` (+ `theme-switch-auto/-light/-dark`), `lang-switch`, `error-boundary`, `error-retry`, `error-reload` |
 | Audit / admin | `audit-page`, `audit-table`, `audit-row-<id>`, `audit-detail`, `json-diff`, `audit-export`, `admin-page`, `service-<name>`, `service-signalr`, `settings-tables`, `summary-page` |
 
 Mocks for all wave-2 endpoints live in `src/mocks/wave2.ts` (stateful: scenarios run → complete after ~0.7 s, lot block invalidates passports, generate bumps versions; `resetMockState()` restores).

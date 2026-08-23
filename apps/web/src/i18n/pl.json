@@ -31,7 +31,13 @@
     "user": "Użytkownik",
     "switchRole": "Przełącz rolę (demo)",
     "logout": "Wyloguj",
-    "language": "Język"
+    "language": "Język",
+    "theme": "Motyw",
+    "themeAuto": "Motyw automatyczny (systemowy)",
+    "themeLight": "Motyw jasny",
+    "themeDark": "Motyw ciemny",
+    "collapseNav": "Zwiń menu boczne",
+    "expandNav": "Rozwiń menu boczne"
   },
   "roles": {
     "SupplierUser": "Dostawca",
@@ -157,7 +163,16 @@
       "ReadyToShip": "Gotowe do wysyłki",
       "Shipped": "Wysłane",
       "Delivered": "Dostarczone",
-      "OnHold": "Wstrzymane"
+      "OnHold": "Wstrzymane",
+      "Open": "Otwarte",
+      "Closed": "Zamknięte",
+      "Cancelled": "Anulowane",
+      "Partial": "Częściowo zrealizowane",
+      "Draft": "Robocze",
+      "Planned": "Zaplanowane",
+      "InTransit": "W drodze",
+      "Delayed": "Opóźnione",
+      "Completed": "Zrealizowane"
     },
     "doc": {
       "Pending": "Oczekuje",
@@ -379,12 +394,18 @@
     "adviceCreated": "Awizacja {{code}} utworzona",
     "shipment": "Wysyłka",
     "etaVsRequired": "ETA vs wymagane",
-    "late": "{{days}} dni po terminie",
-    "early": "{{days}} dni przed terminem",
     "onTime": "w terminie",
     "etaMustBeFuture": "ETA nie może być w przeszłości",
     "site": "Zakład",
-    "ownDataOnly": "Widzisz wyłącznie dane własnej organizacji."
+    "ownDataOnly": "Widzisz wyłącznie dane własnej organizacji.",
+    "late_one": "{{count}} dzień po terminie",
+    "late_few": "{{count}} dni po terminie",
+    "late_many": "{{count}} dni po terminie",
+    "late_other": "{{count}} dnia po terminie",
+    "early_one": "{{count}} dzień przed terminem",
+    "early_few": "{{count}} dni przed terminem",
+    "early_many": "{{count}} dni przed terminem",
+    "early_other": "{{count}} dnia przed terminem"
   },
   "inbound": {
     "title": "Logistyka wjazdowa",
@@ -508,7 +529,13 @@
       "downtimePerHour": "Przestój (za godzinę)",
       "deliveryBreachPerOrder": "Naruszenie terminu (za zlecenie)",
       "changePerMovedOperation": "Koszt zmiany (za operację)",
-      "changeoverPerSwitch": "Przezbrojenie"
+      "changeoverPerSwitch": "Przezbrojenie",
+      "LATENESS_PER_DAY_PER_PRIORITY": "Opóźnienie (dzień × priorytet)",
+      "SHORTAGE_PER_UNIT": "Niedobór materiałowy (szt.)",
+      "DOWNTIME_PER_HOUR": "Przestój (godzina)",
+      "DELIVERY_BREACH_PER_ORDER": "Naruszenie terminu (zlecenie)",
+      "CHANGE_PER_MOVED_OPERATION": "Zmiana planu (operacja)",
+      "CHANGEOVER_PER_SWITCH": "Przezbrojenie"
     },
     "threshold": {
       "RISK_MEDIUM": "Ryzyko średnie od",
@@ -516,7 +543,10 @@
       "RISK_CRITICAL": "Ryzyko krytyczne od",
       "NOTIFY_RISK": "Powiadomienie planisty od",
       "SOLVER_TIMEOUT_MS": "Limit czasu solvera",
-      "DEMO_RESET_MS": "Limit resetu demo"
+      "DEMO_RESET_MS": "Limit resetu demo",
+      "RISK_NOTIFY_THRESHOLD": "Próg powiadomienia o ryzyku",
+      "SOLVER_TIME_LIMIT_MS": "Limit czasu solvera",
+      "HORIZON_WEEKS": "Horyzont planowania (tyg.)"
     },
     "readOnly": "Edycja wag i progów będzie dostępna w kolejnej wersji; wartości pochodzą z konfiguracji serwera."
   },
@@ -845,5 +875,11 @@
     "chainText": "Opóźnienie dostawcy → wzrost ryzyka → zagrożenie planu → symulacja → nowy harmonogram → zachowanie ciągłości produkcji → genealogia partii → kompletny cyfrowy paszport.",
     "fromScenario": "Wartości wyliczone z ostatniego scenariusza: {{name}}.",
     "demoValues": "Wartości demonstracyjne — uruchom scenariusz ACT-40, aby zobaczyć dane z silnika."
+  },
+  "error": {
+    "boundaryTitle": "Nie udało się wyświetlić tego widoku",
+    "boundaryBody": "Wystąpił nieoczekiwany błąd. Pozostała część aplikacji działa — możesz spróbować ponownie lub przejść do innego ekranu.",
+    "correlationId": "Identyfikator korelacji",
+    "reload": "Przeładuj stronę"
   }
 }

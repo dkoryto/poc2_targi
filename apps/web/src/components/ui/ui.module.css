@@ -30,19 +30,19 @@
 .btnPrimary {
   background: var(--info);
   border-color: var(--info);
-  color: #061021;
+  color: var(--on-accent);
 }
 .btnPrimary:hover:not(:disabled) {
-  background: #7dbaff;
-  border-color: #7dbaff;
+  background: var(--info-hover);
+  border-color: var(--info-hover);
 }
 .btnDanger {
   background: var(--crit-bg);
   border-color: var(--crit);
-  color: #ffd5d5;
+  color: var(--crit-fg);
 }
 .btnDanger:hover:not(:disabled) {
-  background: rgba(240, 82, 82, 0.28);
+  background: var(--crit-hover-bg);
 }
 .btnGhost {
   background: transparent;
@@ -160,13 +160,13 @@
 }
 .tone-high {
   color: var(--risk-high);
-  background: rgba(240, 132, 60, 0.14);
-  border-color: rgba(240, 132, 60, 0.45);
+  background: var(--risk-high-bg);
+  border-color: var(--risk-high-border);
 }
 .tone-critical {
-  color: #ff8a8a;
+  color: var(--crit-fg);
   background: var(--crit-bg);
-  border-color: rgba(240, 82, 82, 0.5);
+  border-color: var(--crit-border);
 }
 .tone-info {
   color: var(--info);
@@ -601,7 +601,7 @@
   border-color: var(--crit);
 }
 .fieldError {
-  color: #ff8a8a;
+  color: var(--crit-fg);
   font-size: var(--fs-xs);
 }
 .fieldHint {
@@ -684,7 +684,7 @@
   font-size: 11px;
   font-weight: 700;
   background: var(--crit);
-  color: #fff;
+  color: var(--badge-fg);
 }
 
 /* Segmented */
@@ -719,4 +719,34 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ErrorBoundary fallback card */
+.boundary {
+  max-width: 640px;
+  margin: 48px auto;
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--crit);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-shadow: var(--shadow);
+}
+.boundaryIcon {
+  color: var(--crit);
+  display: inline-flex;
+}
+.boundaryDetail {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-1);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  overflow-wrap: anywhere;
+  margin: 0;
 }

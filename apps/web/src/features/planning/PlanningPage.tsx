@@ -21,6 +21,17 @@ export function ScenarioStatusChip({ status, small }: { status: ScenarioStatus; 
   return <StatusChip tone={STATUS_TONE[status] ?? 'neutral'} label={t(`planning.status.${status}`, { defaultValue: status })} small={small} />;
 }
 
+/**
+ * The API sends `titleKey` either bare (`ACT40_DELAY`) or fully qualified
+ * (`planning.presets.ACT40_DELAY`); resolve both, falling back to the raw value.
+ */
+function presetTitle(titleKey: string, t: (k: string, o?: Record<string, unknown>) => string): string {
+  const qualified = titleKey.includes('.') ? titleKey : `planning.presets.${titleKey}`;
+  const viaQualified = t(qualified, { defaultValue: '' });
+  if (viaQualified) return viaQualified;
+  return t(titleKey, { defaultValue: titleKey });
+}
+
 export function PlanningPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -105,13 +116,13 @@ export function PlanningPage() {
                 type="button"
                 className={s.tile}
                 disabled={!canRun || busyKey !== null}
-                onClick={() => void createAndRun(t(p.titleKey, { defaultValue: p.titleKey }), p.changes, p.key)}
+                onClick={() => void createAndRun(presetTitle(p.titleKey, t), p.changes, p.key)}
                 data-testid={`scenario-tile-${p.key}`}
                 title={canRun ? t('planning.runHint') : t('common.forbidden')}
               >
                 <span className={s.tileTitle}>
                   {busyKey === p.key ? <Clock3 size={15} aria-hidden /> : <Play size={15} aria-hidden />}
-                  {t(p.titleKey, { defaultValue: p.titleKey })}
+                  {presetTitle(p.titleKey, t)}
                 </span>
                 <span className={s.tileChanges}>
                   {p.changes.map((c, i) => <span key={i}>{describeChange(c, t)}</span>)}

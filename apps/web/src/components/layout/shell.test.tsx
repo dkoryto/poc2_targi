@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Routes, Route } from 'react-router';
 import { AppShell } from './AppShell';
 import { renderWithProviders } from '@/test/utils';
@@ -49,5 +49,60 @@ describe('AppShell', () => {
     await waitFor(() => expect(screen.getByTestId('current-role')).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'EN' }));
     await waitFor(() => expect(screen.getByTestId('current-role')).toHaveTextContent('Demo presenter'));
+  });
+
+  it('collapses and expands the side nav, persisting the choice', async () => {
+    const user = userEvent.setup();
+    localStorage.removeItem('dspc.nav.collapsed');
+    // jsdom defaults to 1024px, which is below the rail breakpoint; emulate the 1920×1080 stand.
+    Object.defineProperty(window, 'innerWidth', { value: 1920, writable: true, configurable: true });
+    const { unmount } = renderWithProviders(<Shell />, { auth: true });
+    await waitFor(() => expect(screen.getByTestId('main-nav')).toBeInTheDocument());
+
+    const nav = screen.getByTestId('main-nav');
+    const toggle = screen.getByTestId('nav-toggle');
+    expect(nav).toHaveAttribute('data-collapsed', 'false');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveAttribute('aria-controls', 'main-nav');
+    expect(nav).toHaveAttribute('id', 'main-nav');
+
+    await user.click(toggle);
+    expect(screen.getByTestId('main-nav')).toHaveAttribute('data-collapsed', 'true');
+    expect(screen.getByTestId('nav-toggle')).toHaveAttribute('aria-expanded', 'false');
+    expect(localStorage.getItem('dspc.nav.collapsed')).toBe('1');
+    // links stay reachable by their accessible name while collapsed
+    expect(screen.getByTestId('nav-planning')).toBeInTheDocument();
+
+    unmount();
+    renderWithProviders(<Shell />, { auth: true });
+    await waitFor(() => expect(screen.getByTestId('main-nav')).toHaveAttribute('data-collapsed', 'true'));
+    localStorage.removeItem('dspc.nav.collapsed');
+  });
+
+  it('defaults to the icon rail on narrow screens', async () => {
+    localStorage.removeItem('dspc.nav.collapsed');
+    Object.defineProperty(window, 'innerWidth', { value: 1100, writable: true, configurable: true });
+    renderWithProviders(<Shell />, { auth: true });
+    await waitFor(() => expect(screen.getByTestId('main-nav')).toHaveAttribute('data-collapsed', 'true'));
+    Object.defineProperty(window, 'innerWidth', { value: 1920, writable: true, configurable: true });
+  });
+
+  it('renders the error boundary instead of a blank page when a route throws', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    function Broken(): never {
+      throw new TypeError('riskWeights.map is not a function');
+    }
+    renderWithProviders(
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<Broken />} />
+        </Route>
+      </Routes>,
+      { auth: true },
+    );
+    await waitFor(() => expect(screen.getByTestId('error-boundary')).toBeInTheDocument());
+    // the shell itself survives
+    expect(screen.getByTestId('main-nav')).toBeInTheDocument();
+    spy.mockRestore();
   });
 });
