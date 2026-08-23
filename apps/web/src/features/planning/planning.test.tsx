@@ -44,6 +44,30 @@ describe('Planning / What-If', () => {
     expect(screen.getByTestId('solver-badge')).toHaveTextContent('dspc-heuristic/1.0');
   });
 
+  it('the moved-operations tile, the Gantt and the table report the same number', async () => {
+    // Regression: the tile counted operations moved vs the approved baseline while the table
+    // counted operations moved vs "before", so the screen contradicted itself.
+    const user = userEvent.setup();
+    renderWithProviders(<App />, { route: '/planning', auth: true });
+    const tile = await screen.findByTestId('scenario-tile-DELAY_ACT40_10D');
+    await waitFor(() => expect(tile).toBeEnabled());
+    await user.click(tile);
+    await waitFor(() => expect(screen.getByTestId('scenario-status')).toHaveTextContent('Completed'), { timeout: 5000 });
+
+    const table = await screen.findByTestId('moved-ops');
+    const rows = within(table).getAllByRole('row').length - 1;            // minus the header row
+    const kpiTile = screen.getByTestId('kpi-delta-moved');
+    const tileValue = Number(within(kpiTile).getByTestId('kpi-after-value').textContent);
+    const ghosts = document.querySelectorAll('[data-testid="gantt-ghost"]').length;
+
+    expect(rows).toBeGreaterThan(0);
+    expect(tileValue).toBe(rows);
+    expect(ghosts).toBe(rows);
+
+    // the vs-baseline figure is shown too, under its own label
+    expect(screen.getByTestId('changes-vs-baseline')).toHaveTextContent(/planu bazowego/i);
+  });
+
   it('approve is gated by role: Auditor cannot approve, DemoPresenter can and baseline version bumps', async () => {
     const user = userEvent.setup();
     setToken(null);

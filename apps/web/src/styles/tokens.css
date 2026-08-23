@@ -104,8 +104,30 @@
   --space-6: 32px;
 
   --topbar-h: 52px;
+  --topbar-h-mobile: 52px;
   --nav-w: 208px;
   --nav-w-rail: 56px;
+  --nav-w-drawer: 260px;
+
+  /*
+   * Breakpoints. CSS custom properties cannot be used inside @media, so these are
+   * documentation + a source for JS (`useBreakpoint`); the media queries below and in
+   * the component modules repeat the literal values. Keep them in sync.
+   *   mobile  < 768   tablet 768-1199   desktop >= 1200   wall >= 1600
+   */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1200px;
+  --bp-xl: 1600px;
+
+  /* minimum comfortable touch target (WCAG 2.5.8 / contract rule 4) */
+  --tap: 44px;
+
+  /* safe-area insets, 0 on desktop; used by the shell, sheets and toasts */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
   --dur: 180ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --shadow: 0 4px 18px rgba(0, 0, 0, 0.35);

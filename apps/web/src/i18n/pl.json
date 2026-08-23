@@ -37,7 +37,10 @@
     "themeLight": "Motyw jasny",
     "themeDark": "Motyw ciemny",
     "collapseNav": "Zwiń menu boczne",
-    "expandNav": "Rozwiń menu boczne"
+    "expandNav": "Rozwiń menu boczne",
+    "more": "Więcej",
+    "menu": "Menu",
+    "demo": "Demo"
   },
   "roles": {
     "SupplierUser": "Dostawca",
@@ -98,7 +101,13 @@
     "version": "Wersja",
     "copy": "Kopiuj",
     "copied": "Skopiowano do schowka",
-    "copyFailed": "Nie udało się skopiować"
+    "copyFailed": "Nie udało się skopiować",
+    "filters": "Filtry",
+    "sortBy": "Sortuj według",
+    "listView": "Lista operacji",
+    "chartView": "Wykres",
+    "showLegend": "Pokaż legendę",
+    "hideLegend": "Ukryj legendę"
   },
   "auth": {
     "title": "Logowanie",
@@ -593,7 +602,7 @@
       "downtimeHours": "Przewidywany przestój",
       "lateOrders": "Zlecenia spóźnione",
       "totalLatenessDays": "Łączne opóźnienie (dni)",
-      "movedOperations": "Przesunięte operacje",
+      "movedOperations": "Przesunięte przez przeplanowanie",
       "ordersWithShortage": "Zlecenia z niedoborem",
       "onTimeRate": "Terminowość"
     },
@@ -605,8 +614,7 @@
     "ganttCompareDef": "„Przed” = plan bazowy z zastosowaną zmianą bez przeplanowania. „Po” = propozycja silnika. W trybie porównania cienie pokazują położenie bazowe.",
     "view": "Widok",
     "compare": "Porównanie",
-    "movedOps": "Przesunięte operacje ({{count}})",
-    "noMoved": "Brak przesuniętych operacji",
+    "movedOps": "Przesunięte przez przeplanowanie ({{count}})",
     "approvedInfo": "Zatwierdzono przez {{by}} {{at}} — plan bazowy v{{version}}",
     "status": {
       "Draft": "Roboczy",
@@ -619,12 +627,12 @@
     },
     "change": {
       "DELAY_INBOUND": "Opóźnij dostawę",
-      "BLOCK_LOT": "Zablokuj partię",
+      "BLOCK_LOT": "Symuluj blokadę partii",
       "PRIORITY": "Zmień priorytet zlecenia",
       "CAPACITY": "Zmień dostępność gniazda",
       "DELAY_ORDER": "Opóźnij zlecenie",
       "DELAY_INBOUND_desc": "Dostawa {{line}} opóźniona o {{days}} dni",
-      "BLOCK_LOT_desc": "Blokada partii {{lot}}",
+      "BLOCK_LOT_desc": "Symulacja blokady partii {{lot}} (status partii bez zmian)",
       "PRIORITY_desc": "Priorytet {{order}} → {{priority}}",
       "CAPACITY_desc": "Dostępność {{wc}} → {{pct}} %",
       "DELAY_ORDER_desc": "Zlecenie {{order}} opóźnione o {{days}} dni"
@@ -632,7 +640,7 @@
     "presets": {
       "ACT40_DELAY": "Opóźnij siłowniki ACT-40 o 10 dni",
       "MCU_X7_DELAY": "Opóźnij moduły sterujące MCU-X7 o 14 dni",
-      "HTS22_BLOCK": "Zablokuj partię stali HTS-22 z powodu jakości",
+      "HTS22_BLOCK": "Symuluj blokadę partii stali HTS-22 z powodu jakości",
       "WO014_PRIORITY": "Zwiększ priorytet zlecenia WO-2026-014",
       "WC_INT_CAPACITY": "Zmniejsz dostępność gniazda integracji o 50%"
     },
@@ -665,7 +673,12 @@
     "impactLate": "Zleceń spóźnionych: {{count}}",
     "impactDowntime": "Przewidywany przestój: {{from}} h → {{to}} h",
     "impactVersion": "Powstanie nowa wersja planu bazowego",
-    "featured": "Scenariusz wiodący"
+    "featured": "Scenariusz wiodący",
+    "movedOpsDef": "Operacje, które silnik przesunął względem planu „Przed” — czyli wobec tego, co wydarzyłoby się bez przeplanowania. Zmiany wynikające z samego zdarzenia (np. opóźnionej dostawy) widać w planie „Przed”.",
+    "noMovedTitle": "Przeplanowanie nie przesunęło żadnej operacji",
+    "noMovedDetail": "Plan po zmianie jest już najlepszy z możliwych — silnik nie znalazł korzystniejszej kolejności. Skutki samego zdarzenia widać w planie „Przed / Po”.",
+    "changesVsBaseline": "Zmiany wobec zatwierdzonego planu bazowego: {{count}}",
+    "simulationNote": "What-If jest symulacją — nie zmienia statusu partii ani nie unieważnia paszportów. Rzeczywistą blokadę wykonuje się na karcie partii (Traceability → Zablokuj partię)."
   },
   "trace": {
     "title": "Traceability i genealogia",

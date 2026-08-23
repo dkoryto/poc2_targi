@@ -13,7 +13,7 @@ const KPI_ORDER: { key: KpiKey; lowerIsBetter: boolean; unit: 'h' | 'd' | '' | '
   { key: 'downtimeHours', lowerIsBetter: true, unit: 'h', testId: 'kpi-delta-downtime' },
   { key: 'lateOrders', lowerIsBetter: true, unit: '' },
   { key: 'totalLatenessDays', lowerIsBetter: true, unit: 'd' },
-  { key: 'movedOperations', lowerIsBetter: true, unit: '' },
+  { key: 'movedOperations', lowerIsBetter: true, unit: '', testId: 'kpi-delta-moved' },
   { key: 'onTimeRate', lowerIsBetter: false, unit: '%' },
 ];
 
@@ -37,7 +37,7 @@ export function KpiCompare({ before, after }: { before: PlanKpi; after: PlanKpi 
             <h4>{t(`planning.kpi.${k.key}`)}</h4>
             <div className={s.kpiVals}>
               <span className={s.kpiBefore} aria-label={t('risk.before')}>{kpiVal(b, k.unit)}</span>
-              <span className={s.kpiAfter} aria-label={t('risk.after')}>{kpiVal(a, k.unit)}</span>
+              <span className={s.kpiAfter} aria-label={t('risk.after')} data-testid="kpi-after-value">{kpiVal(a, k.unit)}</span>
             </div>
             <span className={[s.delta, good === true && s.deltaGood, good === false && s.deltaBad, good === null && s.deltaNeutral].filter(Boolean).join(' ')}>
               <Icon size={12} aria-hidden />
@@ -153,6 +153,11 @@ export function ScenarioResult({ scenario, compare }: { scenario: PlanningScenar
       </Card>
       <div className={s.twoCol}>
         <Card title={t('planning.explanations')} definition={t('planning.explanationsDef')}>
+          {scenario.changes?.some((c) => c.type === 'BLOCK_LOT') && (
+            <p className={s.simulationNote} data-testid="simulation-note">
+              <Info size={13} aria-hidden /> {t('planning.simulationNote')}
+            </p>
+          )}
           <Explanations items={scenario.explanations ?? []} />
           {scenario.consequences && scenario.consequences.length > 0 && (
             <>
@@ -161,8 +166,26 @@ export function ScenarioResult({ scenario, compare }: { scenario: PlanningScenar
             </>
           )}
         </Card>
-        <Card title={t('planning.movedOps', { count: moved.length })} flush>
-          <DataTable columns={cols} rows={moved} rowKey={(r) => r.operationCode} emptyTitle={t('planning.noMoved')} emptyDetail="" initialSort={{ key: 'shift', dir: 'desc' }} maxHeight={360} data-testid="moved-ops" />
+        <Card
+          title={t('planning.movedOps', { count: moved.length })}
+          definition={t('planning.movedOpsDef')}
+          flush
+        >
+          <DataTable
+            columns={cols}
+            rows={moved}
+            rowKey={(r) => r.operationCode}
+            emptyTitle={t('planning.noMovedTitle')}
+            emptyDetail={t('planning.noMovedDetail')}
+            initialSort={{ key: 'shift', dir: 'desc' }}
+            maxHeight={360}
+            data-testid="moved-ops"
+          />
+          {typeof scenario.changesVsBaseline === 'number' && (
+            <p className={s.vsBaseline} data-testid="changes-vs-baseline">
+              {t('planning.changesVsBaseline', { count: scenario.changesVsBaseline })}
+            </p>
+          )}
         </Card>
       </div>
       {scenario.status === 'Approved' && (

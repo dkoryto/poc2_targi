@@ -11,6 +11,15 @@ body,
   height: 100%;
   margin: 0;
 }
+/*
+ * Rule 1 of docs/architecture/responsive.md: the page never scrolls horizontally.
+ * Wide content (Gantt, tables, heatmap) scrolls inside its own container instead.
+ * `overflow-x: clip` is a guard, not the fix — the real widths are constrained by
+ * min-width:0 on every flex/grid child that holds wide content.
+ */
+html {
+  overflow-x: clip;
+}
 body {
   background: var(--bg-0);
   color: var(--fg-0);
@@ -91,6 +100,13 @@ code,
   flex-direction: column;
   gap: var(--space-4);
   min-height: 100%;
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  .page {
+    padding: var(--space-3) var(--space-3) calc(var(--space-4) + var(--safe-b));
+    gap: var(--space-3);
+  }
 }
 .page-header {
   display: flex;
@@ -122,6 +138,30 @@ code,
 @media (max-width: 1100px) {
   .grid-2 {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Touch: data text stays >= 14px and hit areas >= 44px (contract rule 4). */
+@media (max-width: 767px) {
+  body {
+    font-size: var(--fs-md);
+  }
+  .page-header {
+    align-items: flex-start;
+  }
+}
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  a.navLink,
+  select,
+  input[type='checkbox'],
+  input[type='radio'] {
+    min-height: var(--tap);
+  }
+  /* icon-only controls also need the width */
+  button:has(> svg:only-child) {
+    min-width: var(--tap);
   }
 }
 .maplibregl-popup-content {

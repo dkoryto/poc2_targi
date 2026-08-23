@@ -92,12 +92,22 @@ test.describe('every plant tells its own story', () => {
     await api.dispose();
   });
 
-  test('the moved-operation count agrees with the proposed plan', async () => {
+  test('the KPI tile, the Gantt markers and the compare table report one number', async () => {
+    // Regression: the tile counted operations moved against the approved baseline while the table below it
+    // counted operations moved against "before", so the screen contradicted itself (8 vs 3 on Kielce).
     const api = await apiAs('ProductionPlanner');
-    for (const code of ['SITE-01', 'SITE-02', 'SITE-04'] as SiteCode[]) {
+    for (const code of ['SITE-01', 'SITE-02', 'SITE-03', 'SITE-04'] as SiteCode[]) {
       const { scenario } = await runPresetFor(api, code, PLANTS[code].featured);
       const changed = (scenario.after?.operations ?? []).filter((o) => o.changed).length;
-      expect(scenario.kpiAfter!.movedOperations, `${code} moved-op KPI vs plan`).toBe(changed);
+      const compare = await (await api.get(`/api/v1/planning/scenarios/${scenario.id}/compare`)).json();
+      const table = compare.movedOperations.length;
+
+      expect(scenario.kpiAfter!.movedOperations, `${code} tile vs compare table`).toBe(table);
+      expect(changed, `${code} Gantt markers vs compare table`).toBe(table);
+      // "Before" is the reference plan, so nothing has moved relative to it.
+      expect(scenario.kpiBefore!.movedOperations, `${code} before is the reference`).toBe(0);
+      // The engine's vs-baseline count is still reported, separately and never smaller.
+      expect(scenario.changesVsBaseline, `${code} vs-baseline figure`).toBeGreaterThanOrEqual(table);
     }
     await api.dispose();
   });

@@ -2,9 +2,20 @@
   display: grid;
   grid-template-rows: var(--topbar-h) 1fr auto;
   grid-template-columns: var(--nav-w) 1fr;
-  height: 100vh;
+  /* dvh, not vh: mobile browser chrome must not push the footer off-screen */
+  height: 100dvh;
   overflow: hidden;
   transition: grid-template-columns var(--dur) var(--ease);
+  padding-left: var(--safe-l);
+  padding-right: var(--safe-r);
+}
+/*
+ * Mobile: no nav column at all — the nav is an overlay drawer.
+ * The authoritative rule lives in the media query at the end of this file, because
+ * `.shellRail` is declared later and would otherwise win on source order.
+ */
+.shellMobile {
+  grid-template-columns: 1fr;
 }
 .shellRail {
   grid-template-columns: var(--nav-w-rail) 1fr;
@@ -15,6 +26,7 @@
   justify-content: center;
   width: 30px;
   height: 30px;
+  min-width: 30px;
   flex-shrink: 0;
   background: transparent;
   border: 1px solid transparent;
@@ -48,6 +60,13 @@
   letter-spacing: 0.02em;
   white-space: nowrap;
   font-size: var(--fs-md);
+  min-width: 0;
+  overflow: hidden;
+}
+.brand > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .brand small {
   display: block;
@@ -71,6 +90,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
 }
 .siteSelect {
   background: var(--bg-0);
@@ -340,4 +361,140 @@
   margin-top: 4px;
   font-size: 11px;
   color: var(--fg-2);
+}
+
+
+/* ---- Mobile navigation drawer (docs/architecture/responsive.md) ---- */
+.navBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 14, 0.5);
+  z-index: 44;
+  animation: navFade var(--dur) var(--ease);
+}
+@keyframes navFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.navDrawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(var(--nav-w-drawer), 82vw);
+  z-index: 45;
+  border-right: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  padding-top: calc(8px + var(--safe-t));
+  padding-bottom: calc(8px + var(--safe-b));
+  animation: navSlide var(--dur) var(--ease);
+}
+@keyframes navSlide {
+  from {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.navDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-3);
+}
+.navDrawer .navLink {
+  min-height: var(--tap);
+  font-size: var(--fs-md);
+}
+
+@media (max-width: 767px) {
+  /* Single column whatever the persisted rail preference says. */
+  .shell,
+  .shellRail,
+  .shellMobile {
+    grid-template-columns: 1fr;
+  }
+  .topbar {
+    padding: 0 10px;
+    gap: 8px;
+  }
+  /*
+   * The user button becomes icon-only: the name and role would not fit next to the
+   * plant switcher and the ⋯ menu. Nothing is lost — both are shown in the menu it
+   * opens, and the button keeps an accessible name.
+   */
+  .userBtn {
+    min-width: var(--tap);
+    flex-shrink: 0;
+    padding: 0;
+    justify-content: center;
+    width: var(--tap);
+  }
+  .userBtn > span,
+  .userBtn > svg:last-of-type {
+    display: none;
+  }
+  .topbar .brand small {
+    display: none;
+  }
+  /* The clock and the seed version are the only things allowed to go (contract). */
+  .clock {
+    display: none;
+  }
+  .status {
+    padding: 3px 6px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .statusLabel {
+    display: none;
+  }
+  .userBtn {
+    height: var(--tap);
+    padding: 0 8px;
+  }
+  .userBtn span span,
+  .userBtn strong {
+    max-width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+  .menu {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: calc(8px + var(--safe-b));
+    min-width: 0;
+    max-height: 70dvh;
+    overflow: auto;
+  }
+  .menuItem {
+    min-height: var(--tap);
+  }
+  .footer {
+    font-size: 11px;
+  }
+}
+@media (max-width: 479px) {
+  .brand > span {
+    /* just the shield + a short mark; the full name returns at >= 480px */
+    font-size: var(--fs-sm);
+  }
 }

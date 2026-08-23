@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import maplibregl, { Map as MlMap, Marker, Popup } from 'maplibre-gl';
 import { useTranslation } from 'react-i18next';
 import s from './dashboard.module.css';
 import type { MapData, RiskCategory } from '@/api/types';
-import { riskColorVar } from '@/components/ui';
+import { Info } from 'lucide-react';
+import { riskColorVar, useIsMobile } from '@/components/ui';
 import { fmtDate } from '@/lib/format';
 import i18n from '@/i18n';
 import { readThemeColor, THEME_EVENT } from '@/theme/theme';
@@ -72,6 +73,8 @@ export function DeliveryMap({
   onSelectSite?: (code: string) => void;
 }) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
+  const [legendOpen, setLegendOpen] = useState(false);
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -249,7 +252,18 @@ export function DeliveryMap({
   return (
     <>
       <div ref={el} className={s.map} data-testid="delivery-map" />
-      <div className={s.mapLegend} aria-label={t('dashboard.legend')}>
+      {/* On a phone the legend would cover the map, so it folds behind this button. */}
+      <button
+        type="button"
+        className={s.legendToggle}
+        aria-expanded={legendOpen}
+        onClick={() => setLegendOpen((o) => !o)}
+        data-testid="map-legend-toggle"
+      >
+        <Info size={13} aria-hidden />
+        {legendOpen ? t('common.hideLegend') : t('common.showLegend')}
+      </button>
+      <div className={s.mapLegend} aria-label={t('dashboard.legend')} hidden={isMobile && !legendOpen}>
         <div className={s.legendRow}><span className={s.legendSquare} />{t('dashboard.legendSite')}</div>
         {otherSites.length > 0 && <div className={s.legendRow}><span className={s.legendSquareMuted} />{t('dashboard.legendOtherSites')}</div>}
         <div className={s.legendRow}><span className={s.legendDot} style={{ background: riskColorVar('Low') }} />{t('dashboard.legendSupplier')} · {t('risk.Low')}</div>

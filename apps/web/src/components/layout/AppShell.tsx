@@ -4,7 +4,7 @@ import s from './layout.module.css';
 import { TopBar } from './TopBar';
 import { Nav } from './Nav';
 import { PresenterPanel } from './PresenterPanel';
-import { DisclaimerBanner, ConfirmDialog, ErrorBoundary, useToast } from '@/components/ui';
+import { DisclaimerBanner, ConfirmDialog, ErrorBoundary, useToast, useIsMobile } from '@/components/ui';
 import { useLive, type LiveStatus } from '@/realtime/useLive';
 
 const NAV_STORAGE_KEY = 'dspc.nav.collapsed';
@@ -42,8 +42,16 @@ export function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [navCollapsed, setNavCollapsed] = useState(readNavCollapsed);
+  const isMobile = useIsMobile();
+  // Below `md` the nav is an overlay drawer instead of a grid column, so it has its own
+  // open/closed state — the persisted rail preference does not apply there.
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const toggleNav = useCallback(() => {
+    if (isMobile) {
+      setDrawerOpen((o) => !o);
+      return;
+    }
     setNavCollapsed((c) => {
       const next = !c;
       try {
@@ -53,19 +61,34 @@ export function AppShell() {
       }
       return next;
     });
-  }, []);
+  }, [isMobile]);
+
+  // A route change closes the drawer (contract: "zamknięcie po wyborze trasy").
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMobile) setDrawerOpen(false);
+  }, [isMobile]);
 
   // The main area changes width; anything measuring itself (map, Gantt) listens for resize.
   useEffect(() => {
     const id = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 220);
     return () => window.clearTimeout(id);
-  }, [navCollapsed]);
+  }, [navCollapsed, isMobile]);
 
   return (
     <LiveCtx.Provider value={live}>
-    <div className={[s.shell, navCollapsed && s.shellRail].filter(Boolean).join(' ')}>
-      <TopBar live={live} onOpenPresenter={() => setPresenter(true)} navCollapsed={navCollapsed} onToggleNav={toggleNav} />
-      <Nav collapsed={navCollapsed} />
+    <div className={[s.shell, navCollapsed && s.shellRail, isMobile && s.shellMobile].filter(Boolean).join(' ')}>
+      <TopBar
+        live={live}
+        onOpenPresenter={() => setPresenter(true)}
+        navCollapsed={isMobile ? !drawerOpen : navCollapsed}
+        onToggleNav={toggleNav}
+        mobile={isMobile}
+      />
+      <Nav collapsed={navCollapsed} drawer={isMobile} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <main className={s.main} id="main">
         <ErrorBoundary resetKey={location.pathname}>
           <Outlet />

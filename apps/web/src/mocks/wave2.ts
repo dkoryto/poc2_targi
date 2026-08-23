@@ -8,8 +8,9 @@ const { t0, t0d } = F;
 
 // ---------------- planning ----------------
 export const baselineKpi: PlanKpi = { downtimeHours: 0, lateOrders: 0, totalLatenessDays: 0, movedOperations: 0, ordersWithShortage: 0, onTimeRate: 1 };
-export const kpiBeforeAct40: PlanKpi = { downtimeHours: 36, lateOrders: 1, totalLatenessDays: 4, movedOperations: 4, ordersWithShortage: 1, onTimeRate: 0.875 };
-export const kpiAfterAct40: PlanKpi = { downtimeHours: 8, lateOrders: 1, totalLatenessDays: 4, movedOperations: 7, ordersWithShortage: 1, onTimeRate: 0.875 };
+// "Before" is the reference plan, so nothing has moved relative to it; "after" counts what re-planning moved.
+export const kpiBeforeAct40: PlanKpi = { downtimeHours: 36, lateOrders: 1, totalLatenessDays: 4, movedOperations: 0, ordersWithShortage: 1, onTimeRate: 0.875 };
+export const kpiAfterAct40: PlanKpi = { downtimeHours: 8, lateOrders: 1, totalLatenessDays: 4, movedOperations: 0, ordersWithShortage: 1, onTimeRate: 0.875 };
 
 export const presets: ScenarioPreset[] = [
   { key: 'DELAY_ACT40_10D', titleKey: 'ACT40_DELAY', changes: [{ type: 'DELAY_INBOUND', poLineId: 'line-0007-1', days: 10, poCode: 'PO-2026-0007', partCode: 'ACT-40' }] },
@@ -65,7 +66,9 @@ function complete(s: PlanningScenario): PlanningScenario {
   const isAct40 = s.changes.some((c) => c.type === 'DELAY_INBOUND' && c.poLineId === 'line-0007-1');
   const isCapacity = s.changes.some((c) => c.type === 'CAPACITY');
   if (isAct40) {
-    return { ...s, status: 'Completed', solver: 'dspc-heuristic/1.0', elapsedMs: 187, before: planBeforeAct40, after: planAfterAct40, kpiBefore: kpiBeforeAct40, kpiAfter: kpiAfterAct40, explanations: act40Explanations, consequences: [{ kind: 'warn', text: 'WO-2026-014: termin przekroczony o 4 dni (brak 8 szt. ACT-40 do ' + t0d(18) + ').' }, { kind: 'info', text: 'WO-2026-019 wciągnięte na gniazdo integracji — luka po ACT-40 wypełniona w 78 %.' }] };
+    // Derived, so the tile can never drift from the table the compare endpoint returns.
+    const movedByReplan = movedOps(planBeforeAct40, planAfterAct40).length;
+    return { ...s, status: 'Completed', solver: 'dspc-heuristic/1.0', elapsedMs: 187, before: planBeforeAct40, after: planAfterAct40, kpiBefore: kpiBeforeAct40, kpiAfter: { ...kpiAfterAct40, movedOperations: movedByReplan }, changesVsBaseline: movedOps(F.plan, planAfterAct40).length, explanations: act40Explanations, consequences: [{ kind: 'warn', text: 'WO-2026-014: termin przekroczony o 4 dni (brak 8 szt. ACT-40 do ' + t0d(18) + ').' }, { kind: 'info', text: 'WO-2026-019 wciągnięte na gniazdo integracji — luka po ACT-40 wypełniona w 78 %.' }] };
   }
   if (isCapacity) {
     return { ...s, status: 'Completed', solver: 'Heuristic fallback', elapsedMs: 3004, before: F.plan, after: F.plan, kpiBefore: baselineKpi, kpiAfter: { ...baselineKpi, lateOrders: 2, totalLatenessDays: 5, onTimeRate: 0.75 }, explanations: [{ reasonCode: 'FALLBACK_USED', orderCode: '', params: { reason: 'timeout' } }, { reasonCode: 'CAPACITY_REDUCED', orderCode: '', params: { workCenterCode: 'WC-INT', factor: 0.5 } }], consequences: [] };
@@ -282,7 +285,7 @@ export const wave2Handlers = [
   http.get(`${B}/planning/scenarios/:id/compare`, ({ params }) => {
     const sc = scenarios.find((s) => s.id === params.id);
     if (!sc?.after || !sc.before) return HttpResponse.json({ movedOperations: [], kpiDelta: {} });
-    const moved = movedOps(F.plan, sc.after);
+    const moved = movedOps(sc.before, sc.after);
     return HttpResponse.json({ movedOperations: moved, kpiDelta: { downtimeHours: (sc.kpiAfter?.downtimeHours ?? 0) - (sc.kpiBefore?.downtimeHours ?? 0) } });
   }),
   http.post(`${B}/planning/scenarios/:id/approve`, async ({ params }) => {

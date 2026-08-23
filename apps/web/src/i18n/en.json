@@ -37,7 +37,10 @@
     "themeLight": "Light theme",
     "themeDark": "Dark theme",
     "collapseNav": "Collapse side menu",
-    "expandNav": "Expand side menu"
+    "expandNav": "Expand side menu",
+    "more": "More",
+    "menu": "Menu",
+    "demo": "Demo"
   },
   "roles": {
     "SupplierUser": "Supplier",
@@ -96,7 +99,13 @@
     "version": "Version",
     "copy": "Copy",
     "copied": "Copied to clipboard",
-    "copyFailed": "Copy failed"
+    "copyFailed": "Copy failed",
+    "filters": "Filters",
+    "sortBy": "Sort by",
+    "listView": "Operation list",
+    "chartView": "Chart",
+    "showLegend": "Show legend",
+    "hideLegend": "Hide legend"
   },
   "auth": {
     "title": "Sign in",
@@ -587,7 +596,7 @@
       "downtimeHours": "Predicted downtime",
       "lateOrders": "Late orders",
       "totalLatenessDays": "Total lateness (days)",
-      "movedOperations": "Moved operations",
+      "movedOperations": "Moved by re-planning",
       "ordersWithShortage": "Orders with shortage",
       "onTimeRate": "On-time rate"
     },
@@ -599,8 +608,7 @@
     "ganttCompareDef": "\"Before\" = baseline with the change applied but not re-sequenced. \"After\" = engine proposal. In compare mode ghost bars show the baseline position.",
     "view": "View",
     "compare": "Compare",
-    "movedOps": "Moved operations ({{count}})",
-    "noMoved": "No moved operations",
+    "movedOps": "Moved by re-planning ({{count}})",
     "approvedInfo": "Approved by {{by}} on {{at}} — baseline v{{version}}",
     "status": {
       "Draft": "Draft",
@@ -613,12 +621,12 @@
     },
     "change": {
       "DELAY_INBOUND": "Delay inbound delivery",
-      "BLOCK_LOT": "Block lot",
+      "BLOCK_LOT": "Simulate lot block",
       "PRIORITY": "Change order priority",
       "CAPACITY": "Change work-center capacity",
       "DELAY_ORDER": "Delay order",
       "DELAY_INBOUND_desc": "Delivery {{line}} delayed by {{days}} days",
-      "BLOCK_LOT_desc": "Block lot {{lot}}",
+      "BLOCK_LOT_desc": "Simulated block of lot {{lot}} (lot status unchanged)",
       "PRIORITY_desc": "Priority {{order}} → {{priority}}",
       "CAPACITY_desc": "Capacity {{wc}} → {{pct}} %",
       "DELAY_ORDER_desc": "Order {{order}} delayed by {{days}} days"
@@ -626,7 +634,7 @@
     "presets": {
       "ACT40_DELAY": "Delay ACT-40 actuators by 10 days",
       "MCU_X7_DELAY": "Delay MCU-X7 control modules by 14 days",
-      "HTS22_BLOCK": "Block HTS-22 steel lot for quality",
+      "HTS22_BLOCK": "Simulate blocking the HTS-22 steel lot for quality",
       "WO014_PRIORITY": "Raise priority of WO-2026-014",
       "WC_INT_CAPACITY": "Reduce integration cell capacity by 50%"
     },
@@ -659,7 +667,12 @@
     "impactLate": "Late orders: {{count}}",
     "impactDowntime": "Predicted downtime: {{from}} h → {{to}} h",
     "impactVersion": "A new baseline version will be created",
-    "featured": "Featured"
+    "featured": "Featured",
+    "movedOpsDef": "Operations the solver moved relative to the “Before” plan — that is, against what would have happened without re-planning. Shifts caused by the event itself (e.g. a late delivery) are already visible in “Before”.",
+    "noMovedTitle": "Re-planning moved no operations",
+    "noMovedDetail": "The plan after the change is already the best available — the solver found no better sequence. The effect of the event itself is visible in the Before / After plan.",
+    "changesVsBaseline": "Changes vs the approved baseline: {{count}}",
+    "simulationNote": "A What-If is a simulation — it does not change any lot status or invalidate passports. An actual block is performed on the lot page (Traceability → Block lot)."
   },
   "trace": {
     "title": "Traceability and genealogy",

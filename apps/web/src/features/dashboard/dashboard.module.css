@@ -247,3 +247,92 @@
   justify-content: space-between;
   gap: 8px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Mobile / tablet — docs/architecture/responsive.md
+ * ------------------------------------------------------------------ */
+
+/* Toggle for the map legend; on desktop the legend is always visible. */
+.legendToggle {
+  display: none;
+}
+
+@media (max-width: 1199px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    /* the shell scrolls the main area; the dashboard is a normal document flow here */
+    height: auto;
+    padding: 12px;
+    gap: 10px;
+  }
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  /* One column of panels, each tall enough to be useful rather than squeezed. */
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    flex: none;
+  }
+  .panel {
+    height: auto;
+    min-height: 300px;
+  }
+  /* The map panel needs an explicit height because its child is absolutely positioned. */
+  .panel[data-testid='panel-map'] {
+    min-height: 320px;
+  }
+  .panel[data-testid='panel-map'] > div:last-child {
+    min-height: 260px;
+  }
+  .gridFocused .panel {
+    min-height: 70dvh;
+  }
+  /* Legend folds behind a button so it stops covering the map. */
+  .legendToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 3;
+    min-height: 32px;
+    padding: 0 10px;
+    background: var(--map-overlay-bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--fg-1);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .mapLegend {
+    bottom: 46px;
+    max-width: calc(100% - 16px);
+  }
+}
+
+.heatWrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  /* Cells stay legible; the panel scrolls sideways instead of shrinking the text. */
+  .heatWrap {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  .heat {
+    min-width: 520px;
+    height: auto;
+    aspect-ratio: 2 / 1;
+  }
+}

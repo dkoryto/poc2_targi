@@ -143,3 +143,76 @@
 .tooltip dd {
   margin: 0;
 }
+
+/* ---- Mobile: the same plan as a scannable list (responsive contract) ---- */
+.opList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.opRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 8px 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--fs-sm);
+}
+.opCode {
+  font-weight: 600;
+}
+.opWc {
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.opWhen {
+  margin-left: auto;
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+}
+.opFlagWait,
+.opFlagFrozen,
+.opShift {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+}
+.opFlagWait {
+  color: var(--crit);
+  border-color: var(--crit-border);
+  background: var(--crit-bg);
+}
+.opFlagFrozen {
+  color: var(--fg-2);
+  background: var(--neutral-bg);
+}
+.opShift {
+  color: var(--warn);
+  border-color: var(--warn-border);
+  background: var(--warn-bg);
+}
+@media (max-width: 767px) {
+  .toolbar {
+    gap: 6px;
+  }
+  .toolbar .legend {
+    display: none;
+  }
+}

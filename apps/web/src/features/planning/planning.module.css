@@ -244,3 +244,25 @@
   background: var(--info);
   color: var(--on-accent);
 }
+
+.vsBaseline {
+  margin: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+}
+
+.simulationNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--info);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg-2);
+  font-size: var(--fs-sm);
+}

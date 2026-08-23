@@ -21,7 +21,7 @@ export function RiskHeatmap({ data }: { data: RiskHeatmapData }) {
   const ch = (H - top) / Math.max(1, data.rows.length);
   const cell = new Map(data.cells.map((c) => [`${c.row}|${c.col}`, c]));
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className={s.heatWrap}>
       <svg viewBox={`0 0 ${W} ${H}`} className={s.heat} role="img" aria-label={t('dashboard.heatmap')} preserveAspectRatio="xMidYMid meet" data-testid="risk-heatmap">
         {data.cols.map((c, i) => (
           <text key={c} x={left + i * cw + cw / 2} y={16} textAnchor="middle" className={s.heatAxis}>

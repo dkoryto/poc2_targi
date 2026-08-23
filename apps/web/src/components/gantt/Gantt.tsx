@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import s from './gantt.module.css';
 import { buildLayout, productColor, dayX, type GanttRowMode, type GanttBar } from './ganttModel';
 import type { GanttData } from '@/api/types';
-import { SegmentedControl } from '@/components/ui';
+import { SegmentedControl, ScrollArea, useIsMobile } from '@/components/ui';
 import { fmtDate, fmtDateTime, fmtSigned } from '@/lib/format';
 
 export interface GanttProps {
@@ -27,6 +27,9 @@ const HEADER_H = 40;
 
 export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: weeksProp, onWeeksChange, today, showToolbar = true, compact, onSelect }: GanttProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
+  /* On a phone the chart is unreadable at any zoom, so the same data is offered as a list. */
+  const [view, setView] = useState<'chart' | 'list'>('chart');
   const [modeState, setModeState] = useState<GanttRowMode>('workCenter');
   const [weeksState, setWeeksState] = useState<4 | 8 | 12>(8);
   const mode = modeProp ?? modeState;
@@ -89,6 +92,18 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
               { value: 'order', label: t('dashboard.viewByOrder') },
             ]}
           />
+          {isMobile && (
+            <SegmentedControl
+              label={t('gantt.zoom')}
+              value={view}
+              onChange={setView}
+              data-testid="gantt-view"
+              options={[
+                { value: 'chart', label: t('common.chartView') },
+                { value: 'list', label: t('common.listView') },
+              ]}
+            />
+          )}
           <div className={s.legend} style={{ marginLeft: 'auto' }}>
             <span className={s.legendItem}><span className={s.swatch} style={{ background: 'var(--info)' }} />{t('gantt.op')}</span>
             <span className={s.legendItem}><span className={s.swatch} style={{ background: 'repeating-linear-gradient(45deg,var(--hatch-fill) 0 2px,transparent 2px 5px)', border: '1px solid var(--hatch-fill)' }} />{t('gantt.frozen')}</span>
@@ -98,7 +113,35 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
           </div>
         </div>
       )}
-      <div className={s.scroll}>
+      {isMobile && view === 'list' ? (
+        <ul className={s.opList} data-testid="gantt-list">
+          {visibleBars.length === 0 && <li className="muted">{t('gantt.noOps')}</li>}
+          {[...visibleBars]
+            .sort((a, b) => a.op.start.localeCompare(b.op.start))
+            .map((b) => (
+              <li key={b.op.code}>
+                <button
+                  type="button"
+                  className={s.opRow}
+                  onClick={() => onSelect?.(b.op.code)}
+                  data-testid={`gantt-op-${b.op.code}`}
+                >
+                  <span className={s.opCode}>{b.op.orderCode}</span>
+                  <span className={s.opWc}>{b.op.workCenterCode}</span>
+                  <span className={s.opWhen}>
+                    {fmtDate(b.op.start)} → {fmtDate(b.op.end)}
+                  </span>
+                  {b.op.materialWait && <span className={s.opFlagWait}>{t('gantt.materialWait')}</span>}
+                  {b.op.frozen && <span className={s.opFlagFrozen}>{t('gantt.frozen')}</span>}
+                  {b.changed && b.shiftDays != null && b.shiftDays !== 0 && (
+                    <span className={s.opShift}>{fmtSigned(b.shiftDays, 1)} d</span>
+                  )}
+                </button>
+              </li>
+            ))}
+        </ul>
+      ) : (
+      <ScrollArea className={s.scroll} axis="both" label={t('dashboard.plan')}>
         {layout.rows.length === 0 || visibleBars.length === 0 ? (
           <div className="muted" style={{ padding: 16 }}>{t('gantt.noOps')}</div>
         ) : null}
@@ -213,7 +256,8 @@ export function Gantt({ data, compare, mode: modeProp, onModeChange, weeks: week
             })}
           </g>
         </svg>
-      </div>
+      </ScrollArea>
+      )}
       {tip && (
         <div className={s.tooltip} style={{ left: tip.x + 12, top: tip.y + 12 }} role="tooltip">
           <dl>

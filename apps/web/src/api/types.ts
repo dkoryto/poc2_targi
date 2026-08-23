@@ -598,6 +598,8 @@ export interface PlanningScenario {
   approvedBy?: string | null;
   baselineVersion?: number | null;
   errorMessage?: string | null;
+  /** Operations differing from the approved baseline. `kpiAfter.movedOperations` counts what re-planning moved vs "before". */
+  changesVsBaseline?: number | null;
 }
 export interface PlanningScenarioSummary {
   id: string;

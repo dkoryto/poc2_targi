@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
-import { Bell, Play, RotateCcw, ShieldCheck, ChevronDown, LogOut, UserCog, Wifi, WifiOff, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, Play, RotateCcw, ShieldCheck, ChevronDown, LogOut, UserCog, Wifi, WifiOff, PanelLeftClose, PanelLeftOpen, Menu } from 'lucide-react';
 import s from './layout.module.css';
 import { useAuth } from '@/features/auth/auth';
 import { useDemoAccounts, useHealth, useResetDemo, useDemoStatus } from '@/features/demo/api';
 import { useNotifications } from '@/features/notifications/api';
-import { Badge, Button, ConfirmDialog, IconButton, SegmentedControl, useToast } from '@/components/ui';
+import { Badge, Button, ConfirmDialog, IconButton, OverflowItem, OverflowMenu, SegmentedControl, useIsCompact, useToast } from '@/components/ui';
 import { setLocale, currentLocale } from '@/i18n';
 import { ThemeSwitch } from '@/theme/theme';
 import { SiteSwitch } from '@/features/sites/SiteSwitch';
@@ -27,7 +27,7 @@ function Clock() {
   );
 }
 
-export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { live: LiveStatus; onOpenPresenter: () => void; navCollapsed: boolean; onToggleNav: () => void }) {
+export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav, mobile = false }: { live: LiveStatus; onOpenPresenter: () => void; navCollapsed: boolean; onToggleNav: () => void; mobile?: boolean }) {
   const { t } = useTranslation();
   const { user, demoMode, demoLogin, logout } = useAuth();
   const navigate = useNavigate();
@@ -40,6 +40,11 @@ export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { l
   const [menuOpen, setMenuOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  /*
+   * Below `lg` the bar cannot hold every control. Rather than hiding them (contract
+   * rule 2) each one is rendered exactly once, either inline or inside the "⋯" menu.
+   */
+  const compact = useIsCompact();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -67,6 +72,45 @@ export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { l
 
   const supplierAccounts = accounts.data?.filter((a) => a.role === 'SupplierUser') ?? [];
 
+  const languageSwitch = (
+    <SegmentedControl
+      label={t('topbar.language')}
+      data-testid="lang-switch"
+      value={locale}
+      onChange={(v) => setLocale(v)}
+      options={[
+        { value: 'pl', label: 'PL' },
+        { value: 'en', label: 'EN' },
+      ]}
+    />
+  );
+
+  const demoButtons = demoMode ? (
+    <>
+      <Button size="sm" icon={<Play size={13} />} onClick={onOpenPresenter} data-testid="run-demo">
+        {t('topbar.runDemo')}
+      </Button>
+      {canReset && (
+        <Button size="sm" variant="danger" icon={<RotateCcw size={13} />} onClick={() => setResetOpen(true)} data-testid="reset-demo">
+          {t('topbar.resetDemo')}
+        </Button>
+      )}
+    </>
+  ) : null;
+
+  const notificationsButton = (
+    <div style={{ position: 'relative' }}>
+      <IconButton label={t('topbar.notifications')} onClick={() => navigate('/notifications')} data-testid="notifications-button">
+        <Bell size={17} />
+      </IconButton>
+      {unread > 0 && (
+        <span style={{ position: 'absolute', top: -2, right: -2 }} aria-label={t('topbar.unread', { count: unread })}>
+          <Badge count={unread} />
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <header className={s.topbar}>
       <button
@@ -79,7 +123,7 @@ export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { l
         title={navCollapsed ? t('topbar.expandNav') : t('topbar.collapseNav')}
         data-testid="nav-toggle"
       >
-        {navCollapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
+        {mobile ? <Menu size={20} aria-hidden /> : navCollapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
       </button>
       <Link to="/" className={s.brand} aria-label={t('app.name')}>
         <ShieldCheck size={22} color="var(--ok)" aria-hidden />
@@ -92,44 +136,39 @@ export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { l
       <span className={s.status} data-testid="online-status" title={live === 'connected' ? t('app.liveConnected') : t('app.liveDisconnected')}>
         <span className={[s.dot, online ? (live === 'connected' ? s.dotOk : s.dotWarn) : s.dotCrit].join(' ')} aria-hidden />
         {online ? (live === 'connected' ? <Wifi size={12} aria-hidden /> : <WifiOff size={12} aria-hidden />) : <WifiOff size={12} aria-hidden />}
-        {online ? (live === 'connected' ? t('app.online') : t('app.degraded')) : t('app.offline')}
+        <span className={s.statusLabel}>{online ? (live === 'connected' ? t('app.online') : t('app.degraded')) : t('app.offline')}</span>
       </span>
       <div className={s.spacer} />
       <div className={s.topGroup}>
         <SiteSwitch />
-        <ThemeSwitch />
-        <SegmentedControl
-          label={t('topbar.language')}
-          data-testid="lang-switch"
-          value={locale}
-          onChange={(v) => setLocale(v)}
-          options={[
-            { value: 'pl', label: 'PL' },
-            { value: 'en', label: 'EN' },
-          ]}
-        />
-        {demoMode && (
-          <Button size="sm" icon={<Play size={13} />} onClick={onOpenPresenter} data-testid="run-demo">
-            {t('topbar.runDemo')}
-          </Button>
+        {compact ? (
+          <OverflowMenu data-testid="overflow-menu">
+            <OverflowItem label={t('topbar.theme')}>
+              <ThemeSwitch />
+            </OverflowItem>
+            <OverflowItem label={t('topbar.language')}>{languageSwitch}</OverflowItem>
+            {demoMode && <OverflowItem label={t('topbar.demo')}>{demoButtons}</OverflowItem>}
+            <OverflowItem label={t('topbar.notifications')}>{notificationsButton}</OverflowItem>
+          </OverflowMenu>
+        ) : (
+          <>
+            <ThemeSwitch />
+            {languageSwitch}
+            {demoButtons}
+            {notificationsButton}
+          </>
         )}
-        {demoMode && canReset && (
-          <Button size="sm" variant="danger" icon={<RotateCcw size={13} />} onClick={() => setResetOpen(true)} data-testid="reset-demo">
-            {t('topbar.resetDemo')}
-          </Button>
-        )}
-        <div style={{ position: 'relative' }}>
-          <IconButton label={t('topbar.notifications')} onClick={() => navigate('/notifications')} data-testid="notifications-button">
-            <Bell size={17} />
-          </IconButton>
-          {unread > 0 && (
-            <span style={{ position: 'absolute', top: -2, right: -2 }} aria-label={t('topbar.unread', { count: unread })}>
-              <Badge count={unread} />
-            </span>
-          )}
-        </div>
         <div className={s.menuWrap} ref={menuRef}>
-          <button type="button" className={s.userBtn} onClick={() => setMenuOpen((o) => !o)} aria-haspopup="menu" aria-expanded={menuOpen} data-testid="user-menu">
+          <button
+            type="button"
+            className={s.userBtn}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-label={`${user?.displayName ?? ''} · ${user ? t(`roles.${user.role}`) : ''}`}
+            title={`${user?.displayName ?? ''} · ${user ? t(`roles.${user.role}`) : ''}`}
+            data-testid="user-menu"
+          >
             <UserCog size={16} aria-hidden />
             <span>
               <strong>{user?.displayName ?? '—'}</strong>
