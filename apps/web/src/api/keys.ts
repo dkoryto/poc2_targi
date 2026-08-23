@@ -4,13 +4,16 @@ export const keys = {
   demoScript: ['demo', 'script'] as const,
   demoAccounts: ['demo', 'accounts'] as const,
   health: ['health'] as const,
+  sites: ['sites'] as const,
+  // Site-scoped keys carry the active plant as their last segment, so invalidating by the
+  // bare prefix (e.g. `keys.dashboard.all`) still clears every plant's cached copy.
   dashboard: {
     all: ['dashboard'] as const,
-    kpis: ['dashboard', 'kpis'] as const,
-    map: ['dashboard', 'map'] as const,
-    heatmap: ['dashboard', 'heatmap'] as const,
-    quality: ['dashboard', 'quality'] as const,
-    plan: ['dashboard', 'plan'] as const,
+    kpis: (site: string) => ['dashboard', 'kpis', site] as const,
+    map: (site: string) => ['dashboard', 'map', site] as const,
+    heatmap: (site: string) => ['dashboard', 'heatmap', site] as const,
+    quality: (site: string) => ['dashboard', 'quality', site] as const,
+    plan: (site: string) => ['dashboard', 'plan', site] as const,
   },
   suppliers: ['suppliers'] as const,
   purchaseOrders: {
@@ -21,16 +24,18 @@ export const keys = {
   },
   shipments: {
     all: ['shipments'] as const,
+    list: (site: string) => ['shipments', 'list', site] as const,
     detail: (code: string) => ['shipments', 'detail', code] as const,
   },
   logisticsEvents: ['logistics-events'] as const,
+  logisticsEventList: (site: string) => ['logistics-events', site] as const,
   documents: (q: Record<string, unknown>) => ['documents', q] as const,
   notifications: ['notifications'] as const,
   planning: {
     all: ['planning'] as const,
-    baseline: ['planning', 'baseline'] as const,
-    presets: ['planning', 'presets'] as const,
-    scenarios: ['planning', 'scenarios'] as const,
+    baseline: (site: string) => ['planning', 'baseline', site] as const,
+    presets: (site: string) => ['planning', 'presets', site] as const,
+    scenarios: (site: string) => ['planning', 'scenarios', 'list', site] as const,
     scenario: (id: string) => ['planning', 'scenarios', id] as const,
     compare: (id: string) => ['planning', 'scenarios', id, 'compare'] as const,
   },
@@ -39,7 +44,7 @@ export const keys = {
   lotForward: (lotNumber: string) => ['lots', 'forward', lotNumber] as const,
   lotList: (filters: object) => ['lots', 'list', filters] as const,
   trace: {
-    search: (q: string) => ['trace', 'search', q] as const,
+    search: (q: string, site: string) => ['trace', 'search', q, site] as const,
     serial: (serial: string) => ['trace', 'serial', serial] as const,
     audit: (filters: object) => ['trace', 'audit', filters] as const,
   },

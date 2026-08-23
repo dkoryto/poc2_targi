@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '@/components/ui';
 import { ThemeProvider } from '@/theme/theme';
 import { AuthProvider } from '@/features/auth/auth';
+import { SiteProvider } from '@/features/sites/sites';
 import { RequireAuth } from '@/features/auth/RequireRole';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { AppShell } from '@/components/layout/AppShell';
@@ -73,9 +74,11 @@ export function App({ queryClient }: { queryClient?: QueryClient }) {
       <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <SiteProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </SiteProvider>
         </AuthProvider>
       </ToastProvider>
       </ThemeProvider>

@@ -29,7 +29,7 @@ class RO { observe() {} unobserve() {} disconnect() {} }
 Object.defineProperty(globalThis, 'ResizeObserver', { value: RO, writable: true });
 Object.defineProperty(window, 'matchMedia', { writable: true, value: (q: string) => ({ matches: false, media: q, onchange: null, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn() }) });
 vi.mock('maplibre-gl', () => {
-  class Map { on(ev: string, cb: () => void) { if (ev === 'load') setTimeout(cb, 0); return this; } addControl() { return this; } addSource() {} addLayer() {} getSource() { return { setData() {} }; } remove() {} resize() {} }
+  class Map { on(ev: string, cb: () => void) { if (ev === 'load') setTimeout(cb, 0); return this; } addControl() { return this; } addSource() {} addLayer() {} getSource() { return { setData() {} }; } remove() {} resize() {} triggerRepaint() {} easeTo() {} setPaintProperty() {} project() { return { x: 0, y: 0 }; } }
   class Marker { setLngLat() { return this; } setPopup() { return this; } addTo() { return this; } remove() {} constructor(_o?: unknown) {} }
   class Popup { setHTML() { return this; } setDOMContent() { return this; } constructor(_o?: unknown) {} }
   class NavigationControl { constructor(_o?: unknown) {} }

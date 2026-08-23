@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, requestRaw } from '@/api/client';
 import { keys } from '@/api/keys';
+import { useScopedSiteCode, useSiteReady } from '@/features/sites/sites';
 import type { DocumentSummary, EtaChangeRequest, EtaChangeResponse, ImpactResponse, Paged, PoLinePatch, PurchaseOrderDetail, PurchaseOrderLine, PurchaseOrderSummary, Shipment, ShipmentAdviceRequest, Supplier } from '@/api/types';
 
 export interface PoFilters {
@@ -17,7 +18,16 @@ export function useSuppliers() {
   return useQuery({ queryKey: keys.suppliers, queryFn: () => api.get<Paged<Supplier>>('/suppliers') });
 }
 export function usePurchaseOrders(filters: PoFilters) {
-  return useQuery({ queryKey: keys.purchaseOrders.list(filters), queryFn: () => api.get<Paged<PurchaseOrderSummary>>('/purchase-orders', { ...filters }) });
+  // The active plant is part of the filter object, so it lands in both the key and the query string.
+  const site = useScopedSiteCode();
+  const ready = useSiteReady();
+  const scoped: PoFilters = { ...filters, siteCode: filters.siteCode ?? site ?? undefined };
+  if (!scoped.siteCode) delete scoped.siteCode;
+  return useQuery({
+    queryKey: keys.purchaseOrders.list(scoped),
+    queryFn: () => api.get<Paged<PurchaseOrderSummary>>('/purchase-orders', { ...scoped }),
+    enabled: ready,
+  });
 }
 export function usePurchaseOrder(code: string | undefined) {
   return useQuery({ queryKey: keys.purchaseOrders.detail(code ?? ''), queryFn: () => api.get<PurchaseOrderDetail>(`/purchase-orders/${code}`), enabled: !!code });

@@ -331,3 +331,13 @@
     display: none;
   }
 }
+
+/* Presenter step: which plant the step is told against. */
+.stepSite {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--fg-2);
+}

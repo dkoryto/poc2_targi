@@ -14,12 +14,12 @@ const INVALIDATIONS: Record<string, QueryKey[]> = {
   SupplierOrderStatusChanged: [keys.purchaseOrders.all, keys.shipments.all, keys.dashboard.all],
   DeliveryRiskChanged: [keys.dashboard.all, keys.purchaseOrders.all, keys.shipments.all, keys.suppliers],
   LogisticsRiskEventRaised: [keys.logisticsEvents, keys.dashboard.all, keys.shipments.all, keys.purchaseOrders.all],
-  QualityDocumentUploaded: [keys.purchaseOrders.all, keys.dashboard.quality, keys.lots],
+  QualityDocumentUploaded: [keys.purchaseOrders.all, ['dashboard', 'quality'] as const, keys.lots],
   PlanningScenarioCompleted: [keys.planning.all],
   ProductionPlanApproved: [keys.planning.all, keys.dashboard.all],
   MaterialLotBlocked: [keys.lots, keys.passports, keys.dashboard.all, keys.planning.all, keys.quality],
-  PassportInvalidated: [keys.passports, keys.dashboard.quality],
-  PassportGenerated: [keys.passports, keys.dashboard.quality],
+  PassportInvalidated: [keys.passports, ['dashboard', 'quality'] as const],
+  PassportGenerated: [keys.passports, ['dashboard', 'quality'] as const],
 };
 
 type Listener = (e: DomainEvent) => void;

@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { keys } from '@/api/keys';
+import { useSiteCode, useSiteParam, useSiteReady } from '@/features/sites/sites';
 import type { LogisticsEvent, LogisticsEventRequest, Paged, Shipment, ShipmentEvent } from '@/api/types';
 
 export function useShipments() {
-  return useQuery({ queryKey: keys.shipments.all, queryFn: () => api.get<Paged<Shipment>>('/shipments'), refetchInterval: 30_000 });
+  const params = useSiteParam();
+  const ready = useSiteReady();
+  return useQuery({
+    queryKey: keys.shipments.list(useSiteCode()),
+    queryFn: () => api.get<Paged<Shipment>>('/shipments', params),
+    enabled: ready,
+    refetchInterval: 30_000,
+  });
 }
 export function useShipment(code: string | undefined) {
   return useQuery({ queryKey: keys.shipments.detail(code ?? ''), queryFn: () => api.get<Shipment>(`/shipments/${code}`), enabled: !!code });
@@ -17,7 +25,14 @@ export function useAddShipmentEvent(code: string) {
   });
 }
 export function useLogisticsEvents() {
-  return useQuery({ queryKey: keys.logisticsEvents, queryFn: () => api.get<Paged<LogisticsEvent>>('/logistics-events'), refetchInterval: 30_000 });
+  const params = useSiteParam();
+  const ready = useSiteReady();
+  return useQuery({
+    queryKey: keys.logisticsEventList(useSiteCode()),
+    queryFn: () => api.get<Paged<LogisticsEvent>>('/logistics-events', params),
+    enabled: ready,
+    refetchInterval: 30_000,
+  });
 }
 export function useRaiseLogisticsEvent() {
   const qc = useQueryClient();

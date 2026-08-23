@@ -104,6 +104,11 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
+/** Auth context where it may legitimately be absent (isolated component rendering). */
+export function useOptionalAuth(): AuthState | null {
+  return useContext(Ctx);
+}
+
 export function isApiError(e: unknown, status?: number): e is ApiError {
   return e instanceof ApiError && (status === undefined || e.status === status);
 }

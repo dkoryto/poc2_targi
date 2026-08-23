@@ -10,6 +10,8 @@ import type { PlanningScenarioSummary, ScenarioChange, ScenarioStatus } from '@/
 import { Button, Card, DataTable, ErrorState, LoadingState, StatusChip, type Column, useToast } from '@/components/ui';
 import { Gantt } from '@/components/gantt/Gantt';
 import { useAuth } from '@/features/auth/auth';
+import { useSite } from '@/features/sites/sites';
+import { Star } from 'lucide-react';
 import { fmtDateTime, fmtNumber } from '@/lib/format';
 
 export const CAN_RUN = ['ProductionPlanner', 'DemoPresenter', 'Administrator', 'OperationsDirector'];
@@ -37,6 +39,7 @@ export function PlanningPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { activeSite } = useSite();
   const baseline = useBaseline();
   const presets = usePresets();
   const scenarios = useScenarios();
@@ -68,6 +71,13 @@ export function PlanningPage() {
     { key: 'solver', header: t('planning.solver'), render: (r) => (r.solver ? <SolverBadge solver={r.solver} /> : '—') },
     { key: 'downtime', header: t('planning.kpi.downtimeHours'), align: 'right', render: (r) => (r.kpiAfter ? `${fmtNumber(r.kpiAfter.downtimeHours)} h` : '—'), sortValue: (r) => r.kpiAfter?.downtimeHours ?? null },
   ];
+
+  /**
+   * Each plant has one headline scenario (`featured`, or the plant's `featuredScenarioKey`);
+   * it is badged and sorted first so the presenter always starts from the right tile.
+   */
+  const isFeatured = (p: { key: string; featured?: boolean }) => p.featured === true || (!!activeSite?.featuredScenarioKey && p.key === activeSite.featuredScenarioKey);
+  const orderedPresets = [...(presets.data ?? [])].sort((a, b) => Number(isFeatured(b)) - Number(isFeatured(a)));
 
   return (
     <div className="page" data-testid="planning-page">
@@ -110,11 +120,11 @@ export function PlanningPage() {
         {presets.isError && <ErrorState error={presets.error} onRetry={() => presets.refetch()} />}
         {presets.data && (
           <div className={s.tiles}>
-            {presets.data.map((p) => (
+            {orderedPresets.map((p) => (
               <button
                 key={p.key}
                 type="button"
-                className={s.tile}
+                className={[s.tile, isFeatured(p) && s.tileFeatured].filter(Boolean).join(' ')}
                 disabled={!canRun || busyKey !== null}
                 onClick={() => void createAndRun(presetTitle(p.titleKey, t), p.changes, p.key)}
                 data-testid={`scenario-tile-${p.key}`}
@@ -123,6 +133,12 @@ export function PlanningPage() {
                 <span className={s.tileTitle}>
                   {busyKey === p.key ? <Clock3 size={15} aria-hidden /> : <Play size={15} aria-hidden />}
                   {presetTitle(p.titleKey, t)}
+                  {isFeatured(p) && (
+                    <span className={s.featuredBadge} data-testid={`scenario-featured-${p.key}`}>
+                      <Star size={11} aria-hidden />
+                      {t('planning.featured')}
+                    </span>
+                  )}
                 </span>
                 <span className={s.tileChanges}>
                   {p.changes.map((c, i) => <span key={i}>{describeChange(c, t)}</span>)}

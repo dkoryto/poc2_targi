@@ -54,6 +54,23 @@ A global `ErrorBoundary` (in `components/ui`) wraps the routed content in `AppSh
 4. Strings in both `i18n/pl.json` and `i18n/en.json` (same keys). Explanation reason codes live under `explain.*` with `{{param}}` placeholders.
 5. Fixtures + handler in `src/mocks`, and a test.
 
+## Multi-site
+
+`src/features/sites/` holds `SiteProvider` / `useSite()` / `SiteSwitch` / `SiteChip`. The active plant comes
+from `localStorage` (`dspc.site`), then `/auth/me`'s `siteCode`, then the plant flagged `isDefault`; a stored
+plant outside the user's `availableSites` is discarded. See `docs/architecture/multi-site.md` for the plants
+and the API contract.
+
+Rules when adding a screen:
+
+- Site-scoped hooks take the plant from `useScopedSiteCode()` (params) and put it in the **query key**, so a
+  switch refetches instead of showing another plant's data; gate them with `enabled: useSiteReady()`.
+- `useSiteReady()` is false until both auth and `/sites` have settled, so each hook fires once with the right
+  key rather than re-keying a request already in flight.
+- An API **without** `/sites` still works: the provider synthesises a single plant from the user's `siteCode`,
+  `scoped` is false and `?siteCode=` is omitted entirely, so a single-plant backend behaves exactly as before.
+- Label any record that may belong to another plant with `<SiteChip code={…} />`.
+
 ## i18n rules
 
 - All user-visible text via `t()`; keys grouped by module. Plurals use i18next `_one/_few/_many/_other`.
@@ -78,7 +95,9 @@ A global `ErrorBoundary` (in `components/ui`) wraps the routed content in `AppSh
 | Trace | `trace-page`, `trace-search`, `trace-quick-<code>`, `trace-hit-<code>`, `serial-page`, `genealogy-tree`, `trace-node-<code>`, `trace-toggle-<code>`, `trace-node-panel`, `trace-node-open`, `trace-node-download`, `trace-components`, `audit-export`, `open-passport` |
 | Lots | `lots-page`, `lots-table`, `lot-page`, `trace-forward`, `btn-block-lot`, `block-reason`, `block-ncr`, `block-result`, `btn-add-inspection`, `submit-inspection` |
 | Passports | `passports-page`, `passports-table`, `passport-filter-<Status>`, `passport-page`, `passport-status`, `passport-completeness`, `passport-missing`, `passport-complete`, `passport-req-<CODE>`, `passport-versions`, `passport-pdf-<v>`, `passport-qr`, `passport-invalidated`, `btn-approve-passport`, `btn-generate-passport` |
-| Shell | `nav-toggle`, `main-nav` (`data-collapsed`), `theme-switch` (+ `theme-switch-auto/-light/-dark`), `lang-switch`, `error-boundary`, `error-retry`, `error-reload` |
+| Shell | `nav-toggle`, `main-nav` (`data-collapsed`), `theme-switch` (+ `theme-switch-auto/-light/-dark`), `lang-switch`, `site-switch`, `site-option-<CODE>`, `error-boundary`, `error-retry`, `error-reload` |
+| Planning (multi-site) | `scenario-featured-<presetKey>` on the active plant's headline tile |
+| Map | `map-supplier-<CODE>`, `map-shipment-<CODE>`, `map-site-<CODE>` (other plants) |
 | Audit / admin | `audit-page`, `audit-table`, `audit-row-<id>`, `audit-detail`, `json-diff`, `audit-export`, `admin-page`, `service-<name>`, `service-signalr`, `settings-tables`, `summary-page` |
 
 Mocks for all wave-2 endpoints live in `src/mocks/wave2.ts` (stateful: scenarios run → complete after ~0.7 s, lot block invalidates passports, generate bumps versions; `resetMockState()` restores).

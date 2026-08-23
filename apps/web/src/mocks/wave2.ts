@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import * as F from './fixtures';
+import { planFor, presetsFor, siteOf } from './sites';
 import type { AdminSettings, AuditEvent, BlockLotRequest, CreateScenarioRequest, GanttData, Inspection, InspectionRequest, Lot, LotForward, LotSummary, MovedOperation, Passport, PassportSummary, PlanKpi, PlanningBaseline, PlanningScenario, PlanningScenarioSummary, ScenarioPreset, SerialTrace, TraceNode, TraceSearchHit } from '@/api/types';
 
 const B = '/api/v1';
@@ -50,7 +51,8 @@ export const act40Explanations: PlanningScenario['explanations'] = [
 ];
 
 let baselineVersion = 1;
-let scenarios: PlanningScenario[] = [];
+type MockScenario = PlanningScenario & { siteCode?: string };
+let scenarios: MockScenario[] = [];
 let seq = 0;
 
 export function baseline(): PlanningBaseline {
@@ -249,12 +251,20 @@ export function bindCurrentUser(fn: () => { username: string; role: string }) {
 
 export const wave2Handlers = [
   // planning
-  http.get(`${B}/planning/baseline`, () => HttpResponse.json(baseline())),
-  http.get(`${B}/planning/scenarios/presets`, () => HttpResponse.json(presets)),
-  http.get(`${B}/planning/scenarios`, () => HttpResponse.json({ items: scenarios.map(summary), total: scenarios.length })),
+  http.get(`${B}/planning/baseline`, ({ request }) => {
+    const site = siteOf(request);
+    const b = baseline();
+    return HttpResponse.json(site === 'SITE-01' ? b : { ...b, id: `bl-${site}`, gantt: planFor(site, F.plan), kpi: baselineKpi });
+  }),
+  http.get(`${B}/planning/scenarios/presets`, ({ request }) => HttpResponse.json(presetsFor(siteOf(request), presets))),
+  http.get(`${B}/planning/scenarios`, ({ request }) => {
+    const site = siteOf(request);
+    const items = scenarios.filter((sc) => (sc.siteCode ?? 'SITE-01') === site).map(summary);
+    return HttpResponse.json({ items, total: items.length });
+  }),
   http.post(`${B}/planning/scenarios`, async ({ request }) => {
     const body = (await request.json()) as CreateScenarioRequest;
-    const sc: PlanningScenario = { id: `sc-${++seq}`, name: body.name, status: 'Draft', createdAt: new Date().toISOString(), createdBy: currentRole().username, changes: body.changes };
+    const sc: MockScenario = { id: `sc-${++seq}`, name: body.name, status: 'Draft', createdAt: new Date().toISOString(), createdBy: currentRole().username, changes: body.changes, siteCode: siteOf(request) };
     scenarios = [sc, ...scenarios];
     return HttpResponse.json(sc, { status: 201 });
   }),
@@ -292,7 +302,8 @@ export const wave2Handlers = [
   // trace
   http.get(`${B}/trace/search`, ({ request }) => {
     const q = (new URL(request.url).searchParams.get('q') ?? '').toLowerCase();
-    return HttpResponse.json(searchIndex.filter((h) => h.code.toLowerCase().includes(q) || h.label.toLowerCase().includes(q)));
+    if (siteOf(request) !== 'SITE-01') return HttpResponse.json([]);
+    return HttpResponse.json(searchIndex.map((h) => ({ ...h, siteCode: 'SITE-01' })).filter((h) => h.code.toLowerCase().includes(q) || h.label.toLowerCase().includes(q)));
   }),
   http.get(`${B}/trace/serials/:serial`, ({ params }) => {
     const tr = serialTrace(String(params.serial));
@@ -308,6 +319,7 @@ export const wave2Handlers = [
   }),
   http.get(`${B}/lots`, ({ request }) => {
     const url = new URL(request.url);
+    if (siteOf(request) !== 'SITE-01') return HttpResponse.json({ items: [], total: 0 });
     let items = Object.values(lots).map(({ lotNumber, heatNumber, partCode, partName, supplierCode, supplierName, quantity, unit, status, receivedOn }) => ({ lotNumber, heatNumber, partCode, partName, supplierCode, supplierName, quantity, unit, status, receivedOn }));
     const st = url.searchParams.get('status'); if (st) items = items.filter((l) => l.status === st);
     const pc = url.searchParams.get('partCode'); if (pc) items = items.filter((l) => l.partCode.toLowerCase().includes(pc.toLowerCase()));
@@ -350,6 +362,7 @@ export const wave2Handlers = [
   // passports
   http.get(`${B}/passports`, ({ request }) => {
     const url = new URL(request.url);
+    if (siteOf(request) !== 'SITE-01') return HttpResponse.json({ items: [], total: 0 });
     let items = Object.values(passports).map(passportSummary);
     const st = url.searchParams.get('status'); if (st) items = items.filter((p) => p.status === st);
     const q = url.searchParams.get('q'); if (q) items = items.filter((p) => p.serial.toLowerCase().includes(q.toLowerCase()));

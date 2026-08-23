@@ -1,6 +1,7 @@
 import { http, HttpResponse, delay } from 'msw';
 import * as F from './fixtures';
 import { wave2Handlers, resetWave2, bindCurrentUser } from './wave2';
+import { SITES, kpisFor, mapFor, heatmapFor, qualityFor, planFor, purchaseOrdersFor, siteOf } from './sites';
 import type { EtaChangeRequest, LogisticsEvent, Role, UserContext } from '@/api/types';
 
 const B = '/api/v1';
@@ -21,7 +22,7 @@ export function resetMockState() {
 
 function userFor(role: Role, supplierCode?: string | null): UserContext {
   if (role === 'SupplierUser') return { ...F.supplierUser, supplierId: supplierCode ?? 'SUP-02' };
-  return { ...F.presenter, id: `u-${role}`, username: role.toLowerCase(), displayName: role, role };
+  return { ...F.presenter, id: `u-${role}`, username: role.toLowerCase(), displayName: role, role, availableSites: F.ALL_SITE_CODES };
 }
 
 bindCurrentUser(() => ({ username: currentUser.username, role: currentUser.role }));
@@ -46,16 +47,17 @@ export const handlers = [
   }),
   http.get(`${B}/auth/me`, () => HttpResponse.json(currentUser)),
 
-  http.get(`${B}/dashboard/kpis`, () => HttpResponse.json(kpis)),
-  http.get(`${B}/dashboard/map`, () => HttpResponse.json(F.mapData)),
-  http.get(`${B}/dashboard/risk-heatmap`, () => HttpResponse.json(F.heatmap)),
-  http.get(`${B}/dashboard/quality-status`, () => HttpResponse.json(F.qualityStatus)),
-  http.get(`${B}/dashboard/plan`, () => HttpResponse.json(F.plan)),
+  http.get(`${B}/sites`, () => HttpResponse.json(SITES)),
+  http.get(`${B}/dashboard/kpis`, ({ request }) => HttpResponse.json(kpisFor(siteOf(request), kpis))),
+  http.get(`${B}/dashboard/map`, ({ request }) => HttpResponse.json(mapFor(siteOf(request), F.mapData))),
+  http.get(`${B}/dashboard/risk-heatmap`, ({ request }) => HttpResponse.json(heatmapFor(siteOf(request), F.heatmap))),
+  http.get(`${B}/dashboard/quality-status`, ({ request }) => HttpResponse.json(qualityFor(siteOf(request), F.qualityStatus))),
+  http.get(`${B}/dashboard/plan`, ({ request }) => HttpResponse.json(planFor(siteOf(request), F.plan))),
 
   http.get(`${B}/suppliers`, () => HttpResponse.json({ items: currentUser.role === 'SupplierUser' ? F.suppliers.filter((s) => s.code === currentUser.supplierId) : F.suppliers, total: F.suppliers.length })),
   http.get(`${B}/purchase-orders`, ({ request }) => {
     const url = new URL(request.url);
-    let items = F.poList;
+    let items = purchaseOrdersFor(siteOf(request), F.poList);
     if (currentUser.role === 'SupplierUser') items = items.filter((p) => p.supplierCode === currentUser.supplierId);
     const risk = url.searchParams.get('riskCategory');
     if (risk) items = items.filter((p) => p.riskCategory === risk);

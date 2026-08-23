@@ -220,3 +220,27 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* The active plant's headline scenario: badged and sorted first. */
+.tileFeatured {
+  border-color: var(--info-border);
+  background: var(--info-bg);
+}
+.tileFeatured:hover:not(:disabled) {
+  background: var(--info-bg);
+  border-color: var(--info);
+}
+.featuredBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--info);
+  color: var(--on-accent);
+}

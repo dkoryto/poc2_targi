@@ -6,8 +6,10 @@ export const T0: Date = set(startOfISOWeek(new Date()), { hours: 6, minutes: 0, 
 export const t0 = (days: number, hour = 6): string => formatISO(set(addDays(T0, days), { hours: hour, minutes: 0, seconds: 0, milliseconds: 0 }));
 export const t0d = (days: number): string => formatISO(addDays(T0, days), { representation: 'date' });
 
-export const presenter: UserContext = { id: 'u-presenter', username: 'presenter', displayName: 'Prezenter demo', role: 'DemoPresenter', siteId: 'SITE-01', locale: 'pl', demoMode: true };
-export const supplierUser: UserContext = { id: 'u-sup2', username: 'supplier.hydromech', displayName: 'Hydromech Actuators GmbH', role: 'SupplierUser', supplierId: 'SUP-02', supplierName: 'Hydromech Actuators GmbH', siteId: 'SITE-01', locale: 'pl', demoMode: true };
+export const ALL_SITE_CODES = ['SITE-01', 'SITE-02', 'SITE-03', 'SITE-04'];
+export const presenter: UserContext = { id: 'u-presenter', username: 'presenter', displayName: 'Prezenter demo', role: 'DemoPresenter', siteId: 'SITE-01', siteCode: 'SITE-01', availableSites: ALL_SITE_CODES, locale: 'pl', demoMode: true };
+/** SUP-02 supplies Kielce and Leszno only — the switcher must not offer the other two. */
+export const supplierUser: UserContext = { id: 'u-sup2', username: 'supplier.hydromech', displayName: 'Hydromech Actuators GmbH', role: 'SupplierUser', supplierId: 'SUP-02', supplierName: 'Hydromech Actuators GmbH', siteId: 'SITE-01', siteCode: 'SITE-01', availableSites: ['SITE-01', 'SITE-04'], locale: 'pl', demoMode: true };
 
 export const kpis: KpiResponse = {
   asOf: t0(0, 9),
@@ -180,4 +182,4 @@ export const notifications: Notification[] = [
   { id: 'n-2', createdAt: t0(-2, 10), title: 'Zdarzenie logistyczne', message: 'Utrudnienia portowe — SHP-2026-0032 (OPT-12).', severity: 'info', read: true, route: '/inbound/SHP-2026-0032', eventName: 'LogisticsRiskEventRaised' },
 ];
 
-export const demoScript: DemoScriptStep[] = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({ step: n, titleKey: `demo.script.${n}.title`, descriptionKey: `demo.script.${n}.desc`, route: ['/', '/supply/orders/PO-2026-0007', '/', '/planning', '/planning', '/trace?q=PMV-2026-0007', '/passports/PMV-2026-0007', '/', '/trace?q=HTS-22-2608'][n - 1]! }));
+export const demoScript: DemoScriptStep[] = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => ({ step: n, titleKey: `demo.script.${n}.title`, descriptionKey: `demo.script.${n}.desc`, route: ['/', '/supply/orders/PO-2026-0007', '/', '/planning', '/planning', '/trace?q=PMV-2026-0007', '/passports/PMV-2026-0007', '/', '/trace?q=HTS-22-2608'][n - 1]!, siteCode: 'SITE-01' }));

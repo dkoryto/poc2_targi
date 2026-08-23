@@ -1,20 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { keys } from '@/api/keys';
+import { useSiteCode, useSiteParam, useSiteReady } from '@/features/sites/sites';
 import type { GanttData, KpiResponse, MapData, QualityStatus, RiskHeatmap } from '@/api/types';
 
+/** Every dashboard panel is scoped to the active plant and refetches when it changes. */
+function useSiteQuery<T>(key: readonly unknown[], path: string) {
+  const params = useSiteParam();
+  const ready = useSiteReady();
+  return useQuery({
+    queryKey: key,
+    queryFn: () => api.get<T>(path, params),
+    enabled: ready,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useKpis() {
-  return useQuery({ queryKey: keys.dashboard.kpis, queryFn: () => api.get<KpiResponse>('/dashboard/kpis'), refetchInterval: 30_000 });
+  return useSiteQuery<KpiResponse>(keys.dashboard.kpis(useSiteCode()), '/dashboard/kpis');
 }
 export function useMapData() {
-  return useQuery({ queryKey: keys.dashboard.map, queryFn: () => api.get<MapData>('/dashboard/map'), refetchInterval: 30_000 });
+  return useSiteQuery<MapData>(keys.dashboard.map(useSiteCode()), '/dashboard/map');
 }
 export function useHeatmap() {
-  return useQuery({ queryKey: keys.dashboard.heatmap, queryFn: () => api.get<RiskHeatmap>('/dashboard/risk-heatmap'), refetchInterval: 30_000 });
+  return useSiteQuery<RiskHeatmap>(keys.dashboard.heatmap(useSiteCode()), '/dashboard/risk-heatmap');
 }
 export function useQualityStatus() {
-  return useQuery({ queryKey: keys.dashboard.quality, queryFn: () => api.get<QualityStatus>('/dashboard/quality-status'), refetchInterval: 30_000 });
+  return useSiteQuery<QualityStatus>(keys.dashboard.quality(useSiteCode()), '/dashboard/quality-status');
 }
 export function usePlan() {
-  return useQuery({ queryKey: keys.dashboard.plan, queryFn: () => api.get<GanttData>('/dashboard/plan'), refetchInterval: 30_000 });
+  return useSiteQuery<GanttData>(keys.dashboard.plan(useSiteCode()), '/dashboard/plan');
 }

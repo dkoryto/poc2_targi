@@ -16,5 +16,15 @@ export default defineConfig({
       '/health': { target: API_TARGET, changeOrigin: true },
     },
   },
+  // `vite preview` needs its own proxy block so a production build can be smoke-tested
+  // against the real API without nginx.
+  preview: {
+    port: 5174,
+    proxy: {
+      '/api': { target: API_TARGET, changeOrigin: true },
+      '/hubs': { target: API_TARGET, changeOrigin: true, ws: true },
+      '/health': { target: API_TARGET, changeOrigin: true },
+    },
+  },
   build: { sourcemap: false, chunkSizeWarningLimit: 1500 },
 });

@@ -9,6 +9,7 @@ import { useNotifications } from '@/features/notifications/api';
 import { Badge, Button, ConfirmDialog, IconButton, SegmentedControl, useToast } from '@/components/ui';
 import { setLocale, currentLocale } from '@/i18n';
 import { ThemeSwitch } from '@/theme/theme';
+import { SiteSwitch } from '@/features/sites/SiteSwitch';
 import { fmtClock } from '@/lib/format';
 import type { LiveStatus } from '@/realtime/useLive';
 import { ALL_ROLES, type Role } from '@/api/types';
@@ -95,12 +96,7 @@ export function TopBar({ live, onOpenPresenter, navCollapsed, onToggleNav }: { l
       </span>
       <div className={s.spacer} />
       <div className={s.topGroup}>
-        <label className="sr-only" htmlFor="site-select">
-          {t('app.site')}
-        </label>
-        <select id="site-select" className={s.siteSelect} defaultValue="SITE-01">
-          <option value="SITE-01">SITE-01 · Zakład Centralny</option>
-        </select>
+        <SiteSwitch />
         <ThemeSwitch />
         <SegmentedControl
           label={t('topbar.language')}

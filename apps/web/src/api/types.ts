@@ -51,6 +51,9 @@ export interface UserContext {
   supplierId?: string | null;
   supplierName?: string | null;
   siteId: string;
+  siteCode?: string;
+  /** Plants this user may act on; SupplierUser sees only the ones it supplies. */
+  availableSites?: string[];
   locale: string;
   demoMode: boolean;
 }
@@ -64,6 +67,24 @@ export interface DemoAccount {
   role: Role;
   supplierCode?: string | null;
   description: string;
+}
+
+// Sites (multi-site — see docs/architecture/multi-site.md)
+export interface Site {
+  code: string;
+  name: string;
+  city: string;
+  country: string;
+  lat: number;
+  lon: number;
+  timeZone: string;
+  /** i18n key suffix describing the plant profile, e.g. `ASSEMBLY_INTEGRATION`. */
+  profileKey?: string | null;
+  /** Preset key of this plant's headline scenario; that tile is highlighted on /planning. */
+  featuredScenarioKey?: string | null;
+  isDefault?: boolean;
+  /** Optional cheap status hint for the switcher; absent unless the API supplies it. */
+  highRiskDeliveries?: number | null;
 }
 
 // Dashboard
@@ -503,6 +524,8 @@ export interface DemoScriptStep {
   descriptionKey: string;
   route: string;
   action?: string | null;
+  /** Plant the step is told against; the presenter panel offers a switch when it differs. */
+  siteCode?: string | null;
 }
 
 export interface ServiceStatus {
@@ -541,6 +564,9 @@ export interface ScenarioPreset {
   key: string;
   titleKey: string;
   changes: ScenarioChange[];
+  /** Exactly one preset per plant is the headline scenario. */
+  featured?: boolean;
+  siteCode?: string;
 }
 export interface Explanation {
   reasonCode: string;
@@ -614,6 +640,7 @@ export interface TraceSearchHit {
   kind: TraceKind;
   code: string;
   label: string;
+  siteCode?: string | null;
 }
 export interface TraceNode {
   kind: TraceKind | string;

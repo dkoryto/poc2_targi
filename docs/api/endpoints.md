@@ -96,3 +96,15 @@ SignalR hub `/hubs/live`, server→client method `DomainEvent(event: { name: str
 - `GET /audit` / `GET /trace/audit` → `{ items: [{ id, occurredAt, user, action, entity, entityCode, before?, after?, correlationId, source }], total }`, filters `entity, code, user, from, to, page, pageSize`; `format=csv` returns `text/csv`.
 - `GET /admin/settings` → `{ riskWeights:[{code, weight}], objectiveWeights:[{code, value}], thresholds:[{code, value, unit?}] }` (threshold codes `RISK_MEDIUM|RISK_HIGH|RISK_CRITICAL|NOTIFY_RISK|SOLVER_TIMEOUT_MS|DEMO_RESET_MS`).
 - `GET /documents/{id}/download` returns the file with `Content-Disposition: attachment`.
+
+## Added by web (multi-site)
+
+The plant contract itself lives in `docs/architecture/multi-site.md`. The UI additionally consumes two
+**optional** fields; both degrade to "not shown" when the API omits them, so neither is required:
+
+- `DemoScriptStep.siteCode?` — the plant a presenter step is told against. When present and different from
+  the active plant, the presenter panel offers a one-click switch (`presenter-switch-site-<step>`).
+- `TraceSearchHit.siteCode?` — lets a search hit from another plant be labelled with its plant chip.
+
+`Site.highRiskDeliveries?` (optional) is rendered as a count badge in the plant switcher when supplied;
+without it the switcher shows name + city only.

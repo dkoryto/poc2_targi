@@ -311,7 +311,8 @@
       "Optyka": "Optyka",
       "Zasilanie": "Zasilanie"
     },
-    "openWhatIf": "Otwórz What-If"
+    "openWhatIf": "Otwórz What-If",
+    "legendOtherSites": "Inne zakłady"
   },
   "gantt": {
     "today": "Dziś",
@@ -494,7 +495,8 @@
         "title": "Scenariusz 2 (opcjonalny)",
         "desc": "Zablokuj partię HTS-22-2608, pokaż trace-forward i automatyczne unieważnienie paszportów."
       }
-    }
+    },
+    "switchToSite": "Przełącz na {{site}}"
   },
   "admin": {
     "title": "Administracja",
@@ -662,7 +664,8 @@
     "impactMoved": "Przesuniętych operacji: {{count}}",
     "impactLate": "Zleceń spóźnionych: {{count}}",
     "impactDowntime": "Przewidywany przestój: {{from}} h → {{to}} h",
-    "impactVersion": "Powstanie nowa wersja planu bazowego"
+    "impactVersion": "Powstanie nowa wersja planu bazowego",
+    "featured": "Scenariusz wiodący"
   },
   "trace": {
     "title": "Traceability i genealogia",
@@ -882,5 +885,16 @@
     "boundaryBody": "Wystąpił nieoczekiwany błąd. Pozostała część aplikacji działa — możesz spróbować ponownie lub przejść do innego ekranu.",
     "correlationId": "Identyfikator korelacji",
     "reload": "Przeładuj stronę"
+  },
+  "sites": {
+    "switchLabel": "Wybierz zakład",
+    "menuTitle": "Zakłady",
+    "recordSite": "Zakład: {{site}}",
+    "profile": {
+      "ASSEMBLY_INTEGRATION": "montaż i integracja platform",
+      "ELECTRONICS_COMMS": "elektronika i łączność",
+      "STRUCTURES_ARMOUR": "konstrukcje i opancerzenie",
+      "INTEGRATION_TEST": "integracja i testy końcowe"
+    }
   }
 }

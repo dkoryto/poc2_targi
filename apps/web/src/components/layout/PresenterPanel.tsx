@@ -5,6 +5,8 @@ import { RotateCcw, ArrowRight, ArrowLeft } from 'lucide-react';
 import s from './layout.module.css';
 import { Drawer, Button, LoadingState, ErrorState } from '@/components/ui';
 import { useDemoScript } from '@/features/demo/api';
+import { useSite } from '@/features/sites/sites';
+import { Building2 } from 'lucide-react';
 import type { DemoScriptStep } from '@/api/types';
 
 export const FALLBACK_STEPS: DemoScriptStep[] = [
@@ -23,7 +25,9 @@ export function PresenterPanel({ open, onClose, onReset }: { open: boolean; onCl
   const { t } = useTranslation();
   const navigate = useNavigate();
   const script = useDemoScript(open);
+  const { sites, activeSiteCode, setActiveSite } = useSite();
   const [current, setCurrent] = useState(0);
+  const siteName = (code: string) => sites.find((x) => x.code === code)?.name ?? code;
   const steps = script.data && script.data.length > 0 ? script.data : FALLBACK_STEPS;
   const total = steps.length;
   const go = (idx: number) => {
@@ -66,6 +70,25 @@ export function PresenterPanel({ open, onClose, onReset }: { open: boolean; onCl
             <span>
               <div className={s.stepTitle}>{t(st.titleKey, { defaultValue: st.titleKey })}</div>
               <div className={s.stepDesc}>{t(st.descriptionKey, { defaultValue: st.descriptionKey })}</div>
+              {st.siteCode && (
+                <div className={s.stepSite}>
+                  <Building2 size={11} aria-hidden />
+                  {siteName(st.siteCode)}
+                  {st.siteCode !== activeSiteCode && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveSite(st.siteCode!);
+                      }}
+                      data-testid={`presenter-switch-site-${st.step}`}
+                    >
+                      {t('demo.switchToSite', { site: siteName(st.siteCode) })}
+                    </Button>
+                  )}
+                </div>
+              )}
               <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>
                 {t('demo.goToStep')}: <code>{st.route}</code>
               </div>

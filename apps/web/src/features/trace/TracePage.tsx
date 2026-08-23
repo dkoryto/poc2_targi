@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 import s from './trace.module.css';
 import { useTraceSearch } from './api';
 import type { TraceSearchHit } from '@/api/types';
+import { SiteChip } from '@/features/sites/SiteSwitch';
 import { Card, EmptyState, ErrorState, Input, LoadingState } from '@/components/ui';
 
 export const QUICK = ['PMV-2026-0007', 'HTS-22-2608', 'SCM-2026-0103', 'WO-2026-014'];
@@ -99,6 +100,7 @@ export function TracePage() {
                 <button key={`${h.kind}-${h.code}`} type="button" className={s.hit} onClick={() => navigate(hitRoute(h))} data-testid={`trace-hit-${h.code}`}>
                   <span className="mono">{h.code}</span>
                   <span className="muted">{h.label}</span>
+                  <SiteChip code={h.siteCode} />
                 </button>
               ))}
             </div>

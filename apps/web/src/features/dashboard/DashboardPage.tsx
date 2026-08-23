@@ -6,6 +6,7 @@ import { useHeatmap, useKpis, useMapData, usePlan, useQualityStatus } from './ap
 import { Card, KpiTile, ErrorState, LoadingState, Skeleton, Button } from '@/components/ui';
 import { Wand2 } from 'lucide-react';
 import { DeliveryMap } from './DeliveryMap';
+import { useSite } from '@/features/sites/sites';
 import { RiskHeatmap } from './RiskHeatmap';
 import { QualityPanel } from './QualityPanel';
 import { Gantt } from '@/components/gantt/Gantt';
@@ -18,6 +19,7 @@ const RISK_ORDER = ['Low', 'Medium', 'High', 'Critical'];
 export function DashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { sites, activeSiteCode, setActiveSite } = useSite();
   const kpis = useKpis();
   const map = useMapData();
   const heat = useHeatmap();
@@ -71,7 +73,15 @@ export function DashboardPage() {
         <Card title={t('dashboard.map')} definition={t('dashboard.mapDef')} className={panelCls('map')} flush focusable focused={focus === 'map'} onToggleFocus={() => toggle('map')} data-testid="panel-map">
           {map.isLoading && <div style={{ padding: 12 }}><LoadingState /></div>}
           {map.isError && <ErrorState error={map.error} onRetry={() => map.refetch()} />}
-          {map.data && <DeliveryMap data={map.data} pulseCodes={pulse} onOpenPo={(code) => navigate(`/supply/orders/${code}`)} />}
+          {map.data && (
+            <DeliveryMap
+              data={map.data}
+              pulseCodes={pulse}
+              onOpenPo={(code) => navigate(`/supply/orders/${code}`)}
+              otherSites={sites.filter((x) => x.code !== activeSiteCode)}
+              onSelectSite={setActiveSite}
+            />
+          )}
         </Card>
         <Card title={t('dashboard.heatmap')} definition={t('dashboard.heatmapDef')} className={panelCls('heat')} focusable focused={focus === 'heat'} onToggleFocus={() => toggle('heat')} data-testid="panel-heatmap">
           {heat.isLoading && <LoadingState />}

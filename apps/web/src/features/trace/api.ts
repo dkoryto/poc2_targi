@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { keys } from '@/api/keys';
+import { useScopedSiteCode, useSiteCode, useSiteParam, useSiteReady } from '@/features/sites/sites';
 import type { AuditEvent, BlockLotRequest, BlockLotResponse, Inspection, InspectionRequest, Lot, LotForward, LotSummary, Paged, SerialTrace, TraceSearchHit } from '@/api/types';
 
 export interface LotFilters {
@@ -18,13 +19,28 @@ export interface AuditFilters {
 }
 
 export function useTraceSearch(q: string) {
-  return useQuery({ queryKey: keys.trace.search(q), queryFn: () => api.get<TraceSearchHit[]>('/trace/search', { q }), enabled: q.trim().length >= 2, staleTime: 30_000 });
+  const params = useSiteParam();
+  const ready = useSiteReady();
+  return useQuery({
+    queryKey: keys.trace.search(q, useSiteCode()),
+    queryFn: () => api.get<TraceSearchHit[]>('/trace/search', { q, ...params }),
+    enabled: q.trim().length >= 2 && ready,
+    staleTime: 30_000,
+  });
 }
 export function useSerial(serial: string | undefined) {
   return useQuery({ queryKey: keys.trace.serial(serial ?? ''), queryFn: () => api.get<SerialTrace>(`/trace/serials/${encodeURIComponent(serial ?? '')}`), enabled: !!serial });
 }
 export function useLots(filters: LotFilters, enabled = true) {
-  return useQuery({ queryKey: keys.lotList(filters), queryFn: () => api.get<Paged<LotSummary>>('/lots', { ...filters }), enabled });
+  const site = useScopedSiteCode();
+  const ready = useSiteReady();
+  const scoped: LotFilters & { siteCode?: string } = { ...filters };
+  if (site) scoped.siteCode = site;
+  return useQuery({
+    queryKey: keys.lotList(scoped),
+    queryFn: () => api.get<Paged<LotSummary>>('/lots', { ...scoped }),
+    enabled: enabled && ready,
+  });
 }
 export function useLot(lotNumber: string | undefined) {
   return useQuery({ queryKey: keys.lot(lotNumber ?? ''), queryFn: () => api.get<Lot>(`/lots/${encodeURIComponent(lotNumber ?? '')}`), enabled: !!lotNumber });
@@ -51,7 +67,7 @@ export function useAddInspection(lotNumber: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: keys.lots });
       void qc.invalidateQueries({ queryKey: keys.passports });
-      void qc.invalidateQueries({ queryKey: keys.dashboard.quality });
+      void qc.invalidateQueries({ queryKey: ['dashboard', 'quality'] as const });
     },
   });
 }

@@ -6,6 +6,7 @@ import { usePurchaseOrder } from './api';
 import { LineDrawer } from './LineDrawer';
 import { AdviceDialog } from './AdviceDialog';
 import { EtaCell } from './SupplyListPage';
+import { SiteChip } from '@/features/sites/SiteSwitch';
 import { Button, Card, DataTable, DocStatusChip, ErrorState, LoadingState, PoStatusChip, ProgressBar, RiskBadge, Timeline, type Column } from '@/components/ui';
 import type { PurchaseOrderLine } from '@/api/types';
 import { fmtDate } from '@/lib/format';
@@ -41,7 +42,12 @@ export function PurchaseOrderPage() {
         <div>
           <Link to="/supply" className="row" style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} /> {t('supply.orders')}</Link>
           <h1>{code}</h1>
-          {q.data && <p>{q.data.supplier.code} · {q.data.supplier.name} · {q.data.supplier.city}, {q.data.supplier.country} · {t('supply.ordered')} {fmtDate(q.data.orderedAt)}</p>}
+          {q.data && (
+            <p>
+              {q.data.supplier.code} · {q.data.supplier.name} · {q.data.supplier.city}, {q.data.supplier.country} · {t('supply.ordered')} {fmtDate(q.data.orderedAt)}
+              {q.data.siteCode ? <> · <SiteChip code={q.data.siteCode} /></> : null}
+            </p>
+          )}
         </div>
         <div className="row">
           {q.data && <PoStatusChip status={q.data.status} />}

@@ -309,7 +309,8 @@
       "Optyka": "Optics",
       "Zasilanie": "Power"
     },
-    "openWhatIf": "Open What-If"
+    "openWhatIf": "Open What-If",
+    "legendOtherSites": "Other plants"
   },
   "gantt": {
     "today": "Today",
@@ -488,7 +489,8 @@
         "title": "Scenario 2 (optional)",
         "desc": "Block lot HTS-22-2608, show trace-forward and automatic passport invalidation."
       }
-    }
+    },
+    "switchToSite": "Switch to {{site}}"
   },
   "admin": {
     "title": "Administration",
@@ -656,7 +658,8 @@
     "impactMoved": "Moved operations: {{count}}",
     "impactLate": "Late orders: {{count}}",
     "impactDowntime": "Predicted downtime: {{from}} h → {{to}} h",
-    "impactVersion": "A new baseline version will be created"
+    "impactVersion": "A new baseline version will be created",
+    "featured": "Featured"
   },
   "trace": {
     "title": "Traceability and genealogy",
@@ -876,5 +879,16 @@
     "boundaryBody": "An unexpected error occurred. The rest of the application still works — retry or move to another screen.",
     "correlationId": "Correlation ID",
     "reload": "Reload page"
+  },
+  "sites": {
+    "switchLabel": "Select plant",
+    "menuTitle": "Plants",
+    "recordSite": "Plant: {{site}}",
+    "profile": {
+      "ASSEMBLY_INTEGRATION": "platform assembly & integration",
+      "ELECTRONICS_COMMS": "electronics & communications",
+      "STRUCTURES_ARMOUR": "structures & armour",
+      "INTEGRATION_TEST": "integration & final test"
+    }
   }
 }

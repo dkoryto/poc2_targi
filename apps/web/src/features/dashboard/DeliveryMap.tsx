@@ -49,7 +49,28 @@ function pointAlong(route: [number, number][], progress: number): [number, numbe
   return route[route.length - 1]!;
 }
 
-export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pulseCodes: Set<string>; onOpenPo: (poCode: string) => void }) {
+export interface OtherSite {
+  code: string;
+  name: string;
+  city: string;
+  lat: number;
+  lon: number;
+}
+
+export function DeliveryMap({
+  data,
+  pulseCodes,
+  onOpenPo,
+  otherSites = [],
+  onSelectSite,
+}: {
+  data: MapData;
+  pulseCodes: Set<string>;
+  onOpenPo: (poCode: string) => void;
+  /** The organisation's other plants, drawn subdued; clicking one switches to it. */
+  otherSites?: OtherSite[];
+  onSelectSite?: (code: string) => void;
+}) {
   const { t } = useTranslation();
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -69,13 +90,16 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
           { id: 'borders', type: 'line', source: 'europe', paint: { 'line-color': readThemeColor('--map-border', '#2f3c4f'), 'line-width': 1 } },
         ],
       },
-      center: [14, 51],
+      center: [data.site.lon, data.site.lat],
       zoom: 3.4,
       attributionControl: false,
       dragRotate: false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     map.on('load', () => {
+      // StrictMode mounts twice: a discarded map can still fire `load` after the live one
+      // and would then steal the markers onto an already-removed instance.
+      if (mapRef.current !== map) return;
       readyRef.current = true;
       map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({ id: 'routes', type: 'line', source: 'routes', paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-dasharray': [2, 2], 'line-opacity': 0.9 } });
@@ -109,6 +133,24 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
     site.setAttribute('aria-label', data.site.name);
     site.title = `${data.site.code} · ${data.site.name}`;
     markersRef.current.push(new Marker({ element: site, anchor: 'center' }).setLngLat([data.site.lon, data.site.lat]).addTo(map));
+
+    for (const other of otherSites) {
+      if (other.code === data.site.code) continue;
+      const wrap = document.createElement('div');
+      wrap.className = s.markerWrapSite ?? '';
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = s.markerSiteOther ?? '';
+      dot.setAttribute('aria-label', `${other.code} ${other.name}`);
+      dot.dataset.testid = `map-site-${other.code}`;
+      dot.title = `${other.code} · ${other.name}`;
+      dot.onclick = () => onSelectSite?.(other.code);
+      const label = document.createElement('span');
+      label.className = [s.markerLabel, s.markerLabelMuted].filter(Boolean).join(' ');
+      label.textContent = other.name;
+      wrap.append(dot, label);
+      markersRef.current.push(new Marker({ element: wrap, anchor: 'center' }).setLngLat([other.lon, other.lat]).addTo(map));
+    }
 
     for (const sup of data.suppliers) {
       // The marker element must stay exactly dot-sized: MapLibre centres it on the coordinate,
@@ -163,7 +205,15 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
     if (!map || !readyRef.current) return;
     render(map);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, pulseCodes]);
+  }, [data, pulseCodes, otherSites]);
+
+  // Switching plant pans the map to it rather than leaving the camera on the previous one.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    map.easeTo?.({ center: [data.site.lon, data.site.lat], duration: reduce ? 0 : 500 });
+  }, [data.site.code, data.site.lat, data.site.lon]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -194,13 +244,14 @@ export function DeliveryMap({ data, pulseCodes, onOpenPo }: { data: MapData; pul
     document.addEventListener(THEME_EVENT, onThemeChange);
     return () => document.removeEventListener(THEME_EVENT, onThemeChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, pulseCodes]);
+  }, [data, pulseCodes, otherSites]);
 
   return (
     <>
       <div ref={el} className={s.map} data-testid="delivery-map" />
       <div className={s.mapLegend} aria-label={t('dashboard.legend')}>
         <div className={s.legendRow}><span className={s.legendSquare} />{t('dashboard.legendSite')}</div>
+        {otherSites.length > 0 && <div className={s.legendRow}><span className={s.legendSquareMuted} />{t('dashboard.legendOtherSites')}</div>}
         <div className={s.legendRow}><span className={s.legendDot} style={{ background: riskColorVar('Low') }} />{t('dashboard.legendSupplier')} · {t('risk.Low')}</div>
         <div className={s.legendRow}><span className={s.legendDot} style={{ background: riskColorVar('Medium') }} />{t('risk.Medium')}</div>
         <div className={s.legendRow}><span className={s.legendDot} style={{ background: riskColorVar('High') }} />{t('risk.High')}</div>
