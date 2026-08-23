@@ -908,6 +908,7 @@
       "ELECTRONICS_COMMS": "elektronika i łączność",
       "STRUCTURES_ARMOUR": "konstrukcje i opancerzenie",
       "INTEGRATION_TEST": "integracja i testy końcowe"
-    }
+    },
+    "switchToThis": "Przełącz na {{site}}"
   }
 }

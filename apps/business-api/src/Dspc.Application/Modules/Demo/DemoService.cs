@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Dspc.Application.Modules.Demo;
 
-public sealed record DemoStatusDto(bool DemoMode, string? SeedVersion, DateTime? SeededAt, long? LastResetMs, DateTime T0, string TimeZone, DateTime ServerTime);
+public sealed record DemoStatusDto(bool DemoMode, string? SeedVersion, DateTime? SeededAt, long? LastResetMs, DateTime? T0, string TimeZone, DateTime? ServerTime);
 public sealed record DemoResetResultDto(long DurationMs, string SeedVersion, IReadOnlyDictionary<string, int> Counts);
 public sealed record DemoStepDto(int Step, string TitleKey, string DescriptionKey, string Route, string Action, string? Role, string Scenario);
 
@@ -29,6 +29,12 @@ public sealed class DemoService(IDemoSeeder seeder, IOptions<DemoOptions> option
 
     public DemoStatusDto Status()
     {
+        // This endpoint is anonymous because the web app calls it before login to decide whether
+        // to auto-login and show the role switcher. Outside the demo profile it must therefore
+        // reveal nothing beyond that single flag: seed version, seed time, T0 and server clock are
+        // deployment details that an unauthenticated caller has no business reading.
+        if (!Enabled) return new DemoStatusDto(false, null, null, null, null, clock.SiteTimeZone.Id, null);
+
         var last = seeder.LastResult;
         return new DemoStatusDto(Enabled, last?.SeedVersion, last?.SeededAt, last?.DurationMs, clock.T0Utc, clock.SiteTimeZone.Id, clock.UtcNow);
     }

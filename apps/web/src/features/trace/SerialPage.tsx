@@ -11,6 +11,7 @@ import { Button, Card, DataTable, ErrorState, LoadingState, Sheet, StatusChip, T
 import { copyText, downloadFile } from '@/lib/download';
 import { fmtDateTime } from '@/lib/format';
 import { buildUrl } from '@/api/client';
+import { RecordSite } from '@/features/sites/SiteSwitch';
 
 export function Hash({ value, full }: { value?: string | null; full?: boolean }) {
   const { t } = useTranslation();
@@ -99,6 +100,7 @@ export function SerialPage() {
           <Link to="/trace" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.backToSearch')}</Link>
           <h1 className="mono">{serial}</h1>
           {trace && <p>{trace.productName} ({trace.productCode}) · {t('gantt.order')} <Link to="/planning">{trace.orderCode}</Link> · BOM {trace.bomVersion}</p>}
+          {trace?.siteCode && <RecordSite code={trace.siteCode} />}
         </div>
         {trace && (
           <div className="row">

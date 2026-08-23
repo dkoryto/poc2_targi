@@ -82,4 +82,24 @@ test.describe('plant switching in the browser', () => {
     await expect(page.getByTestId('explanation-ORDER_DELAYED_MATERIAL_SHORTAGE')).toBeVisible();
     expect(errors).toEqual([]);
   });
+
+  test('a deep-linked record names its own plant and offers a switch', async ({ page }) => {
+    const errors = collectErrors(page);
+    // Land on Leszno, then follow a Zamość passport link — this is what scanning the printed QR does.
+    await page.goto('/');
+    await switchPlant(page, 'SITE-04');
+    await page.goto('/passports/PMV-2026-0201-Z');
+
+    const recordSite = page.getByTestId('record-site');
+    await expect(recordSite).toBeVisible();
+    await expect(recordSite).toContainText('Zamość');
+    // The regression: the plant was named nowhere while the switcher read "Zakład Leszno".
+    await expect(page.getByTestId('site-switch')).toContainText(PLANTS['SITE-04'].city);
+
+    await page.getByTestId('record-site-switch').click();
+    await expect(page.getByTestId('site-switch')).toContainText(PLANTS['SITE-03'].city);
+    await expect(page.getByTestId('record-site-switch')).toHaveCount(0);
+    await expect(page.getByTestId('record-site')).toContainText('Zamość');
+    expect(errors).toEqual([]);
+  });
 });

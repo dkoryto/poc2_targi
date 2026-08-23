@@ -11,6 +11,7 @@ import { Button, ConfirmDialog, ErrorState, LoadingState, useIsMobile, useToast 
 import { useAuth } from '@/features/auth/auth';
 import { onDomainEvent } from '@/realtime/useLive';
 import { fmtDateTime, fmtNumber } from '@/lib/format';
+import { RecordSite } from '@/features/sites/SiteSwitch';
 
 export function ScenarioDetailPage() {
   const { t } = useTranslation();
@@ -86,6 +87,7 @@ export function ScenarioDetailPage() {
               <span data-testid="scenario-status" className="sr-only">{sc.status}</span>
               <span>{fmtDateTime(sc.createdAt)} · {sc.createdBy}</span>
               {sc.solver && <SolverBadge solver={sc.solver} elapsedMs={sc.elapsedMs} />}
+              {sc.siteCode && <RecordSite code={sc.siteCode} />}
             </p>
           )}
         </div>

@@ -19,7 +19,9 @@ public sealed record LotDto(
     Guid? PoLineId, string? PoCode, DateOnly? ProducedOn, DateOnly? ExpiresOn, string? BlockReason, DateTime? BlockedAt,
     IReadOnlyList<DocumentSummary> Documents, IReadOnlyList<InspectionDto> Inspections,
     IReadOnlyList<LotConsumptionDto> ConsumedBy, IReadOnlyList<string> ReservedBy,
-    IReadOnlyList<NonConformanceDto> NonConformances, string RowVersion);
+    IReadOnlyList<NonConformanceDto> NonConformances, string RowVersion,
+    // Lot pages are reached by deep link and from a passport's component table, so the record names its own plant.
+    string SiteCode = "", string SiteName = "");
 
 public sealed record BlockLotRequest(string Reason, string NcrTitle);
 

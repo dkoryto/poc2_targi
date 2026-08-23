@@ -278,4 +278,64 @@ public class PassportTests(ApiFixture fx) : IAsyncLifetime
 
         incomplete.Should().NotBeEmpty($"{siteCode} needs a passport with gaps to demonstrate the completeness rules");
     }
+
+    /// <summary>
+    /// A passport must name its own plant. The QR printed on the document links to /passports/{serial}, so the reader
+    /// commonly arrives with a different plant selected — or none. Regression for the defect where a Zamość passport
+    /// rendered under a Leszno heading with the word "Zamość" nowhere on screen.
+    /// </summary>
+    [Theory]
+    [InlineData("SITE-01")]
+    [InlineData("SITE-02")]
+    [InlineData("SITE-03")]
+    [InlineData("SITE-04")]
+    public async Task Passport_names_its_own_plant_in_list_and_detail(string siteCode)
+    {
+        using var c = await fx.AsAsync("QualityInspector");
+
+        var sites = await c.GetFromJsonAsync<JsonElement>("/api/v1/sites", ApiFixture.Json);
+        var siteArr = sites.ValueKind == JsonValueKind.Array ? sites : sites.GetProperty("items");
+        var expectedName = siteArr.EnumerateArray().First(x => x.GetProperty("code").GetString() == siteCode)
+            .GetProperty("name").GetString();
+
+        var list = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports?siteCode={siteCode}", ApiFixture.Json);
+        var items = list.TryGetProperty("items", out var arr) ? arr : list;
+        items.GetArrayLength().Should().BeGreaterThan(0);
+
+        foreach (var row in items.EnumerateArray())
+        {
+            row.GetProperty("siteCode").GetString().Should().Be(siteCode, "the list row must name its plant");
+            row.GetProperty("siteName").GetString().Should().Be(expectedName);
+
+            var serial = row.GetProperty("serial").GetString()!;
+            var detail = await c.GetFromJsonAsync<JsonElement>($"/api/v1/passports/{serial}", ApiFixture.Json);
+            detail.GetProperty("siteCode").GetString().Should().Be(siteCode, $"{serial} must name its plant on the detail route");
+            detail.GetProperty("siteName").GetString().Should().Be(expectedName);
+
+            // The PDF header resolves the plant through the same helper as these fields (PassportService.SiteAsync),
+            // so document and screen cannot name different plants. The rendered text itself is glyph-encoded inside
+            // compressed streams and is not assertable byte-wise here; this checks the document exists and is a PDF.
+            if (detail.GetProperty("status").GetString() != "Generated") continue;
+            var version = detail.GetProperty("versions").EnumerateArray().First().GetProperty("version").GetInt32();
+            var pdf = await c.GetAsync($"/api/v1/passports/{serial}/versions/{version}/pdf");
+            pdf.StatusCode.Should().Be(HttpStatusCode.OK);
+            var bytes = await pdf.Content.ReadAsByteArrayAsync();
+            Encoding.ASCII.GetString(bytes, 0, 5).Should().Be("%PDF-");
+        }
+    }
+
+    /// <summary>The serial, its lot and the scenario that planned it must all name their plant for the same reason.</summary>
+    [Fact]
+    public async Task Trace_and_lot_records_name_their_plant()
+    {
+        using var c = await fx.AsAsync("QualityInspector");
+
+        var serialTrace = await c.GetFromJsonAsync<JsonElement>("/api/v1/trace/serials/PMV-2026-0201-Z", ApiFixture.Json);
+        serialTrace.GetProperty("siteCode").GetString().Should().Be("SITE-03");
+        serialTrace.GetProperty("siteName").GetString().Should().Be("Zakład Zamość");
+
+        var lot = await c.GetFromJsonAsync<JsonElement>("/api/v1/lots/HTS-22-3110", ApiFixture.Json);
+        lot.GetProperty("siteCode").GetString().Should().Be("SITE-03");
+        lot.GetProperty("siteName").GetString().Should().Be("Zakład Zamość");
+    }
 }

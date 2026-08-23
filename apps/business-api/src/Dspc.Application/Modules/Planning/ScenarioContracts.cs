@@ -47,7 +47,10 @@ public sealed record ScenarioDto(
     /// Operations whose window differs from the <em>approved baseline</em>. Distinct from
     /// <c>KpiAfter.MovedOperations</c>, which counts what re-planning moved relative to "before".
     /// </summary>
-    int? ChangesVsBaseline = null);
+    int? ChangesVsBaseline = null,
+    // Scenario detail is deep-linkable, so the record names the plant it was computed for.
+    string SiteCode = "",
+    string SiteName = "");
 
 public sealed record ScenarioSummaryDto(
     Guid Id,

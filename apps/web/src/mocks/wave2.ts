@@ -185,9 +185,10 @@ export const searchIndex: TraceSearchHit[] = [
 ];
 
 // ---------------- passports ----------------
+const SITE_NAMES: Record<string, string> = { 'SITE-01': 'Zakład Kielce', 'SITE-02': 'Zakład Piła', 'SITE-03': 'Zakład Zamość', 'SITE-04': 'Zakład Leszno' };
 const REQ = ['PRODUCT_DATA', 'ORDER_REF', 'BOM_VERSION', 'KEY_COMPONENT_LOTS', 'SUPPLIER_ORIGIN', 'QC_STATUS', 'CERTIFICATES_WITH_HASH', 'INSPECTION_RESULTS', 'DEVIATIONS', 'APPROVAL'];
 let passports: Record<string, Passport> = {};
-function mkPassport(serial: string, productCode: string, orderCode: string, status: Passport['status'], missing: Passport['completeness']['missing'], versions: Passport['versions']): Passport {
+function mkPassport(serial: string, productCode: string, orderCode: string, status: Passport['status'], missing: Passport['completeness']['missing'], versions: Passport['versions'], siteCode = 'SITE-01'): Passport {
   const missingReq = new Set(missing.map((m) => (m.code === 'INSPECTION_RESULT' ? 'INSPECTION_RESULTS' : m.code === 'CERT' ? 'CERTIFICATES_WITH_HASH' : m.code)));
   if (status === 'Draft' || status === 'PendingReview') missingReq.add('APPROVAL');
   return {
@@ -197,6 +198,7 @@ function mkPassport(serial: string, productCode: string, orderCode: string, stat
     inspections: missingReq.has('INSPECTION_RESULTS') ? [] : [{ id: `fat-${serial}`, result: 'Passed', notes: 'Test końcowy (FAT) zaliczony', inspectedAt: t0(-6, 13), inspector: 'quality' }],
     deviations: serial === 'PMV-2026-0008' ? [{ id: 'dev-1', code: 'DEV-2026-002', title: 'Zamienny wariant uszczelnień SEAL-3', status: 'Approved', approvedBy: 'quality', approvedAt: t0(-7, 10) }] : [],
     versions, approvedBy: status === 'Approved' || status === 'Generated' ? 'quality' : null, approvedAt: status === 'Approved' || status === 'Generated' ? t0(-5, 9) : null,
+    siteCode, siteName: SITE_NAMES[siteCode] ?? siteCode,
   };
 }
 function seedPassports() {
@@ -206,9 +208,11 @@ function seedPassports() {
   passports['SCM-2026-0101'] = mkPassport('SCM-2026-0101', 'P-COM-02', 'WO-2026-012', 'Draft', [{ code: 'INSPECTION_RESULT' }], []);
   passports['SCM-2026-0102'] = mkPassport('SCM-2026-0102', 'P-COM-02', 'WO-2026-012', 'Draft', [{ code: 'INSPECTION_RESULT' }], []);
   passports['SCM-2026-0103'] = mkPassport('SCM-2026-0103', 'P-COM-02', 'WO-2026-012', 'Draft', [{ code: 'CERT', params: { partCode: 'MCU-X7', lotNumber: 'MCU-X7-0455' } }, { code: 'INSPECTION_RESULT' }], []);
+  // Zamość record: reached by deep link or QR while another plant is selected.
+  passports['PMV-2026-0201-Z'] = mkPassport('PMV-2026-0201-Z', 'P-MOB-03', 'WO-2026-201', 'Generated', [], [{ version: 1, generatedAt: t0(-4, 10), generatedBy: 'quality', sha256: SHA('PMV-2026-0201-Z-v1'), fileSize: 93_555, status: 'Current' }], 'SITE-03');
 }
 function passportSummary(p: Passport): PassportSummary {
-  return { serial: p.serial, productCode: p.productCode, productName: p.productName, orderCode: p.orderCode, status: p.status, templateCode: p.templateCode, complete: p.completeness.complete, missingCount: p.completeness.missing.length, updatedAt: p.versions[0]?.generatedAt ?? t0(-2, 8), latestVersion: p.versions.length ? Math.max(...p.versions.map((v) => v.version)) : null };
+  return { serial: p.serial, productCode: p.productCode, productName: p.productName, orderCode: p.orderCode, status: p.status, templateCode: p.templateCode, complete: p.completeness.complete, missingCount: p.completeness.missing.length, updatedAt: p.versions[0]?.generatedAt ?? t0(-2, 8), latestVersion: p.versions.length ? Math.max(...p.versions.map((v) => v.version)) : null, siteCode: p.siteCode, siteName: p.siteName };
 }
 
 // ---------------- audit / admin ----------------

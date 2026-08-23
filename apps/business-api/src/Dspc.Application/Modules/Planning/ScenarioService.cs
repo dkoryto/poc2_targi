@@ -44,7 +44,7 @@ public sealed class ScenarioService(
             ? await db.PlanningBaselines.AsNoTracking().Where(b => b.SourceScenarioId == s.Id)
                 .Select(b => (int?)b.Version).FirstOrDefaultAsync(ct)
             : null;
-        return ToDto(s, version);
+        return await ToDtoAsync(s, version, ct);
     }
 
     public async Task<ScenarioCompareDto> CompareAsync(Guid id, CancellationToken ct)
@@ -106,7 +106,7 @@ public sealed class ScenarioService(
         audit.Write("Planning.ScenarioCreated", "PlanningScenario", scenario.Name, scenario.Id, null,
             new { scenario.Name, scenario.PresetKey, Changes = request.Changes });
         await db.SaveChangesAsync(ct);
-        return ToDto(scenario);
+        return await ToDtoAsync(scenario, null, ct);
     }
 
     private static string? TargetCodeOf(ScenarioChangeDto c) => c.Type switch
@@ -402,7 +402,7 @@ public sealed class ScenarioService(
         events.Publish(new ProductionPlanApproved(clock.UtcNow, user.CorrelationId, s.Id, next.Version, user.Username));
         await db.SaveChangesAsync(ct);
 
-        return ToDto(s, next.Version);
+        return await ToDtoAsync(s, next.Version, ct);
     }
 
     public Task<ScenarioDto> RejectAsync(Guid id, CancellationToken ct) => DecideAsync(id, PlanningScenarioStatus.Rejected, "Planning.ScenarioRejected", ct);
@@ -419,7 +419,7 @@ public sealed class ScenarioService(
         s.UpdatedAt = clock.UtcNow;
         audit.Write(action, "PlanningScenario", s.Name, s.Id, new { Status = before.ToString() }, new { Status = status.ToString() });
         await db.SaveChangesAsync(ct);
-        return ToDto(s);
+        return await ToDtoAsync(s, null, ct);
     }
 
     // ---------------------------------------------------------------- helpers
@@ -472,7 +472,15 @@ public sealed class ScenarioService(
         return await siteContext.ResolveAsync(siteCode, ct);
     }
 
-    private static ScenarioDto ToDto(PlanningScenario s, int? approvedBaselineVersion = null)
+    /// <summary>Resolves the scenario's plant so the response can name it, then builds the DTO.</summary>
+    private async Task<ScenarioDto> ToDtoAsync(PlanningScenario s, int? approvedBaselineVersion, CancellationToken ct)
+    {
+        var site = await db.Sites.AsNoTracking().Where(x => x.Id == s.SiteId)
+            .Select(x => new { x.Code, x.Name }).FirstOrDefaultAsync(ct);
+        return ToDto(s, approvedBaselineVersion, site?.Code ?? "", site?.Name ?? "");
+    }
+
+    private static ScenarioDto ToDto(PlanningScenario s, int? approvedBaselineVersion = null, string siteCode = "", string siteName = "")
     {
         var kpiBefore = s.KpiBeforeJson is null ? null : Json.Deserialize<PlanKpi>(s.KpiBeforeJson);
         var response = s.ResponseJson is null ? null : Json.Deserialize<PlanningResponse>(s.ResponseJson);
@@ -491,6 +499,8 @@ public sealed class ScenarioService(
             approved ? s.DecidedBy : null,
             approvedBaselineVersion,
             s.FailureReason,
-            response?.Kpi.MovedOperations);
+            response?.Kpi.MovedOperations,
+            siteCode,
+            siteName);
     }
 }

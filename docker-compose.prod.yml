@@ -76,7 +76,8 @@ services:
       minio: { condition: service_healthy }
       planning-engine: { condition: service_started }
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5080/health/ready >/dev/null"]
+      # the aspnet runtime image ships curl, not wget
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5080/health/ready >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 30

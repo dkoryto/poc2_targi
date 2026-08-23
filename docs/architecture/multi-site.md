@@ -44,10 +44,12 @@ plan bazowy 12 tygodni, 1 gotowy i 1 niekompletny paszport.
 - `GET /api/v1/sites` → `[{ code, name, city, country, lat, lon, timeZone, profileKey, featuredScenarioKey, isDefault }]`
 - `GET /api/v1/auth/me` → dodatkowo `siteCode` (domyślny zakład użytkownika) oraz `availableSites: string[]`
   (dla `SupplierUser` — zakłady, do których dostarcza; dla pozostałych ról — wszystkie).
-- Wszystkie endpointy listujące i pulpitowe przyjmują opcjonalny `?siteCode=`; brak parametru = zakład domyślny
+- Endpointy listujące i pulpitowe przyjmują opcjonalny `?siteCode=`; brak parametru = zakład domyślny
   użytkownika. Dotyczy: `/dashboard/*`, `/purchase-orders`, `/shipments`, `/logistics-events`, `/inventory`,
-  `/lots`, `/non-conformances`, `/passports`, `/notifications`, `/planning/baseline`, `/planning/scenarios`,
-  `/planning/scenarios/presets`, `/trace/search`, `/audit`.
+  `/lots`, `/non-conformances`, `/passports`, `/planning/baseline`, `/planning/scenarios`,
+  `/planning/scenarios/presets`, `/trace/search`.
+  **Wyjątki:** `/notifications` i `/audit` **nie są** zakresowane zakładem — przyjmą `?siteCode=`, ale go
+  **zignorują** (zwrócą `200` z danymi ze wszystkich zakładów). Powód i plan naprawy w sekcji „Ograniczenia".
 - `GET /planning/scenarios/presets?siteCode=` → presety dotyczące **tego** zakładu; dokładnie jeden ma
   `featured: true` (scenariusz wiodący z tabeli powyżej).
 - `POST /planning/scenarios` — zakład wynika ze zmian (pozycje zamówień/partie/gniazda należą do jednego zakładu);
@@ -79,7 +81,11 @@ jest wyróżniony.
 ## Ograniczenia
 
 - `/notifications` i `/audit` **nie są** zakresowane zakładem: powiadomienia adresują rolę, a wpisy audytu odnoszą się
-  do encji z wszystkich modułów. Dodanie kolumny zakładu w obu to naturalny następny krok (patrz `docs/adr/0007-multi-site-scoping.md`).
+  do encji z wszystkich modułów. Oba przyjmują `?siteCode=` bez błędu, ale go ignorują — przy czterech zakładach
+  prezenter zobaczy na tych dwóch ekranach zdarzenia z wszystkich zakładów naraz. Dodanie kolumny zakładu w obu
+  to naturalny następny krok (patrz [`ADR 0007`](../adr/0007-multi-site-scoping.md)).
+- Nieznany `?siteCode=` zwraca `404`, a zakład spoza zasięgu użytkownika `403` — zweryfikowane dla dostawcy
+  `SUP-01`, który sięga Kielc i Zamościa, a na Piłę i Leszno dostaje `403`.
 - Etykiety zakładów i dostawców na mapie mogą się nakładać przy dużym zagęszczeniu.
 - Scenariusz `SITE-04` pogarsza terminowość (7 → 21 dni) — to poprawny wynik przy twardym ograniczeniu pojemności
   („odcięcie połowy gniazda kosztuje 21 dni"), ale nie jest to historia „solver poprawia plan" jak w Kielcach.

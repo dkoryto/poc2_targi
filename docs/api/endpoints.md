@@ -72,6 +72,21 @@ Exceptions: `/notifications` and `/audit` are organisation-wide (neither entity 
 - `GET /passports?status`, `GET /passports/{serial}` → `{ serial, productCode, orderCode, status:'Draft'|'PendingReview'|'Approved'|'Generated'|'Invalidated', templateCode:'DQP-01', completeness:{ complete:boolean, missing:[{code, labelKey, params}] , requirements:[{code, satisfied, evidence}] }, components:[{partCode, lotNumber, supplierCode, country, certSha256?}], inspections:[], deviations:[], versions:[{version, generatedAt, generatedBy, sha256, fileSize, status}] }`
 - `POST /passports/{serial}/approve` (QualityInspector) ; `POST /passports/{serial}/generate` → `{ version, sha256, downloadUrl }` (only if complete; else `422` with `missing[]`); `GET /passports/{serial}/versions/{v}/pdf`; `GET /passports/{serial}/qr` (PNG)
 
+### Plant identity on deep-linkable records (multi-site)
+
+A record's own plant travels with it, because these routes are reached by deep link and by scanning the QR printed
+on a passport, when the reader may have any plant selected. Each of the following carries `siteCode` and `siteName`,
+resolved from the record's production order (the same resolver the passport PDF header uses, so document and screen
+cannot disagree):
+
+- `GET /passports` items and `GET /passports/{serial}`
+- `GET /trace/serials/{serial}`
+- `GET /lots/{lotNumber}`
+- `GET /planning/scenarios/{id}`
+
+`GET /purchase-orders` and its detail already carried `siteCode`. `GET /trace/search` is scoped to one plant, so its
+hits cannot be cross-plant and it does not carry the field.
+
 ## Notifications, audit, demo, admin, health
 - `GET /notifications?unreadOnly`, `POST /notifications/{id}/read`
 - `GET /audit?entity&code&user&from&to&page` → `{ items:[{ id, occurredAt, user, action, entity, entityCode, before, after, correlationId, source }] }`
@@ -112,7 +127,9 @@ The planning engine's contract is unchanged: it still reports `changed`/`shiftDa
 - `GET /passports/{serial}` → `{ …, completeness:{ complete, missing:[{code, labelKey?, params?}], requirements:[{code, satisfied, evidence?}] }, components[], inspections[], deviations[{id,code?,title,status,approvedBy?,approvedAt?}], versions[{version, generatedAt, generatedBy, sha256, fileSize, status:Current|Superseded|Invalidated}], approvedBy?, approvedAt?, invalidatedAt?, invalidationReason? }`. Requirement codes = DQP-01 rows (`PRODUCT_DATA … APPROVAL`); missing codes the UI localises: `INSPECTION_RESULT`, `CERT {partCode, lotNumber}`, `APPROVAL`, `QC_STATUS`, `DOCUMENT {type}`, `COMPONENT_LOT {partCode}`, `DEVIATION_APPROVAL`, `BOM_VERSION`, `PRODUCT_DATA`, `ORDER_REF`, `SUPPLIER_ORIGIN`, `CERT_HASH` (or send `labelKey`).
 - `POST /passports/{serial}/generate` → `201 { version, sha256, downloadUrl }`; `422` Problem Details with `missing[]`; `409` when not approved. `GET .../versions/{v}/pdf` and `GET .../qr` are fetched with the bearer token (blob → object URL).
 - `GET /audit` / `GET /trace/audit` → `{ items: [{ id, occurredAt, user, action, entity, entityCode, before?, after?, correlationId, source }], total }`, filters `entity, code, user, from, to, page, pageSize`; `format=csv` returns `text/csv`.
-- `GET /admin/settings` → `{ riskWeights:[{code, weight}], objectiveWeights:[{code, value}], thresholds:[{code, value, unit?}] }` (threshold codes `RISK_MEDIUM|RISK_HIGH|RISK_CRITICAL|NOTIFY_RISK|SOLVER_TIMEOUT_MS|DEMO_RESET_MS`).
+- `GET /admin/settings` — shape defined once under **Notifications, audit, demo, admin, health** above; the UI
+  normalises both the array and an older object form defensively. Thresholds are returned as the scalar fields
+  `riskNotifyThreshold`, `solverTimeLimitMs`, `horizonWeeks`, not as a `thresholds[]` collection.
 - `GET /documents/{id}/download` returns the file with `Content-Disposition: attachment`.
 
 ## Added by web (multi-site)

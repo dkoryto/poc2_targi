@@ -78,7 +78,10 @@ public sealed class DashboardQueries(IAppDbContext db, IPlanImpactEvaluator impa
             return new MapSupplierDto(s.Code, s.Name, s.Country, s.City, s.Latitude, s.Longitude, max, RiskScoreCalculator.Categorize(max).ToString(), shipments.Count(sh => sh.SupplierId == s.Id));
         }).ToList();
 
-        var shipmentDtos = shipments.Select(s =>
+        // A shipment can end up with no lines (a line reassigned or closed after the advice was
+        // raised). Projecting one used to throw on First(), which turned the Control Room's map
+        // into a 500 for every user until the demo was reset. A dashboard must degrade, not fail.
+        var shipmentDtos = shipments.Where(s => s.Lines.Count > 0).Select(s =>
         {
             var sup = s.Supplier!;
             var route = Route(sup.Latitude, sup.Longitude, site.Latitude, site.Longitude);

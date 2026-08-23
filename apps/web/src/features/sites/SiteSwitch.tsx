@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Building2, Check, ChevronDown } from 'lucide-react';
 import s from './sites.module.css';
-import { useSite } from './sites';
+import { useSite, useSiteLabel } from './sites';
 
 /** Localized plant profile ("montaż i integracja"), falling back to nothing when absent. */
 export function useProfileLabel(): (profileKey: string | null | undefined) => string {
@@ -100,6 +100,29 @@ export function SiteSwitch() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Names the plant a record belongs to and, when that is not the plant currently selected, offers to
+ * switch to it. Records are reachable by deep link and by scanning a passport QR, so the reader can
+ * easily arrive with another plant active; this is an orientation aid, not an error.
+ */
+export function RecordSite({ code, className }: { code: string | null | undefined; className?: string }) {
+  const { activeSiteCode, setActiveSite } = useSite();
+  const { t } = useTranslation();
+  const siteName = useSiteLabel();
+  if (!code) return null;
+  const foreign = code !== activeSiteCode;
+  return (
+    <span className={[s.recordSite, className].filter(Boolean).join(' ')} data-testid="record-site">
+      <SiteChip code={code} />
+      {foreign && (
+        <button type="button" className={s.recordSiteSwitch} onClick={() => setActiveSite(code)} data-testid="record-site-switch">
+          {t('sites.switchToThis', { site: siteName(code) })}
+        </button>
+      )}
+    </span>
   );
 }
 

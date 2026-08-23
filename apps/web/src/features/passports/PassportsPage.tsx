@@ -7,6 +7,7 @@ import type { PassportStatus, PassportSummary } from '@/api/types';
 import { PASSPORT_STATUSES } from '@/api/types';
 import { Button, Card, DataTable, FilterBar, FormField, Input, StatusChip, type Column, type Tone } from '@/components/ui';
 import { fmtDateTime } from '@/lib/format';
+import { SiteChip } from '@/features/sites/SiteSwitch';
 
 const PASSPORT_TONE: Record<PassportStatus, Tone> = { Draft: 'neutral', PendingReview: 'info', Approved: 'ok', Generated: 'ok', Invalidated: 'critical' };
 export function PassportStatusChip({ status, small }: { status: PassportStatus; small?: boolean }) {
@@ -34,7 +35,14 @@ export function PassportsPage() {
   ];
   return (
     <div className="page" data-testid="passports-page">
-      <div className="page-header"><div><h1>{t('passports.title')}</h1><p>{t('passports.subtitle')}</p></div></div>
+      <div className="page-header">
+        <div>
+          <h1>{t('passports.title')}</h1>
+          <p>{t('passports.subtitle')}</p>
+        </div>
+        {/* The list is scoped to one plant, so name it once here rather than repeating a chip per row. */}
+        <SiteChip code={list.data?.items?.[0]?.siteCode} />
+      </div>
       <Card>
         <FilterBar activeCount={[status, q].filter(Boolean).length} onClear={() => { setQ(''); setParams({}); }} data-testid="passport-filters">
         <div className={s.filters}>

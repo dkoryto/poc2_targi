@@ -3,13 +3,13 @@
 ```mermaid
 C4Context
   title Defense Supply & Production Control — context
-  Person(sup, "Supplier user", "Updates orders, ETA, lots, documents")
-  Person(ops, "Planner / Quality / Director / Auditor", "Control room users")
+  Person(sup, "Supplier user", "Updates orders, ETA, lots, documents for its own plants")
+  Person(ops, "Planner / Quality / Director / Auditor / Administrator", "Control room users, all four plants")
   System(dspc, "DSPC demonstrator", "Supplier portal, risk, MRP what-if, traceability, passports")
-  System_Ext(ai, "Local LLM (optional, vLLM, OpenAI-compatible)", "Document field extraction proposals")
+  System_Ext(model, "Local extraction model (optional, OpenAI-compatible)", "Document field proposals, feature-flagged off")
   Rel(sup, dspc, "HTTPS")
   Rel(ops, dspc, "HTTPS + SignalR")
-  Rel(dspc, ai, "HTTP, feature-flagged")
+  Rel(dspc, model, "HTTP, only when LocalAi:Enabled")
 ```
 
 ```mermaid
@@ -27,14 +27,31 @@ flowchart LR
   api -- certificates, passport PDFs --> minio
 ```
 
-## Decisions (see `docs/adr/`)
+## Decisions
 
-1. **Modular monolith in .NET, separate Java engine** — spec requirement; engine is stateless so Compose reliability stays high. Planning request/response JSON persisted in Postgres for audit.
-2. **Custom deterministic heuristic instead of OptaPlanner/Timefold** — same input ⇒ same output, sub-second on demo data, no solver warm-up, no licence questions.
-3. **Local JWT identity in business-api** (no Keycloak) — `Identity:LocalProvider`. Compose stays 5 containers; the auth abstraction (`ITokenIssuer`, standard JWT bearer validation) swaps to OIDC by config. Demo profile adds `demo-login` for role switching.
-4. **Transactional outbox** — `OutboxMessage` written in the same `SaveChanges`; `OutboxDispatcher` hosted service delivers to in-process handlers (risk re-scoring, passport invalidation, notifications) and SignalR. Broker can be attached later behind `IEventPublisher`.
-5. **Seed-relative clock** — all demo dates are offsets from Monday of the current week so the demo looks live and resets identically.
-6. **Baseline is hand-placed in seed**, engine minimises change from it; What-If "Before" = baseline + scenario change without re-sequencing (shows the pain), "After" = engine proposal.
-7. **Explanations are reason codes + params**, localised in the UI, never solver free-text.
-8. **PDF via QuestPDF (Community licence)**, QR via QRCoder, SHA-256 stored per `PassportVersion`; files in MinIO (or filesystem in dev).
-9. **Map without internet** — MapLibre GL with a local GeoJSON Europe outline + supplier/site points; no raster tiles.
+Each significant decision has its own record in [`../adr/`](../adr/); this table is only an index, so the reasoning
+lives in exactly one place.
+
+| # | Decision | Record |
+|---|---|---|
+| 0001 | Modular monolith in .NET + separate stateless Java engine | [modular-monolith](../adr/0001-modular-monolith.md) |
+| 0002 | Local JWT identity instead of Keycloak; OIDC is a config swap | [local-jwt-identity](../adr/0002-local-jwt-identity.md) |
+| 0003 | Transactional outbox for domain events, dispatched to handlers and SignalR | [transactional-outbox](../adr/0003-transactional-outbox.md) |
+| 0004 | Seed-relative clock (T0 = Monday of the current week) and deterministic ids | [seed-relative-clock](../adr/0004-seed-relative-clock.md) |
+| 0005 | Scenario changes applied to the problem, queued execution, deterministic fallback | [scenario-execution-and-fallback](../adr/0005-scenario-execution-and-fallback.md) |
+| 0006 | Passport completeness as a pure rule; versioned PDFs; invalidation on lot block | [passport-generation-and-invalidation](../adr/0006-passport-generation-and-invalidation.md) |
+| 0007 | Plant scoping through one resolver (`ISiteContext`), suppliers reach only plants they supply | [multi-site-scoping](../adr/0007-multi-site-scoping.md) |
+| 0008 | One definition of "moved operations" on the What-If screen | [moved-operations-semantics](../adr/0008-moved-operations-semantics.md) |
+
+Two constraints shape almost everything else and are not ADRs because they come from the specification:
+
+- **Offline.** No tile server, no CDN, no external font or model call on the critical path. The map is a local
+  GeoJSON outline; the optional local-model adapter is feature-flagged off and never gates a demo step.
+- **Explainable, not predictive.** Risk is a weighted rule set ([risk-model](risk-model.md)) and solver output is
+  reason codes plus parameters, localised in the UI — the API never ships prose.
+
+## Further reading
+
+[Four plants and their scenarios](multi-site.md) · [Kielce seed numbers](demo-scenario.md) ·
+[Engine constraints and objective](planning-engine.md) · [Responsive contract](responsive.md) ·
+[Demonstrator vs production](demo-vs-production.md) · [API surface](../api/endpoints.md)

@@ -10,7 +10,9 @@ public sealed record TraceComponentDto(
 
 public sealed record SerialTraceDto(
     string Serial, string ProductCode, string ProductName, string OrderCode, string BomVersion, string Status,
-    TraceNode Genealogy, IReadOnlyList<TraceComponentDto> Components, string? PassportStatus);
+    TraceNode Genealogy, IReadOnlyList<TraceComponentDto> Components, string? PassportStatus,
+    // Reachable by deep link and by scanning a passport QR, so the record names its own plant.
+    string SiteCode = "", string SiteName = "");
 
 public sealed record LotForwardOrderDto(string OrderCode, string Status, string Relation);
 public sealed record LotForwardSerialDto(string Serial, string OrderCode, string ProductCode);

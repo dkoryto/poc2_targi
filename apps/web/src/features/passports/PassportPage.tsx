@@ -11,6 +11,7 @@ import type { MissingItem, PassportVersion } from '@/api/types';
 import { ApiError, buildUrl, getToken } from '@/api/client';
 import { Button, Card, ConfirmDialog, DataTable, ErrorState, LoadingState, StatusChip, Timeline, type Column, useToast } from '@/components/ui';
 import { useAuth } from '@/features/auth/auth';
+import { RecordSite } from '@/features/sites/SiteSwitch';
 import { downloadFile } from '@/lib/download';
 import { fmtBytes, fmtDateTime } from '@/lib/format';
 import { useEffect } from 'react';
@@ -94,6 +95,8 @@ export function PassportPage() {
           <Link to="/passports" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('passports.title')}</Link>
           <h1 className="mono">{serial}</h1>
           {p && <p>{p.productName ?? p.productCode} · {t('gantt.order')} {p.orderCode} · {t('passports.template')} <span className="mono">{p.templateCode}</span>{p.bomVersion ? ` · BOM ${p.bomVersion}` : ''}</p>}
+          {/* The QR on the printed passport links straight to this page, so the plant must be named here. */}
+          {p?.siteCode && <RecordSite code={p.siteCode} />}
         </div>
         {p && (
           <div className="row">

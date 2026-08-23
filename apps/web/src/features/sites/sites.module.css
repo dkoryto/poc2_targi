@@ -120,3 +120,23 @@
     display: none;
   }
 }
+
+/* Plant label attached to a record, with an optional switch when it is not the active plant. */
+.recordSite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.recordSiteSwitch {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--info-fg);
+  border: 1px solid var(--info-border);
+  cursor: pointer;
+}
+.recordSiteSwitch:hover {
+  background: var(--info-bg);
+}

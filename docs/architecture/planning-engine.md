@@ -4,9 +4,11 @@ Stateless, deterministic MRP / re-scheduling service for the Defense Supply & Pr
 Java 17 · Spring Boot 3.3 · Maven · no external solver library (`dspc-heuristic/1.0`). Port **8081**.
 
 Contract: [`packages/contracts/planning-engine.yaml`](../../packages/contracts/planning-engine.yaml) (bundled copy in
-`src/main/resources/static/openapi.yaml`, served at `GET /v3/api-docs`; Swagger UI at `/swagger-ui.html`;
-`ContractSyncTest` fails if the two files drift). Example requests: `packages/contracts/examples/*.json`
-(regenerate with `node packages/contracts/examples/generate-fixtures.mjs <dir>…`).
+`src/main/resources/static/openapi.yaml`, served as static content at `GET /v3/api-docs` and `GET /openapi.yaml`;
+`ContractSyncTest` fails if the two files drift). Springdoc's *generated* docs are disabled
+(`springdoc.api-docs.enabled: false`), so the contract shipped is the reviewed one and **no Swagger UI is exposed**
+on the engine — read the YAML or use the business API's `/swagger`. Example requests:
+`packages/contracts/examples/*.json` (regenerate with `node packages/contracts/examples/generate-fixtures.mjs <dir>…`).
 
 ## Commands
 
@@ -17,6 +19,7 @@ Contract: [`packages/contracts/planning-engine.yaml`](../../packages/contracts/p
 curl -s localhost:8081/actuator/health
 curl -s -X POST localhost:8081/api/v1/plan/solve -H 'content-type: application/json' \
      --data @src/test/resources/scenarios/act40-delay.json | jq '.kpi, .explanations'
+curl -s localhost:8081/v3/api-docs                # the bundled contract (static, not generated)
 docker build -t dspc/planning-engine .           # multi-stage, non-root, HEALTHCHECK on /actuator/health
 ```
 
@@ -99,7 +102,12 @@ explanations** (no free text — the UI localises `reasonCode + params`). Same i
 `act40-delay.json` = `baseline.json` with PO-2026-0007/1 (12 × ACT-40) ETA T0+8 → T0+18.
 Result: WO-2026-014 integration op waits for ACT-40 (shift 9 d, order late 4 d), its 36 h WC-INT slot would sit idle;
 WO-2026-019 (all material on hand) is pulled forward 29 days (ELEC T0+8 06:00, **INT T0+9 14:00 → T0+11 10:00**),
-downtime **36 h → 8 h**, 8 operations moved, frozen WO-2026-012 / WO-2026-013-op10 untouched. Solve time ≈ 5 ms.
+downtime **36 h → 8 h**, frozen WO-2026-012 / WO-2026-013-op10 untouched. Solve time ≈ 5 ms.
+
+The engine reports **8 operations `changed`** — that is *against the baseline it was handed*, so it includes the
+operations the delay itself pushed. The What-If screen headlines a different figure, **3**, being what re-planning
+moved relative to the un-resequenced "before" plan; the business API re-anchors the flags for presentation and keeps
+the engine's raw numbers in the stored response. See [`ADR 0008`](../adr/0008-moved-operations-semantics.md).
 
 ## Layout
 

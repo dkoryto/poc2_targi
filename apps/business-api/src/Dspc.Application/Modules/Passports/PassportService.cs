@@ -64,6 +64,10 @@ public sealed class PassportService(
         }
         var list = await query.OrderBy(p => p.ProductSerial!.SerialNumber).Take(300).ToListAsync(ct);
 
+        // The query is already restricted to one plant, so resolve its label once instead of per row.
+        var site = await db.Sites.AsNoTracking().Where(x => x.Id == siteId)
+            .Select(x => new { x.Code, x.Name }).FirstOrDefaultAsync(ct);
+
         var result = new List<PassportSummaryDto>(list.Count);
         foreach (var p in list)
         {
@@ -73,7 +77,8 @@ public sealed class PassportService(
                 p.ProductSerial!.SerialNumber, p.ProductSerial.Product?.Code ?? "", p.ProductSerial.Product?.NamePl,
                 p.ProductSerial.ProductionOrder?.Code ?? "", p.Status.ToString(), p.Template?.Code ?? PassportCompletenessEvaluator.TemplateCode,
                 completeness.Complete, completeness.Missing.Count, p.UpdatedAt,
-                p.Versions.Count == 0 ? null : p.Versions.Max(v => v.Version)));
+                p.Versions.Count == 0 ? null : p.Versions.Max(v => v.Version),
+                site?.Code ?? "", site?.Name ?? ""));
         }
         return ListResult.Of(result);
     }
@@ -168,14 +173,23 @@ public sealed class PassportService(
     }
 
     /// <summary>
-    /// Plant that produced the serial, for the document header. The demonstrator runs four plants, so this must follow
-    /// the production order rather than be assumed.
+    /// Plant that produced the serial. The demonstrator runs four plants, so this must follow the production order
+    /// rather than be assumed. Both the API responses and the PDF header read it from here, so the document and the
+    /// screen can never name different plants.
     /// </summary>
-    private async Task<string> SiteNameAsync(Passport passport, CancellationToken ct)
+    private async Task<(string Code, string Name)> SiteAsync(Passport passport, CancellationToken ct)
     {
         var siteId = passport.ProductSerial?.ProductionOrder?.SiteId;
-        if (siteId is null || siteId == Guid.Empty) return "Demo";
-        var name = await db.Sites.AsNoTracking().Where(x => x.Id == siteId).Select(x => x.Name).FirstOrDefaultAsync(ct);
+        if (siteId is null || siteId == Guid.Empty) return ("", "");
+        var site = await db.Sites.AsNoTracking().Where(x => x.Id == siteId)
+            .Select(x => new { x.Code, x.Name }).FirstOrDefaultAsync(ct);
+        return site is null ? ("", "") : (site.Code, site.Name);
+    }
+
+    /// <summary>Plant label for the document header, e.g. "Zakład Zamość (demo)".</summary>
+    private async Task<string> SiteNameAsync(Passport passport, CancellationToken ct)
+    {
+        var (_, name) = await SiteAsync(passport, ct);
         return string.IsNullOrWhiteSpace(name) ? "Demo" : $"{name} (demo)";
     }
 
@@ -264,6 +278,7 @@ public sealed class PassportService(
         var facts = await FactsAsync(passport, ct);
         var completeness = PassportCompletenessEvaluator.Evaluate(facts);
         var serialInspections = await db.QualityInspections.AsNoTracking().Where(i => i.ProductSerialId == passport.ProductSerialId).OrderByDescending(i => i.InspectedAt).ToListAsync(ct);
+        var site = await SiteAsync(passport, ct);
 
         return new PassportDto(
             facts.SerialNumber, facts.ProductCode ?? "", facts.ProductName, facts.OrderCode ?? "", facts.BomVersion,
@@ -274,7 +289,8 @@ public sealed class PassportService(
             serialInspections.Select(i => new InspectionDto(i.Id, i.Result.ToString(), i.Notes, i.InspectedAt, i.InspectedBy, i.Code)).ToList(),
             facts.Deviations.Select((d, idx) => new PassportDeviationDto($"{passport.Id:N}-{idx}", d.Code, d.Title, d.ApprovedBy is null ? "Open" : "Approved", d.ApprovedBy, d.ApprovedAt)).ToList(),
             passport.Versions.OrderByDescending(v => v.Version).Select(v => new PassportVersionDto(v.Version, v.GeneratedAt, v.GeneratedBy, v.Sha256, v.FileSize, v.Status.ToString())).ToList(),
-            passport.ApprovedBy, passport.ApprovedAt, passport.InvalidatedAt, passport.InvalidationReason);
+            passport.ApprovedBy, passport.ApprovedAt, passport.InvalidatedAt, passport.InvalidationReason,
+            site.Code, site.Name);
     }
 
     public static MissingItemDto ToMissingDto(MissingRequirement m) => new(m.Code, m.LabelKey, m.Params);

@@ -152,13 +152,17 @@ public sealed class LotService(
             .Select(g => new LotConsumptionDto(g.Key, g.Where(c => c.ProductSerial is not null).Select(c => c.ProductSerial!.SerialNumber).Distinct().Order().ToList(), g.Sum(c => c.Quantity)))
             .ToList();
 
+        var site = await db.Sites.AsNoTracking().Where(x => x.Id == lot.SiteId)
+            .Select(x => new { x.Code, x.Name }).FirstOrDefaultAsync(ct);
+
         return new LotDto(
             lot.LotNumber, lot.HeatNumber, lot.Part?.Code ?? "", lot.Part?.NamePl, lot.Supplier?.Code ?? "", lot.Supplier?.Name,
             lot.Quantity, lot.RemainingQuantity, lot.Unit, lot.Status.ToString(), lot.ReceivedOn, lot.CountryOfOrigin,
             lot.PurchaseOrderLineId, poCode, lot.ProducedOn, lot.ExpiresOn, lot.BlockReason, lot.BlockedAt,
             documents.Select(PurchaseOrderQueries.ToDocumentSummary).ToList(),
             inspections.Select(i => new InspectionDto(i.Id, i.Result.ToString(), i.Notes, i.InspectedAt, i.InspectedBy, i.Code)).ToList(),
-            consumedBy, reserved, ncrs.Select(ToNcrDto).ToList(), lot.RowVersion.ToString());
+            consumedBy, reserved, ncrs.Select(ToNcrDto).ToList(), lot.RowVersion.ToString(),
+            site?.Code ?? "", site?.Name ?? "");
     }
 
     public static LotSummaryDto ToSummary(MaterialLot l) => new(

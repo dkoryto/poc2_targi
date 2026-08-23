@@ -121,8 +121,12 @@ public sealed class TraceQueries(IAppDbContext db, TraceabilityIndex index)
         var root = new TraceNode("Serial", serial.SerialNumber, serial.Product?.NamePl ?? "", serial.Status.ToString(), rootChildren,
             Meta(("productCode", serial.Product?.Code), ("bomVersion", bom), ("completedAt", serial.CompletedAt)));
 
+        var site = serial.ProductionOrder is null ? null : await db.Sites.AsNoTracking()
+            .Where(x => x.Id == serial.ProductionOrder.SiteId).Select(x => new { x.Code, x.Name }).FirstOrDefaultAsync(ct);
+
         return new SerialTraceDto(serial.SerialNumber, serial.Product?.Code ?? "", serial.Product?.NamePl ?? "", serial.ProductionOrder?.Code ?? "",
-            bom, serial.Status.ToString(), root, components, serial.Passport?.Status.ToString());
+            bom, serial.Status.ToString(), root, components, serial.Passport?.Status.ToString(),
+            site?.Code ?? "", site?.Name ?? "");
     }
 
     public async Task<LotForwardDto> LotForwardAsync(string lotNumber, CancellationToken ct)

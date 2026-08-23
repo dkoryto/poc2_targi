@@ -64,4 +64,25 @@ describe('Passports', () => {
     await waitFor(() => expect(screen.getByTestId('passports-table')).not.toHaveTextContent('PMV-2026-0007'));
     expect(screen.getByTestId('passports-table')).toHaveTextContent('SCM-2026-0103');
   });
+
+  it('names the record plant, and offers a switch only when it is not the active plant', async () => {
+    const user = userEvent.setup();
+    // Deep link (the printed QR points here) to a Zamość passport while Kielce is the active plant.
+    const foreign = renderWithProviders(<App />, { route: '/passports/PMV-2026-0201-Z', auth: true });
+    await waitFor(() => expect(screen.getByTestId('record-site')).toHaveTextContent('Zamość'));
+    const switchBtn = screen.getByTestId('record-site-switch');
+    expect(switchBtn).toBeInTheDocument();
+
+    await user.click(switchBtn);
+    // Once the reader is on that plant, the aid stops nagging but still names the record.
+    await waitFor(() => expect(screen.queryByTestId('record-site-switch')).not.toBeInTheDocument());
+    expect(screen.getByTestId('record-site')).toHaveTextContent('Zamość');
+    foreign.unmount();
+  });
+
+  it('a record from the active plant is labelled without a switch', async () => {
+    renderWithProviders(<App />, { route: '/passports/PMV-2026-0007', auth: true });
+    await waitFor(() => expect(screen.getByTestId('record-site')).toHaveTextContent('Kielce'));
+    expect(screen.queryByTestId('record-site-switch')).not.toBeInTheDocument();
+  });
 });

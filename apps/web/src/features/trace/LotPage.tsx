@@ -11,6 +11,7 @@ import { Button, Card, ConfirmDialog, Dialog, DocStatusChip, ErrorState, FormFie
 import { useAuth } from '@/features/auth/auth';
 import { downloadFile } from '@/lib/download';
 import { dateInputValue, fmtDate, fmtDateTime, fmtNumber } from '@/lib/format';
+import { RecordSite } from '@/features/sites/SiteSwitch';
 
 const CAN_QUALITY = ['QualityInspector', 'DemoPresenter', 'Administrator'];
 
@@ -64,6 +65,7 @@ export function LotPage() {
           <Link to="/trace/lots" className={["row", s.backLink].join(" ")} style={{ fontSize: 'var(--fs-xs)' }}><ArrowLeft size={12} aria-hidden />{t('trace.allLots')}</Link>
           <h1 className="mono">{lotNumber}</h1>
           {d && <p>{d.partName ?? d.partCode} · {d.supplierName ?? d.supplierCode} · {fmtNumber(d.quantity)} {d.unit}</p>}
+          {d?.siteCode && <RecordSite code={d.siteCode} />}
         </div>
         {d && (
           <div className="row">

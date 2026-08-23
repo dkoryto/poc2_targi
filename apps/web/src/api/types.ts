@@ -600,6 +600,9 @@ export interface PlanningScenario {
   errorMessage?: string | null;
   /** Operations differing from the approved baseline. `kpiAfter.movedOperations` counts what re-planning moved vs "before". */
   changesVsBaseline?: number | null;
+  /** Plant the scenario was computed for; the detail route is deep-linkable. */
+  siteCode?: string;
+  siteName?: string;
 }
 export interface PlanningScenarioSummary {
   id: string;
@@ -673,6 +676,9 @@ export interface SerialTrace {
   genealogy: TraceNode;
   components?: TraceComponent[];
   passportStatus?: PassportStatus | null;
+  /** Plant that produced the serial; the page is reachable by deep link from another plant. */
+  siteCode?: string;
+  siteName?: string;
 }
 export type LotStatus = 'AwaitingInspection' | 'Accepted' | 'ConditionallyReleased' | 'Blocked' | 'Recalled';
 export const LOT_STATUSES: LotStatus[] = ['AwaitingInspection', 'Accepted', 'ConditionallyReleased', 'Blocked', 'Recalled'];
@@ -714,6 +720,9 @@ export interface Lot extends LotSummary {
   reservedBy: string[];
   nonConformances?: NonConformance[];
   rowVersion?: string;
+  /** Plant the lot belongs to; reachable by deep link and from a passport's component table. */
+  siteCode?: string;
+  siteName?: string;
 }
 export interface LotForward {
   lot: LotSummary;
@@ -766,6 +775,8 @@ export interface PassportSummary {
   missingCount?: number;
   updatedAt?: string | null;
   latestVersion?: number | null;
+  siteCode?: string;
+  siteName?: string;
 }
 export interface PassportComponent {
   partCode: string;
@@ -809,6 +820,9 @@ export interface Passport {
   approvedAt?: string | null;
   invalidatedAt?: string | null;
   invalidationReason?: string | null;
+  /** Plant that produced the serial. The passport QR links straight here, so the record names its own plant. */
+  siteCode?: string;
+  siteName?: string;
 }
 export interface GeneratePassportResponse {
   version: number;

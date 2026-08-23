@@ -5,6 +5,23 @@
 
 Łączymy zewnętrznych dostawców z wewnętrznym planem produkcji: portal kooperanta → wyjaśnialna ocena ryzyka dostaw → dynamiczny MRP i symulacje What-If → genealogia partii → cyfrowy paszport jakościowy (PDF, QR, SHA-256). Całość działa lokalnie, offline, z Docker Compose.
 
+## Jak to wygląda
+
+![Control Room](docs/screenshots/01-control-room.png)
+
+*Control Room: sześć KPI liczonych z danych, mapa dostaw bez internetu, heatmapa ryzyka, Gantt i status paszportów.*
+
+![Plan Przed / Po](docs/screenshots/05-whatif-before-after.png)
+
+*Symulacja What-If: jeden Gantt z planem przed i po, przestój 36 h → 8 h, uzasadnienia wyliczone z danych scenariusza.*
+
+![Paszport jakościowy](docs/screenshots/08-passport.png)
+
+*Cyfrowy paszport jakościowy: kompletność wg szablonu DQP-01, kod QR, wersje dokumentu z sumami SHA-256.*
+
+Pełna galeria z opisami — w tym portal kooperanta, genealogia partii, cztery zakłady i widoki mobilne:
+[`docs/screenshots/`](docs/screenshots/README.md).
+
 ## Quick Start
 
 Wymagania: Docker Desktop (Compose v2), ~4 GB RAM dla kontenerów, wolne porty 5173, 5080, 8081, 5432, 9000/9001 (wszystkie bindowane do `127.0.0.1`).

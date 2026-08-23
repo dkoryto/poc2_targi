@@ -16,13 +16,17 @@ public sealed record PassportVersionDto(int Version, DateTime GeneratedAt, strin
 
 public sealed record PassportSummaryDto(
     string Serial, string ProductCode, string? ProductName, string OrderCode, string Status, string TemplateCode,
-    bool Complete, int MissingCount, DateTime? UpdatedAt, int? LatestVersion);
+    bool Complete, int MissingCount, DateTime? UpdatedAt, int? LatestVersion,
+    string SiteCode, string SiteName);
 
 public sealed record PassportDto(
     string Serial, string ProductCode, string? ProductName, string OrderCode, string? BomVersion, string Status, string TemplateCode,
     PassportCompletenessDto Completeness, IReadOnlyList<PassportComponentDto> Components, IReadOnlyList<InspectionDto> Inspections,
     IReadOnlyList<PassportDeviationDto> Deviations, IReadOnlyList<PassportVersionDto> Versions,
-    string? ApprovedBy, DateTime? ApprovedAt, DateTime? InvalidatedAt, string? InvalidationReason, bool IsDemo = true);
+    string? ApprovedBy, DateTime? ApprovedAt, DateTime? InvalidatedAt, string? InvalidationReason,
+    // The passport QR links straight here, so the record must name its own plant: the reader may
+    // arrive with a different plant selected, or none.
+    string SiteCode = "", string SiteName = "", bool IsDemo = true);
 
 public sealed record GeneratePassportResponse(int Version, string Sha256, string DownloadUrl, long FileSize, DateTime GeneratedAt);
 

@@ -4,8 +4,8 @@
 
 ## Scope and boundaries
 
-- Runs fully offline on a single machine via Docker Compose; all ports bind to `127.0.0.1`.
-- Single tenant, single site, fictional suppliers, no real contract, location or weapon-system data.
+- Runs fully offline on a single machine via Docker Compose; in the default `docker-compose.yml` all ports bind to `127.0.0.1`.
+- Single tenant, four fictional plants (Kielce, Piła, Zamość, Leszno), fictional suppliers, no real contract, plant or weapon-system data. Plant scoping is an authorization boundary inside one tenant, **not** tenant isolation: an operator role sees every plant by design, and a supplier is restricted to the plants it delivers to.
 - Demo profile (`Demo__Enabled=true`) deliberately weakens authentication (`/api/v1/auth/demo-login`, role switcher, `/api/v1/demo/reset`). **Never expose the demo profile on a network.** With `Demo__Enabled=false` those endpoints return 404 and full username/password + JWT + RBAC applies.
 
 ## Threat model (STRIDE, condensed)
@@ -29,9 +29,12 @@ Allowed: `pdf`, `png`, `jpg/jpeg`; MIME sniffed server-side, extension + size ch
 2. Demo credentials and JWT key in `.env.example` — regenerate, move to a secrets store.
 3. `NoOpFileScanner` — no real malware scanning.
 4. Local identity provider — no MFA, no password policy enforcement beyond length.
-5. Optional local LLM adapter: outputs are proposals only, but prompt-injection via uploaded documents is possible; keep `LocalAi__Enabled=false` unless the model host is isolated.
+5. Optional local extraction-model adapter (`LocalAi__Enabled`, off by default): outputs are proposals requiring human acceptance and never gate a decision, but prompt injection through an uploaded document is possible; keep it disabled unless the model host is isolated.
 6. No backups / DR for Postgres and MinIO volumes.
 7. Dependency licences and CVEs: run `dotnet list package --vulnerable`, `mvn dependency-check`, `pnpm audit` before release.
+8. `/notifications` and `/audit` are not plant-scoped (see [`multi-site.md`](docs/architecture/multi-site.md)). Audit rows are readable by every `Auditor` regardless of plant — acceptable for a demonstrator, not for a deployment where plants are separate organisational units.
+9. Rate limits are partitioned by the **caller's IP as the API sees it**. Behind a reverse proxy that does not forward the client address, every visitor shares one bucket; verify `X-Forwarded-For` handling before exposing the app.
+10. The seeded demo password (`demo` for every account, overridable with `Demo__AccountPassword`) must be changed for any deployment reachable beyond loopback, and `Demo__Enabled=false` set, or the demo endpoints must be gated at the proxy.
 
 ## Reporting
 

@@ -902,6 +902,7 @@
       "ELECTRONICS_COMMS": "electronics & communications",
       "STRUCTURES_ARMOUR": "structures & armour",
       "INTEGRATION_TEST": "integration & final test"
-    }
+    },
+    "switchToThis": "Switch to {{site}}"
   }
 }
