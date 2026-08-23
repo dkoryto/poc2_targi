@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router';
 import s from './layout.module.css';
 import { TopBar } from './TopBar';
 import { Nav } from './Nav';
 import { PresenterPanel } from './PresenterPanel';
 import { DisclaimerBanner, ConfirmDialog, useToast } from '@/components/ui';
-import { useLive } from '@/realtime/useLive';
+import { useLive, type LiveStatus } from '@/realtime/useLive';
+
+const LiveCtx = createContext<LiveStatus>('disconnected');
+/** SignalR connection state, available anywhere under AppShell. */
+export function useLiveStatus(): LiveStatus {
+  return useContext(LiveCtx);
+}
 import { useAuth } from '@/features/auth/auth';
 import { useResetDemo } from '@/features/demo/api';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +26,7 @@ export function AppShell() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (
+    <LiveCtx.Provider value={live}>
     <div className={s.shell}>
       <TopBar live={live} onOpenPresenter={() => setPresenter(true)} />
       <Nav />
@@ -50,5 +57,6 @@ export function AppShell() {
         }
       />
     </div>
+    </LiveCtx.Provider>
   );
 }

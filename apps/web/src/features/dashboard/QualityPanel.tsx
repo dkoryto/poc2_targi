@@ -35,7 +35,7 @@ export function QualityPanel({ data }: { data: QualityStatus }) {
         </div>
         {pSegs.map((x) => (
           <div key={x.k} className={s.qRow}>
-            <span className="row"><span className={s.legendDot} style={{ background: x.c }} />{t(`status.passport.${x.k}`)}</span>
+            <Link to={`/passports?status=${x.k}`} className="row" style={{ color: 'inherit' }}><span className={s.legendDot} style={{ background: x.c }} />{t(`status.passport.${x.k}`)}</Link>
             <strong>{x.v}</strong>
           </div>
         ))}
@@ -59,11 +59,11 @@ export function QualityPanel({ data }: { data: QualityStatus }) {
         <div className={s.qStat}><h3>{t('dashboard.openNcr')}</h3><span className={s.qBig}>{data.openNonConformances}</span></div>
         <StatusChip tone={data.openNonConformances > 0 ? 'warn' : 'ok'} label={data.openNonConformances > 0 ? t('status.generic.warn') : t('status.generic.ok')} small />
         <div className={s.qStat}><h3>{t('dashboard.lotsBlocked')}</h3><span className={s.qBig} style={{ color: data.lotsBlocked > 0 ? 'var(--crit)' : undefined }}>{data.lotsBlocked}</span></div>
-        <Link to="/trace" style={{ fontSize: 'var(--fs-xs)' }}>{t('dashboard.openLots')} →</Link>
+        <Link to="/trace/lots?status=Blocked" style={{ fontSize: 'var(--fs-xs)' }} data-testid="open-blocked-lots">{t('dashboard.openLots')} →</Link>
       </div>
       <div className={s.qBlock}>
         <div className={s.qStat}><h3>{t('dashboard.readyForAcceptance')}</h3><span className={s.qBig} style={{ color: 'var(--ok)' }}>{data.readyForAcceptance}</span></div>
-        <StatusChip tone="ok" label={t('status.passport.Approved')} small />
+        <Link to="/passports?status=Approved" style={{ fontSize: 'var(--fs-xs)' }}>{t('dashboard.openPassports')} →</Link>
       </div>
     </div>
   );

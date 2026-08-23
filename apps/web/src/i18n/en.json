@@ -87,7 +87,10 @@
     "hours": "h",
     "notFound": "Not found",
     "forbidden": "You are not allowed to access this resource",
-    "version": "Version"
+    "version": "Version",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Copy failed"
   },
   "auth": {
     "title": "Sign in",
@@ -194,13 +197,22 @@
       "Generated": "Generated",
       "Invalidated": "Invalidated"
     },
-    "service": { "up": "Up", "down": "Down", "disabled": "Disabled" },
+    "service": {
+      "up": "Up",
+      "down": "Down",
+      "disabled": "Disabled"
+    },
     "generic": {
       "ok": "OK",
       "warn": "Warning",
       "critical": "Critical",
       "info": "Info",
       "neutral": "—"
+    },
+    "inspection": {
+      "Passed": "Passed",
+      "Failed": "Failed",
+      "Conditional": "Conditional"
     }
   },
   "docType": {
@@ -224,7 +236,11 @@
     "QUALITY_ISSUE": "Quality issue",
     "PARTIAL_DELIVERY": "Partial delivery",
     "NO_CONFIRMATION": "No supplier confirmation",
-    "severity": { "LOW": "Low", "MEDIUM": "Medium", "HIGH": "High" }
+    "severity": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    }
   },
   "explain": {
     "ORDER_DELAYED_MATERIAL_SHORTAGE": "Order {{orderCode}} was moved by {{days}} days due to a shortage of {{missingQty}} pcs of {{partCode}} (available {{availableOn}}).",
@@ -276,7 +292,8 @@
       "Materiały": "Materials",
       "Optyka": "Optics",
       "Zasilanie": "Power"
-    }
+    },
+    "openWhatIf": "Open What-If"
   },
   "gantt": {
     "today": "Today",
@@ -417,20 +434,89 @@
     "resetting": "Restoring data…",
     "seedVersion": "Seed version",
     "script": {
-      "1": { "title": "Control Room", "desc": "Show deliveries, KPIs and the current plan. All key values are green or amber." },
-      "2": { "title": "Event", "desc": "As the supplier, change the ACT-40 ETA by +10 days (PO-2026-0007) or trigger a simulator event." },
-      "3": { "title": "Live reaction", "desc": "Map, risk counter and Gantt update; the system flags endangered orders (WO-2026-014)." },
-      "4": { "title": "What-If", "desc": "Open the “Delay ACT-40 actuators by 10 days” scenario and click Recalculate plan." },
-      "5": { "title": "Comparison", "desc": "Show Before / After, the change in predicted downtime and why WO-2026-019 was moved." },
-      "6": { "title": "Traceability", "desc": "Open serial PMV-2026-0007 and walk the genealogy down to lots and certificates." },
-      "7": { "title": "Passport", "desc": "Show the completeness check and generate the PDF with one click." },
-      "8": { "title": "Summary", "desc": "Business value screen: risk detected early, downtime avoided, full traceability, acceptance documentation ready." },
-      "9": { "title": "Scenario 2 (optional)", "desc": "Block lot HTS-22-2608, show trace-forward and automatic passport invalidation." }
+      "1": {
+        "title": "Control Room",
+        "desc": "Show deliveries, KPIs and the current plan. All key values are green or amber."
+      },
+      "2": {
+        "title": "Event",
+        "desc": "As the supplier, change the ACT-40 ETA by +10 days (PO-2026-0007) or trigger a simulator event."
+      },
+      "3": {
+        "title": "Live reaction",
+        "desc": "Map, risk counter and Gantt update; the system flags endangered orders (WO-2026-014)."
+      },
+      "4": {
+        "title": "What-If",
+        "desc": "Open the “Delay ACT-40 actuators by 10 days” scenario and click Recalculate plan."
+      },
+      "5": {
+        "title": "Comparison",
+        "desc": "Show Before / After, the change in predicted downtime and why WO-2026-019 was moved."
+      },
+      "6": {
+        "title": "Traceability",
+        "desc": "Open serial PMV-2026-0007 and walk the genealogy down to lots and certificates."
+      },
+      "7": {
+        "title": "Passport",
+        "desc": "Show the completeness check and generate the PDF with one click."
+      },
+      "8": {
+        "title": "Summary",
+        "desc": "Business value screen: risk detected early, downtime avoided, full traceability, acceptance documentation ready."
+      },
+      "9": {
+        "title": "Scenario 2 (optional)",
+        "desc": "Block lot HTS-22-2608, show trace-forward and automatic passport invalidation."
+      }
     }
   },
   "admin": {
     "title": "Administration",
-    "status": "Service status"
+    "status": "Service status",
+    "subtitle": "Service status, recent errors and configuration (read-only in this version).",
+    "statusDef": "Pings the database, object storage, planning engine and the optional AI model.",
+    "services": {
+      "postgres": "PostgreSQL",
+      "minio": "Object storage (MinIO)",
+      "planning-engine": "Planning engine",
+      "local-ai": "Local AI model"
+    },
+    "live": {
+      "connected": "Connected",
+      "connecting": "Connecting…",
+      "disconnected": "Disconnected"
+    },
+    "recentErrors": "Recent errors",
+    "recentErrorsDef": "Error history of recent operations without stack traces.",
+    "noErrors": "No errors",
+    "demoStatus": "Demo status",
+    "demoMode": "Demo mode",
+    "seededAt": "Seeded at",
+    "lastReset": "Last reset",
+    "settings": "Configuration",
+    "settingsDef": "Risk weights, solver objective weights and thresholds.",
+    "riskWeights": "Risk weights",
+    "objectiveWeights": "Solver objective",
+    "thresholds": "Thresholds",
+    "objective": {
+      "latenessPerDayPerPriority": "Lateness × priority (per day)",
+      "shortagePerUnit": "Material shortage (per unit)",
+      "downtimePerHour": "Downtime (per hour)",
+      "deliveryBreachPerOrder": "Due-date breach (per order)",
+      "changePerMovedOperation": "Change cost (per operation)",
+      "changeoverPerSwitch": "Changeover"
+    },
+    "threshold": {
+      "RISK_MEDIUM": "Medium risk from",
+      "RISK_HIGH": "High risk from",
+      "RISK_CRITICAL": "Critical risk from",
+      "NOTIFY_RISK": "Notify planner from",
+      "SOLVER_TIMEOUT_MS": "Solver time limit",
+      "DEMO_RESET_MS": "Demo reset limit"
+    },
+    "readOnly": "Editing weights and thresholds arrives in a later version; values come from server configuration."
   },
   "events": {
     "ShipmentEtaChanged": "ETA changed for delivery {{code}}",
@@ -442,5 +528,320 @@
     "PassportGenerated": "Passport {{serial}} generated",
     "QualityDocumentUploaded": "Quality document added",
     "SupplierOrderStatusChanged": "Order status changed {{code}}"
+  },
+  "planning": {
+    "title": "Planning and What-If simulations",
+    "subtitle": "Baseline plan, scenarios and MRP engine recommendations. No scenario changes the baseline without approval.",
+    "baseline": "Baseline plan",
+    "baselineDef": "Approved, versioned production schedule. A copy is kept before every change.",
+    "approvedAt": "Approved",
+    "approvedBy": "By",
+    "horizon": "Horizon",
+    "scenarios": "What-If scenarios",
+    "scenariosDef": "Preset tiles and custom scenarios. Running creates a versioned snapshot and re-plans in the planning engine (3 s limit, deterministic fallback).",
+    "customScenario": "Custom scenario",
+    "customHint": "Combine any changes: inbound delay, lot block, priority, work-center capacity.",
+    "runHint": "Run the scenario and re-plan",
+    "readOnly": "Your role can only view scenarios.",
+    "history": "Scenario history",
+    "scenario": "Scenario",
+    "createdAt": "Created",
+    "changes": "Changes",
+    "solver": "Engine",
+    "fallback": "Heuristic fallback",
+    "fallbackHint": "The planning engine did not answer within the time limit — the deterministic fallback heuristic was used.",
+    "elapsed": "{{ms}} ms",
+    "noScenarios": "No scenarios yet",
+    "noScenariosDetail": "Run one of the tiles above to see the Before / After plan.",
+    "runFailed": "Could not start the scenario",
+    "kpi": {
+      "downtimeHours": "Predicted downtime",
+      "lateOrders": "Late orders",
+      "totalLatenessDays": "Total lateness (days)",
+      "movedOperations": "Moved operations",
+      "ordersWithShortage": "Orders with shortage",
+      "onTimeRate": "On-time rate"
+    },
+    "explanations": "Recommendation rationale",
+    "explanationsDef": "Every sentence derives from scenario data (engine reason codes), not from a text generator.",
+    "noExplanations": "The engine reported no changes requiring explanation.",
+    "consequences": "Consequences",
+    "ganttCompare": "Plan Before / After",
+    "ganttCompareDef": "\"Before\" = baseline with the change applied but not re-sequenced. \"After\" = engine proposal. In compare mode ghost bars show the baseline position.",
+    "view": "View",
+    "compare": "Compare",
+    "movedOps": "Moved operations ({{count}})",
+    "noMoved": "No moved operations",
+    "approvedInfo": "Approved by {{by}} on {{at}} — baseline v{{version}}",
+    "status": {
+      "Draft": "Draft",
+      "Running": "Running",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Saved": "Saved"
+    },
+    "change": {
+      "DELAY_INBOUND": "Delay inbound delivery",
+      "BLOCK_LOT": "Block lot",
+      "PRIORITY": "Change order priority",
+      "CAPACITY": "Change work-center capacity",
+      "DELAY_ORDER": "Delay order",
+      "DELAY_INBOUND_desc": "Delivery {{line}} delayed by {{days}} days",
+      "BLOCK_LOT_desc": "Block lot {{lot}}",
+      "PRIORITY_desc": "Priority {{order}} → {{priority}}",
+      "CAPACITY_desc": "Capacity {{wc}} → {{pct}} %",
+      "DELAY_ORDER_desc": "Order {{order}} delayed by {{days}} days"
+    },
+    "presets": {
+      "ACT40_DELAY": "Delay ACT-40 actuators by 10 days",
+      "MCU_X7_DELAY": "Delay MCU-X7 control modules by 14 days",
+      "HTS22_BLOCK": "Block HTS-22 steel lot for quality",
+      "WO014_PRIORITY": "Raise priority of WO-2026-014",
+      "WC_INT_CAPACITY": "Reduce integration cell capacity by 50%"
+    },
+    "createAndRun": "Create and re-plan",
+    "scenarioName": "Scenario name",
+    "scenarioNamePlaceholder": "e.g. ACT-40 delay + HTS-22 block",
+    "removeChange": "Remove change",
+    "changeType": "Change type",
+    "days": "Days",
+    "factor": "Factor",
+    "factorHint": "0.5 = half capacity",
+    "addChange": "Add change",
+    "backToList": "Back to planning",
+    "run": "Re-plan",
+    "runStarted": "Re-planning started",
+    "save": "Save scenario",
+    "saved": "Scenario saved",
+    "reject": "Reject",
+    "rejected": "Scenario rejected",
+    "approve": "Approve",
+    "approved": "Plan approved — new baseline version created",
+    "approveForbidden": "Only a production planner can approve",
+    "running": "Re-planning…",
+    "draft": "Scenario waiting to run",
+    "runningHint": "The engine accounts for BOM, stock, blocked lots, work-center calendars and frozen operations.",
+    "failed": "Re-planning failed",
+    "approveTitle": "Approve the proposed plan?",
+    "approveBody": "The current baseline will be copied as the previous version and the proposal becomes the new baseline. The operation is audited.",
+    "impactMoved": "Moved operations: {{count}}",
+    "impactLate": "Late orders: {{count}}",
+    "impactDowntime": "Predicted downtime: {{from}} h → {{to}} h",
+    "impactVersion": "A new baseline version will be created"
+  },
+  "trace": {
+    "title": "Traceability and genealogy",
+    "subtitle": "Supplier → purchase order → shipment → lot → inspection → consumption → order → serial → passport.",
+    "allLots": "All lots",
+    "search": "Search",
+    "searchDef": "Search by serial, lot, heat, purchase order or document number.",
+    "searchPlaceholder": "Serial, lot, heat, PO, document…",
+    "quick": "Quick picks",
+    "results": "Results",
+    "noResults": "No results",
+    "noResultsDetail": "Check the identifier or use a quick pick.",
+    "kind": {
+      "Serial": "Serial",
+      "Lot": "Lot",
+      "Heat": "Heat",
+      "PurchaseOrder": "Purchase order",
+      "Document": "Document",
+      "Order": "Production order",
+      "Supplier": "Supplier",
+      "Shipment": "Shipment",
+      "Operation": "Operation",
+      "Inspection": "Inspection",
+      "Passport": "Passport",
+      "Consumption": "Consumption"
+    },
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "genealogy": "Genealogy tree",
+    "genealogyDef": "Full chain of origin for the product. Click a node for details and navigation.",
+    "backToSearch": "Back to search",
+    "openPassport": "Open passport",
+    "traceBack": "Trace-back: components and certificates",
+    "traceBackDef": "From the product to every lot, supplier and certificate with checksums.",
+    "history": "Change history",
+    "selectNode": "Select a node in the tree to see details.",
+    "downloadDoc": "Download document",
+    "lotHeat": "Lot / heat",
+    "certificate": "Certificate (SHA-256)",
+    "noComponents": "No components",
+    "meta": {
+      "partCode": "Part",
+      "partName": "Name",
+      "heatNumber": "Heat",
+      "country": "Country",
+      "sha256": "SHA-256",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "fileName": "File",
+      "documentNumber": "Document no.",
+      "receivedOn": "Received",
+      "consumedAt": "Consumed",
+      "operationCode": "Operation",
+      "workCenterCode": "Work center",
+      "result": "Result",
+      "eta": "ETA",
+      "status": "Status",
+      "supplierCode": "Supplier",
+      "orderCode": "Order",
+      "inspectedAt": "Inspected",
+      "type": "Type",
+      "version": "Version",
+      "generatedAt": "Generated"
+    },
+    "lot": "Lot",
+    "lots": "Material lots",
+    "lotsSubtitle": "Lot statuses, documents, inspections and production impact.",
+    "lotSearchPlaceholder": "HTS-22-2608",
+    "receivedOn": "Received",
+    "addInspection": "Add inspection",
+    "blockLot": "Block lot",
+    "blocked": "Lot {{lot}} blocked",
+    "blockedDetail": "Affected: {{orders}} orders, {{serials}} products, {{passports}} passports",
+    "inspectionAdded": "Inspection recorded",
+    "blockResult": "Block result — affected records",
+    "affectedOrders": "Orders",
+    "affectedSerials": "Products (serials)",
+    "affectedPassports": "Passports",
+    "lotData": "Lot data",
+    "inspections": "Inspections",
+    "noInspections": "No inspections recorded",
+    "ncr": "Non-conformances (NCR)",
+    "traceForward": "Trace-forward: where the lot was used",
+    "traceForwardDef": "From the lot to every order, product and passport that consumed or reserved it.",
+    "relation": {
+      "Consumed": "consumed",
+      "Reserved": "reserved"
+    },
+    "reservedBy": "Reservations",
+    "blockTitle": "Block lot {{lot}}?",
+    "blockImpact": "The lot is removed from planning. Affected: {{orders}} orders, {{serials}} products; {{passports}} passports will be invalidated.",
+    "blockReason": "Block reason",
+    "ncrTitle": "NCR title",
+    "inspectionResult": "Result",
+    "inspectedAt": "Inspection date",
+    "notes": "Notes"
+  },
+  "passports": {
+    "title": "Digital quality passports",
+    "subtitle": "Data completeness, approval and versioned PDF with QR and SHA-256 (template DQP-01).",
+    "serial": "Serial",
+    "product": "Product",
+    "completeness": "Completeness",
+    "complete": "Complete",
+    "missingCount": "Missing: {{count}}",
+    "updatedAt": "Updated",
+    "searchPlaceholder": "PMV-2026-0007",
+    "template": "Template",
+    "openTrace": "Genealogy",
+    "approve": "Approve",
+    "generate": "Generate passport",
+    "incomplete": "Passport incomplete — resolve missing items",
+    "approveFirst": "Approve the passport first",
+    "invalidatedTitle": "Passport invalidated",
+    "invalidatedDefault": "A lot or quality status change invalidated the previous version.",
+    "demoNote": "Demonstration passport (DQP-01). Requirement mapping is not a formal confirmation of compliance or certification.",
+    "completenessDef": "DQP-01 requirement register. \"Generate passport\" is enabled only when every rule is satisfied.",
+    "missingHeader": "Missing:",
+    "allRequirementsMet": "All requirements met",
+    "req": {
+      "PRODUCT_DATA": "Product data and serial",
+      "ORDER_REF": "Production order",
+      "BOM_VERSION": "Configuration / BOM version",
+      "KEY_COMPONENT_LOTS": "Key components and lots",
+      "SUPPLIER_ORIGIN": "Suppliers and country of origin",
+      "QC_STATUS": "Quality control status",
+      "CERTIFICATES_WITH_HASH": "Certificates with checksums",
+      "INSPECTION_RESULTS": "Inspection results",
+      "DEVIATIONS": "Deviation and approval register",
+      "APPROVAL": "Quality inspector approval"
+    },
+    "missing": {
+      "INSPECTION_RESULT": "Final inspection result missing",
+      "CERT": "Material certificate missing for {{partCode}} (lot {{lotNumber}})",
+      "APPROVAL": "Quality inspector approval missing",
+      "QC_STATUS": "Quality control status missing",
+      "DOCUMENT": "Document missing: {{type}}",
+      "COMPONENT_LOT": "No lot assigned for {{partCode}}",
+      "DEVIATION_APPROVAL": "Unapproved deviation",
+      "BOM_VERSION": "BOM version missing",
+      "PRODUCT_DATA": "Incomplete product data",
+      "ORDER_REF": "No production order link",
+      "SUPPLIER_ORIGIN": "Origin data missing",
+      "CERT_HASH": "Certificate checksum missing"
+    },
+    "components": "Key components and lots",
+    "deviations": "Deviations and approvals",
+    "noDeviations": "No deviations recorded",
+    "qr": "QR code and approval",
+    "qrDef": "The QR code links to the local passport record.",
+    "approvedBy": "Approved by",
+    "latestVersion": "Latest version",
+    "versions": "Document versions",
+    "noVersions": "No generated versions",
+    "noVersionsDetail": "After approval, generate the PDF with one click.",
+    "generatedAt": "Generated",
+    "size": "Size",
+    "version": {
+      "Current": "Current",
+      "Superseded": "Superseded",
+      "Invalidated": "Invalidated"
+    },
+    "generated": "Passport v{{version}} generated",
+    "approved": "Passport approved",
+    "generateTitle": "Generate passport PDF?",
+    "generateImpact": "Version v{{version}} with QR code and SHA-256 will be created. Previous versions are kept.",
+    "generateBody": "The document is marked as demonstrative and generated locally without internet access."
+  },
+  "audit": {
+    "title": "Audit",
+    "subtitle": "Who changed what and when — before/after values, correlation ID and source. The log is read-only.",
+    "exportCsv": "Export CSV",
+    "entity": "Entity",
+    "code": "Identifier",
+    "user": "User",
+    "occurredAt": "Time",
+    "action": "Action",
+    "source": "Source",
+    "correlationId": "Correlation ID",
+    "entities": {
+      "PurchaseOrderLine": "Purchase order line",
+      "Shipment": "Shipment",
+      "MaterialLot": "Lot",
+      "QualityDocument": "Document",
+      "PlanningScenario": "Scenario",
+      "PlanningBaseline": "Baseline",
+      "Passport": "Passport",
+      "ProductionOrder": "Production order",
+      "Serial": "Serial",
+      "User": "User"
+    },
+    "pageOf": "Page {{page}} of {{pages}} ({{total}} entries)",
+    "noPayload": "No before/after payload",
+    "field": "Field"
+  },
+  "summary": {
+    "title": "Business value summary",
+    "subtitle": "What the demonstrator showed in a few minutes.",
+    "daysEarlier": "{{count}} days earlier",
+    "riskDetected": "Risk detected earlier",
+    "riskDetectedDetail": "The supplier's ETA change immediately raised the risk score and flagged the endangered order.",
+    "downtimeAvoided": "Downtime avoided",
+    "downtimeAvoidedDetail": "Predicted integration-cell downtime: {{before}} h → {{after}} h after re-scheduling.",
+    "traceability": "Traceability",
+    "traceabilityDetail": "Full genealogy from supplier to serial number, with certificate checksums.",
+    "oneClick": "1 click",
+    "passport": "Acceptance documentation",
+    "passportDetail": "Digital quality passport with QR and SHA-256. Passport completeness: {{pct}} %.",
+    "passportDetailNoData": "Digital quality passport with QR and SHA-256.",
+    "chain": "Cause-and-effect chain",
+    "chainText": "Supplier delay → risk increase → plan at risk → simulation → new schedule → production continuity → lot genealogy → complete digital passport.",
+    "fromScenario": "Values computed from the latest scenario: {{name}}.",
+    "demoValues": "Demo values — run the ACT-40 scenario to see engine data."
   }
 }

@@ -89,7 +89,10 @@
     "hours": "h",
     "notFound": "Nie znaleziono",
     "forbidden": "Brak uprawnień do tego zasobu",
-    "version": "Wersja"
+    "version": "Wersja",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano do schowka",
+    "copyFailed": "Nie udało się skopiować"
   },
   "auth": {
     "title": "Logowanie",
@@ -196,13 +199,22 @@
       "Generated": "Wygenerowany",
       "Invalidated": "Unieważniony"
     },
-    "service": { "up": "Działa", "down": "Niedostępna", "disabled": "Wyłączona" },
+    "service": {
+      "up": "Działa",
+      "down": "Niedostępna",
+      "disabled": "Wyłączona"
+    },
     "generic": {
       "ok": "OK",
       "warn": "Ostrzeżenie",
       "critical": "Krytyczne",
       "info": "Informacja",
       "neutral": "—"
+    },
+    "inspection": {
+      "Passed": "Zaliczona",
+      "Failed": "Niezaliczona",
+      "Conditional": "Warunkowa"
     }
   },
   "docType": {
@@ -226,7 +238,11 @@
     "QUALITY_ISSUE": "Problem jakościowy",
     "PARTIAL_DELIVERY": "Częściowa dostawa",
     "NO_CONFIRMATION": "Brak potwierdzenia przez dostawcę",
-    "severity": { "LOW": "Niska", "MEDIUM": "Średnia", "HIGH": "Wysoka" }
+    "severity": {
+      "LOW": "Niska",
+      "MEDIUM": "Średnia",
+      "HIGH": "Wysoka"
+    }
   },
   "explain": {
     "ORDER_DELAYED_MATERIAL_SHORTAGE": "Zlecenie {{orderCode}} przesunięto o {{days}} dni z powodu braku {{missingQty}} szt. {{partCode}} (dostępne {{availableOn}}).",
@@ -278,7 +294,8 @@
       "Materiały": "Materiały",
       "Optyka": "Optyka",
       "Zasilanie": "Zasilanie"
-    }
+    },
+    "openWhatIf": "Otwórz What-If"
   },
   "gantt": {
     "today": "Dziś",
@@ -419,20 +436,89 @@
     "resetting": "Przywracanie danych…",
     "seedVersion": "Wersja seeda",
     "script": {
-      "1": { "title": "Control Room", "desc": "Pokaż dostawy, KPI i aktualny plan. Wszystkie kluczowe wartości są zielone lub bursztynowe." },
-      "2": { "title": "Zdarzenie", "desc": "Jako dostawca zmień ETA ACT-40 o +10 dni (PO-2026-0007) albo uruchom gotowe zdarzenie symulatora." },
-      "3": { "title": "Reakcja na żywo", "desc": "Mapa, licznik ryzyk i Gantt aktualizują się; system wskazuje zagrożone zlecenia (WO-2026-014)." },
-      "4": { "title": "What-If", "desc": "Otwórz scenariusz „Opóźnij siłowniki ACT-40 o 10 dni” i kliknij Przelicz plan." },
-      "5": { "title": "Porównanie", "desc": "Pokaż plan Przed / Po, zmianę przewidywanego przestoju i powód przesunięcia WO-2026-019." },
-      "6": { "title": "Traceability", "desc": "Otwórz numer seryjny PMV-2026-0007 i przejdź po genealogii do partii i certyfikatów." },
-      "7": { "title": "Paszport", "desc": "Pokaż kontrolę kompletności i wygeneruj PDF jednym kliknięciem." },
-      "8": { "title": "Podsumowanie", "desc": "Ekran wartości biznesowej: wcześniej wykryte ryzyko, uniknięty przestój, pełna identyfikowalność, gotowa dokumentacja." },
-      "9": { "title": "Scenariusz 2 (opcjonalny)", "desc": "Zablokuj partię HTS-22-2608, pokaż trace-forward i automatyczne unieważnienie paszportów." }
+      "1": {
+        "title": "Control Room",
+        "desc": "Pokaż dostawy, KPI i aktualny plan. Wszystkie kluczowe wartości są zielone lub bursztynowe."
+      },
+      "2": {
+        "title": "Zdarzenie",
+        "desc": "Jako dostawca zmień ETA ACT-40 o +10 dni (PO-2026-0007) albo uruchom gotowe zdarzenie symulatora."
+      },
+      "3": {
+        "title": "Reakcja na żywo",
+        "desc": "Mapa, licznik ryzyk i Gantt aktualizują się; system wskazuje zagrożone zlecenia (WO-2026-014)."
+      },
+      "4": {
+        "title": "What-If",
+        "desc": "Otwórz scenariusz „Opóźnij siłowniki ACT-40 o 10 dni” i kliknij Przelicz plan."
+      },
+      "5": {
+        "title": "Porównanie",
+        "desc": "Pokaż plan Przed / Po, zmianę przewidywanego przestoju i powód przesunięcia WO-2026-019."
+      },
+      "6": {
+        "title": "Traceability",
+        "desc": "Otwórz numer seryjny PMV-2026-0007 i przejdź po genealogii do partii i certyfikatów."
+      },
+      "7": {
+        "title": "Paszport",
+        "desc": "Pokaż kontrolę kompletności i wygeneruj PDF jednym kliknięciem."
+      },
+      "8": {
+        "title": "Podsumowanie",
+        "desc": "Ekran wartości biznesowej: wcześniej wykryte ryzyko, uniknięty przestój, pełna identyfikowalność, gotowa dokumentacja."
+      },
+      "9": {
+        "title": "Scenariusz 2 (opcjonalny)",
+        "desc": "Zablokuj partię HTS-22-2608, pokaż trace-forward i automatyczne unieważnienie paszportów."
+      }
     }
   },
   "admin": {
     "title": "Administracja",
-    "status": "Status usług"
+    "status": "Status usług",
+    "subtitle": "Status usług, ostatnie błędy i konfiguracja (tylko do odczytu w tej wersji).",
+    "statusDef": "Ping bazy danych, object storage, silnika planowania i opcjonalnego modelu AI.",
+    "services": {
+      "postgres": "PostgreSQL",
+      "minio": "Object storage (MinIO)",
+      "planning-engine": "Silnik planowania",
+      "local-ai": "Lokalny model AI"
+    },
+    "live": {
+      "connected": "Połączono",
+      "connecting": "Łączenie…",
+      "disconnected": "Rozłączono"
+    },
+    "recentErrors": "Ostatnie błędy",
+    "recentErrorsDef": "Historia błędów ostatnich operacji bez stack trace.",
+    "noErrors": "Brak błędów",
+    "demoStatus": "Stan demo",
+    "demoMode": "Tryb demo",
+    "seededAt": "Seed wykonano",
+    "lastReset": "Ostatni reset",
+    "settings": "Konfiguracja",
+    "settingsDef": "Wagi ryzyka, wagi funkcji celu solvera i progi.",
+    "riskWeights": "Wagi ryzyka",
+    "objectiveWeights": "Funkcja celu solvera",
+    "thresholds": "Progi",
+    "objective": {
+      "latenessPerDayPerPriority": "Opóźnienie × priorytet (za dzień)",
+      "shortagePerUnit": "Niedobór materiałowy (za szt.)",
+      "downtimePerHour": "Przestój (za godzinę)",
+      "deliveryBreachPerOrder": "Naruszenie terminu (za zlecenie)",
+      "changePerMovedOperation": "Koszt zmiany (za operację)",
+      "changeoverPerSwitch": "Przezbrojenie"
+    },
+    "threshold": {
+      "RISK_MEDIUM": "Ryzyko średnie od",
+      "RISK_HIGH": "Ryzyko wysokie od",
+      "RISK_CRITICAL": "Ryzyko krytyczne od",
+      "NOTIFY_RISK": "Powiadomienie planisty od",
+      "SOLVER_TIMEOUT_MS": "Limit czasu solvera",
+      "DEMO_RESET_MS": "Limit resetu demo"
+    },
+    "readOnly": "Edycja wag i progów będzie dostępna w kolejnej wersji; wartości pochodzą z konfiguracji serwera."
   },
   "events": {
     "ShipmentEtaChanged": "Zmieniono ETA dostawy {{code}}",
@@ -444,5 +530,320 @@
     "PassportGenerated": "Wygenerowano paszport {{serial}}",
     "QualityDocumentUploaded": "Dodano dokument jakościowy",
     "SupplierOrderStatusChanged": "Zmiana statusu zamówienia {{code}}"
+  },
+  "planning": {
+    "title": "Planowanie i symulacje What-If",
+    "subtitle": "Plan bazowy, scenariusze i rekomendacje silnika MRP. Żaden scenariusz nie zmienia planu bazowego bez zatwierdzenia.",
+    "baseline": "Plan bazowy",
+    "baselineDef": "Zatwierdzona, wersjonowana wersja harmonogramu produkcji. Kopia jest zachowywana przed każdą zmianą.",
+    "approvedAt": "Zatwierdzono",
+    "approvedBy": "Przez",
+    "horizon": "Horyzont",
+    "scenarios": "Scenariusze What-If",
+    "scenariosDef": "Gotowe kafle i własne scenariusze. Uruchomienie tworzy wersjonowany snapshot i przelicza plan w silniku planowania (limit 3 s, z deterministycznym fallbackiem).",
+    "customScenario": "Własny scenariusz",
+    "customHint": "Zbuduj dowolną kombinację zmian: opóźnienie dostawy, blokada partii, priorytet, pojemność gniazda.",
+    "runHint": "Uruchom scenariusz i przelicz plan",
+    "readOnly": "Twoja rola pozwala tylko na przeglądanie scenariuszy.",
+    "history": "Historia scenariuszy",
+    "scenario": "Scenariusz",
+    "createdAt": "Utworzono",
+    "changes": "Zmiany",
+    "solver": "Silnik",
+    "fallback": "Heuristic fallback",
+    "fallbackHint": "Silnik planowania nie odpowiedział w limicie czasu — użyto deterministycznej heurystyki zapasowej.",
+    "elapsed": "{{ms}} ms",
+    "noScenarios": "Brak scenariuszy",
+    "noScenariosDetail": "Uruchom jeden z kafli powyżej, aby zobaczyć plan Przed / Po.",
+    "runFailed": "Nie udało się uruchomić scenariusza",
+    "kpi": {
+      "downtimeHours": "Przewidywany przestój",
+      "lateOrders": "Zlecenia spóźnione",
+      "totalLatenessDays": "Łączne opóźnienie (dni)",
+      "movedOperations": "Przesunięte operacje",
+      "ordersWithShortage": "Zlecenia z niedoborem",
+      "onTimeRate": "Terminowość"
+    },
+    "explanations": "Uzasadnienie rekomendacji",
+    "explanationsDef": "Każde zdanie wynika z danych scenariusza (kody przyczyn silnika), nie z generatora tekstu.",
+    "noExplanations": "Silnik nie zgłosił zmian wymagających uzasadnienia.",
+    "consequences": "Konsekwencje",
+    "ganttCompare": "Plan Przed / Po",
+    "ganttCompareDef": "„Przed” = plan bazowy z zastosowaną zmianą bez przeplanowania. „Po” = propozycja silnika. W trybie porównania cienie pokazują położenie bazowe.",
+    "view": "Widok",
+    "compare": "Porównanie",
+    "movedOps": "Przesunięte operacje ({{count}})",
+    "noMoved": "Brak przesuniętych operacji",
+    "approvedInfo": "Zatwierdzono przez {{by}} {{at}} — plan bazowy v{{version}}",
+    "status": {
+      "Draft": "Roboczy",
+      "Running": "Przeliczanie",
+      "Completed": "Zakończony",
+      "Failed": "Błąd",
+      "Approved": "Zatwierdzony",
+      "Rejected": "Odrzucony",
+      "Saved": "Zapisany"
+    },
+    "change": {
+      "DELAY_INBOUND": "Opóźnij dostawę",
+      "BLOCK_LOT": "Zablokuj partię",
+      "PRIORITY": "Zmień priorytet zlecenia",
+      "CAPACITY": "Zmień dostępność gniazda",
+      "DELAY_ORDER": "Opóźnij zlecenie",
+      "DELAY_INBOUND_desc": "Dostawa {{line}} opóźniona o {{days}} dni",
+      "BLOCK_LOT_desc": "Blokada partii {{lot}}",
+      "PRIORITY_desc": "Priorytet {{order}} → {{priority}}",
+      "CAPACITY_desc": "Dostępność {{wc}} → {{pct}} %",
+      "DELAY_ORDER_desc": "Zlecenie {{order}} opóźnione o {{days}} dni"
+    },
+    "presets": {
+      "ACT40_DELAY": "Opóźnij siłowniki ACT-40 o 10 dni",
+      "MCU_X7_DELAY": "Opóźnij moduły sterujące MCU-X7 o 14 dni",
+      "HTS22_BLOCK": "Zablokuj partię stali HTS-22 z powodu jakości",
+      "WO014_PRIORITY": "Zwiększ priorytet zlecenia WO-2026-014",
+      "WC_INT_CAPACITY": "Zmniejsz dostępność gniazda integracji o 50%"
+    },
+    "createAndRun": "Utwórz i przelicz plan",
+    "scenarioName": "Nazwa scenariusza",
+    "scenarioNamePlaceholder": "np. Opóźnienie ACT-40 + blokada HTS-22",
+    "removeChange": "Usuń zmianę",
+    "changeType": "Rodzaj zmiany",
+    "days": "Dni",
+    "factor": "Współczynnik",
+    "factorHint": "0,5 = połowa pojemności",
+    "addChange": "Dodaj zmianę",
+    "backToList": "Wróć do planowania",
+    "run": "Przelicz plan",
+    "runStarted": "Przeliczanie rozpoczęte",
+    "save": "Zapisz scenariusz",
+    "saved": "Scenariusz zapisany",
+    "reject": "Odrzuć",
+    "rejected": "Scenariusz odrzucony",
+    "approve": "Zatwierdź",
+    "approved": "Plan zatwierdzony — utworzono nową wersję planu bazowego",
+    "approveForbidden": "Zatwierdzać może tylko planista produkcji",
+    "running": "Przeliczanie planu…",
+    "draft": "Scenariusz oczekuje na uruchomienie",
+    "runningHint": "Silnik uwzględnia BOM, zapasy, partie zablokowane, kalendarze gniazd i operacje zamrożone.",
+    "failed": "Przeliczanie nie powiodło się",
+    "approveTitle": "Zatwierdzić proponowany plan?",
+    "approveBody": "Bieżący plan bazowy zostanie skopiowany jako poprzednia wersja, a propozycja stanie się nowym planem bazowym. Operacja zostanie zapisana w audycie.",
+    "impactMoved": "Przesuniętych operacji: {{count}}",
+    "impactLate": "Zleceń spóźnionych: {{count}}",
+    "impactDowntime": "Przewidywany przestój: {{from}} h → {{to}} h",
+    "impactVersion": "Powstanie nowa wersja planu bazowego"
+  },
+  "trace": {
+    "title": "Traceability i genealogia",
+    "subtitle": "Dostawca → zamówienie → wysyłka → partia → kontrola → zużycie → zlecenie → numer seryjny → paszport.",
+    "allLots": "Wszystkie partie",
+    "search": "Wyszukaj",
+    "searchDef": "Szukaj po numerze seryjnym, partii, wytopie, zamówieniu lub dokumencie.",
+    "searchPlaceholder": "Numer seryjny, partia, wytop, PO, dokument…",
+    "quick": "Szybki wybór",
+    "results": "Wyniki",
+    "noResults": "Brak wyników",
+    "noResultsDetail": "Sprawdź pisownię identyfikatora albo użyj szybkiego wyboru.",
+    "kind": {
+      "Serial": "Numer seryjny",
+      "Lot": "Partia",
+      "Heat": "Wytop",
+      "PurchaseOrder": "Zamówienie",
+      "Document": "Dokument",
+      "Order": "Zlecenie",
+      "Supplier": "Dostawca",
+      "Shipment": "Wysyłka",
+      "Operation": "Operacja",
+      "Inspection": "Kontrola",
+      "Passport": "Paszport",
+      "Consumption": "Zużycie"
+    },
+    "collapse": "Zwiń",
+    "expand": "Rozwiń",
+    "genealogy": "Drzewo genealogii",
+    "genealogyDef": "Pełny łańcuch pochodzenia wyrobu. Kliknij węzeł, aby zobaczyć szczegóły i przejść dalej.",
+    "backToSearch": "Wróć do wyszukiwania",
+    "openPassport": "Otwórz paszport",
+    "traceBack": "Trace-back: komponenty i certyfikaty",
+    "traceBackDef": "Z wyrobu do wszystkich partii, dostawców i certyfikatów wraz z sumami kontrolnymi.",
+    "history": "Historia zmian",
+    "selectNode": "Wybierz węzeł w drzewie, aby zobaczyć szczegóły.",
+    "downloadDoc": "Pobierz dokument",
+    "lotHeat": "Partia / wytop",
+    "certificate": "Certyfikat (SHA-256)",
+    "noComponents": "Brak komponentów",
+    "meta": {
+      "partCode": "Komponent",
+      "partName": "Nazwa",
+      "heatNumber": "Wytop",
+      "country": "Kraj",
+      "sha256": "SHA-256",
+      "quantity": "Ilość",
+      "unit": "Jednostka",
+      "fileName": "Plik",
+      "documentNumber": "Nr dokumentu",
+      "receivedOn": "Przyjęto",
+      "consumedAt": "Zużyto",
+      "operationCode": "Operacja",
+      "workCenterCode": "Gniazdo",
+      "result": "Wynik",
+      "eta": "ETA",
+      "status": "Status",
+      "supplierCode": "Dostawca",
+      "orderCode": "Zlecenie",
+      "inspectedAt": "Data kontroli",
+      "type": "Typ",
+      "version": "Wersja",
+      "generatedAt": "Wygenerowano"
+    },
+    "lot": "Partia",
+    "lots": "Partie materiałowe",
+    "lotsSubtitle": "Statusy partii, dokumenty, inspekcje i wpływ na produkcję.",
+    "lotSearchPlaceholder": "HTS-22-2608",
+    "receivedOn": "Przyjęto",
+    "addInspection": "Dodaj inspekcję",
+    "blockLot": "Zablokuj partię",
+    "blocked": "Partia {{lot}} zablokowana",
+    "blockedDetail": "Dotknięte: {{orders}} zleceń, {{serials}} wyrobów, {{passports}} paszportów",
+    "inspectionAdded": "Inspekcja zapisana",
+    "blockResult": "Wynik blokady — dotknięte rekordy",
+    "affectedOrders": "Zlecenia",
+    "affectedSerials": "Wyroby (numery seryjne)",
+    "affectedPassports": "Paszporty",
+    "lotData": "Dane partii",
+    "inspections": "Inspekcje",
+    "noInspections": "Brak zarejestrowanych inspekcji",
+    "ncr": "Niezgodności (NCR)",
+    "traceForward": "Trace-forward: gdzie użyto partię",
+    "traceForwardDef": "Z partii do wszystkich zleceń, wyrobów i paszportów, w których ją wykorzystano lub zarezerwowano.",
+    "relation": {
+      "Consumed": "zużyta",
+      "Reserved": "zarezerwowana"
+    },
+    "reservedBy": "Rezerwacje",
+    "blockTitle": "Zablokować partię {{lot}}?",
+    "blockImpact": "Partia zostanie wyłączona z planowania. Dotknięte: {{orders}} zleceń, {{serials}} wyrobów; {{passports}} paszportów zostanie unieważnionych.",
+    "blockReason": "Powód blokady",
+    "ncrTitle": "Tytuł NCR",
+    "inspectionResult": "Wynik",
+    "inspectedAt": "Data kontroli",
+    "notes": "Uwagi"
+  },
+  "passports": {
+    "title": "Cyfrowe paszporty jakościowe",
+    "subtitle": "Kompletność danych, zatwierdzenie i wersjonowane PDF z QR i SHA-256 (szablon DQP-01).",
+    "serial": "Numer seryjny",
+    "product": "Produkt",
+    "completeness": "Kompletność",
+    "complete": "Kompletny",
+    "missingCount": "Braki: {{count}}",
+    "updatedAt": "Aktualizacja",
+    "searchPlaceholder": "PMV-2026-0007",
+    "template": "Szablon",
+    "openTrace": "Genealogia",
+    "approve": "Zatwierdź",
+    "generate": "Generuj paszport",
+    "incomplete": "Paszport niekompletny — uzupełnij braki",
+    "approveFirst": "Najpierw zatwierdź paszport",
+    "invalidatedTitle": "Paszport unieważniony",
+    "invalidatedDefault": "Zmiana partii lub statusu jakości unieważniła poprzednią wersję.",
+    "demoNote": "Paszport demonstracyjny (DQP-01). Mapowanie wymagań nie stanowi formalnego potwierdzenia zgodności ani certyfikacji.",
+    "completenessDef": "Rejestr wymagań szablonu DQP-01. Przycisk „Generuj paszport” jest aktywny tylko przy spełnieniu wszystkich reguł.",
+    "missingHeader": "Brakuje:",
+    "allRequirementsMet": "Wszystkie wymagania spełnione",
+    "req": {
+      "PRODUCT_DATA": "Dane produktu i numer seryjny",
+      "ORDER_REF": "Zlecenie produkcyjne",
+      "BOM_VERSION": "Wersja konfiguracji / BOM",
+      "KEY_COMPONENT_LOTS": "Kluczowe komponenty i partie",
+      "SUPPLIER_ORIGIN": "Dostawcy i kraj pochodzenia",
+      "QC_STATUS": "Status kontroli jakości",
+      "CERTIFICATES_WITH_HASH": "Certyfikaty z sumami kontrolnymi",
+      "INSPECTION_RESULTS": "Wyniki inspekcji",
+      "DEVIATIONS": "Rejestr odstępstw i zatwierdzeń",
+      "APPROVAL": "Zatwierdzenie kontrolera jakości"
+    },
+    "missing": {
+      "INSPECTION_RESULT": "Brak wyniku inspekcji końcowej",
+      "CERT": "Brak certyfikatu materiałowego dla {{partCode}} (partia {{lotNumber}})",
+      "APPROVAL": "Brak zatwierdzenia przez kontrolera jakości",
+      "QC_STATUS": "Brak statusu kontroli jakości",
+      "DOCUMENT": "Brak dokumentu: {{type}}",
+      "COMPONENT_LOT": "Brak przypisanej partii dla {{partCode}}",
+      "DEVIATION_APPROVAL": "Niezatwierdzone odstępstwo",
+      "BOM_VERSION": "Brak wersji BOM",
+      "PRODUCT_DATA": "Niekompletne dane produktu",
+      "ORDER_REF": "Brak powiązania ze zleceniem",
+      "SUPPLIER_ORIGIN": "Brak danych o pochodzeniu",
+      "CERT_HASH": "Brak sumy kontrolnej certyfikatu"
+    },
+    "components": "Kluczowe komponenty i partie",
+    "deviations": "Odstępstwa i zatwierdzenia",
+    "noDeviations": "Brak zarejestrowanych odstępstw",
+    "qr": "Kod QR i zatwierdzenie",
+    "qrDef": "Kod QR prowadzi do lokalnego rekordu paszportu.",
+    "approvedBy": "Zatwierdził",
+    "latestVersion": "Najnowsza wersja",
+    "versions": "Wersje dokumentu",
+    "noVersions": "Brak wygenerowanych wersji",
+    "noVersionsDetail": "Po zatwierdzeniu wygeneruj PDF jednym kliknięciem.",
+    "generatedAt": "Wygenerowano",
+    "size": "Rozmiar",
+    "version": {
+      "Current": "Aktualna",
+      "Superseded": "Zastąpiona",
+      "Invalidated": "Unieważniona"
+    },
+    "generated": "Wygenerowano paszport v{{version}}",
+    "approved": "Paszport zatwierdzony",
+    "generateTitle": "Wygenerować paszport PDF?",
+    "generateImpact": "Powstanie wersja v{{version}} z kodem QR i sumą SHA-256. Poprzednie wersje zostaną zachowane.",
+    "generateBody": "Dokument zostanie oznaczony jako demonstracyjny i wygenerowany lokalnie bez połączenia z internetem."
+  },
+  "audit": {
+    "title": "Audyt",
+    "subtitle": "Kto, kiedy, co zmienił — wartości przed i po, correlation ID i źródło operacji. Rejestr jest tylko do odczytu.",
+    "exportCsv": "Eksport CSV",
+    "entity": "Obiekt",
+    "code": "Identyfikator",
+    "user": "Użytkownik",
+    "occurredAt": "Czas",
+    "action": "Akcja",
+    "source": "Źródło",
+    "correlationId": "Correlation ID",
+    "entities": {
+      "PurchaseOrderLine": "Pozycja zamówienia",
+      "Shipment": "Wysyłka",
+      "MaterialLot": "Partia",
+      "QualityDocument": "Dokument",
+      "PlanningScenario": "Scenariusz",
+      "PlanningBaseline": "Plan bazowy",
+      "Passport": "Paszport",
+      "ProductionOrder": "Zlecenie",
+      "Serial": "Numer seryjny",
+      "User": "Użytkownik"
+    },
+    "pageOf": "Strona {{page}} z {{pages}} ({{total}} wpisów)",
+    "noPayload": "Brak danych przed/po",
+    "field": "Pole"
+  },
+  "summary": {
+    "title": "Podsumowanie wartości",
+    "subtitle": "Co pokazał demonstrator w ciągu kilku minut.",
+    "daysEarlier": "{{count}} dni wcześniej",
+    "riskDetected": "Ryzyko wykryte wcześniej",
+    "riskDetectedDetail": "Zmiana ETA dostawcy natychmiast podniosła ocenę ryzyka i wskazała zagrożone zlecenie.",
+    "downtimeAvoided": "Uniknięty przestój",
+    "downtimeAvoidedDetail": "Prognozowany przestój gniazda integracji: {{before}} h → {{after}} h po re-harmonogramowaniu.",
+    "traceability": "Identyfikowalność",
+    "traceabilityDetail": "Pełna genealogia od dostawcy do numeru seryjnego, z sumami kontrolnymi certyfikatów.",
+    "oneClick": "1 klik",
+    "passport": "Dokumentacja odbiorowa",
+    "passportDetail": "Cyfrowy paszport jakościowy z QR i SHA-256. Kompletność paszportów: {{pct}} %.",
+    "passportDetailNoData": "Cyfrowy paszport jakościowy z QR i SHA-256.",
+    "chain": "Łańcuch przyczynowo-skutkowy",
+    "chainText": "Opóźnienie dostawcy → wzrost ryzyka → zagrożenie planu → symulacja → nowy harmonogram → zachowanie ciągłości produkcji → genealogia partii → kompletny cyfrowy paszport.",
+    "fromScenario": "Wartości wyliczone z ostatniego scenariusza: {{name}}.",
+    "demoValues": "Wartości demonstracyjne — uruchom scenariusz ACT-40, aby zobaczyć dane z silnika."
   }
 }

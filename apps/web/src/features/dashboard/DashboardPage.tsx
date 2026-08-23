@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import s from './dashboard.module.css';
 import { useHeatmap, useKpis, useMapData, usePlan, useQualityStatus } from './api';
-import { Card, KpiTile, ErrorState, LoadingState, Skeleton } from '@/components/ui';
+import { Card, KpiTile, ErrorState, LoadingState, Skeleton, Button } from '@/components/ui';
+import { Wand2 } from 'lucide-react';
 import { DeliveryMap } from './DeliveryMap';
 import { RiskHeatmap } from './RiskHeatmap';
 import { QualityPanel } from './QualityPanel';
@@ -77,7 +78,7 @@ export function DashboardPage() {
           {heat.isError && <ErrorState error={heat.error} onRetry={() => heat.refetch()} />}
           {heat.data && <RiskHeatmap data={heat.data} />}
         </Card>
-        <Card title={t('dashboard.plan')} definition={t('dashboard.planDef')} className={panelCls('plan')} focusable focused={focus === 'plan'} onToggleFocus={() => toggle('plan')} data-testid="panel-plan">
+        <Card title={t('dashboard.plan')} definition={t('dashboard.planDef')} className={panelCls('plan')} actions={<Button size="sm" icon={<Wand2 size={13} />} onClick={() => navigate('/planning')} data-testid="open-whatif">{t('dashboard.openWhatIf')}</Button>} focusable focused={focus === 'plan'} onToggleFocus={() => toggle('plan')} data-testid="panel-plan">
           {plan.isLoading && <LoadingState />}
           {plan.isError && <ErrorState error={plan.error} onRetry={() => plan.refetch()} />}
           {plan.data && <Gantt data={plan.data} compact={!focus} onSelect={() => navigate('/planning')} />}

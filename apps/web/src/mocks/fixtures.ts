@@ -137,14 +137,14 @@ export const plan: GanttData = {
     { orderCode: 'WO-2026-014', code: 'WO-2026-014/10', sequence: 10, workCenterCode: 'WC-CUT', start: t0(2, 6), end: t0(2, 22), frozen: false, status: 'Planned', materialWait: false },
     { orderCode: 'WO-2026-014', code: 'WO-2026-014/20', sequence: 20, workCenterCode: 'WC-ELEC', start: t0(4, 6), end: t0(7, 22), frozen: false, status: 'Planned', materialWait: false },
     { orderCode: 'WO-2026-014', code: 'WO-2026-014/30', sequence: 30, workCenterCode: 'WC-INT', start: t0(9, 6), end: t0(11, 10), frozen: false, status: 'Planned', materialWait: false },
-    { orderCode: 'WO-2026-014', code: 'WO-2026-014/40', sequence: 40, workCenterCode: 'WC-TEST', start: t0(14, 6), end: t0(14, 22), frozen: false, status: 'Planned', materialWait: false },
+    { orderCode: 'WO-2026-014', code: 'WO-2026-014/40', sequence: 40, workCenterCode: 'WC-TEST', start: t0(14, 6), end: t0(14, 18), frozen: false, status: 'Planned', materialWait: false },
     { orderCode: 'WO-2026-015', code: 'WO-2026-015/10', sequence: 10, workCenterCode: 'WC-CUT', start: t0(3, 6), end: t0(3, 22), frozen: false, status: 'Planned', materialWait: false },
     { orderCode: 'WO-2026-015', code: 'WO-2026-015/20', sequence: 20, workCenterCode: 'WC-WELD', start: t0(8, 6), end: t0(9, 14), frozen: false, status: 'Planned', materialWait: false },
-    { orderCode: 'WO-2026-015', code: 'WO-2026-015/30', sequence: 30, workCenterCode: 'WC-INT', start: t0(16, 6), end: t0(16, 22), frozen: false, status: 'Planned', materialWait: false },
-    { orderCode: 'WO-2026-015', code: 'WO-2026-015/40', sequence: 40, workCenterCode: 'WC-TEST', start: t0(18, 6), end: t0(18, 14), frozen: false, status: 'Planned', materialWait: false },
+    { orderCode: 'WO-2026-015', code: 'WO-2026-015/30', sequence: 30, workCenterCode: 'WC-INT', start: t0(21, 6), end: t0(21, 22), frozen: false, status: 'Planned', materialWait: false },
+    { orderCode: 'WO-2026-015', code: 'WO-2026-015/40', sequence: 40, workCenterCode: 'WC-TEST', start: t0(22, 6), end: t0(22, 14), frozen: false, status: 'Planned', materialWait: false },
     { orderCode: 'WO-2026-019', code: 'WO-2026-019/10', sequence: 10, workCenterCode: 'WC-ELEC', start: t0(37, 6), end: t0(38, 14), frozen: false, status: 'Planned', materialWait: false },
-    { orderCode: 'WO-2026-019', code: 'WO-2026-019/20', sequence: 20, workCenterCode: 'WC-INT', start: t0(39, 6), end: t0(40, 18), frozen: false, status: 'Planned', materialWait: false },
-    { orderCode: 'WO-2026-019', code: 'WO-2026-019/30', sequence: 30, workCenterCode: 'WC-TEST', start: t0(41, 6), end: t0(41, 14), frozen: false, status: 'Planned', materialWait: false },
+    { orderCode: 'WO-2026-019', code: 'WO-2026-019/20', sequence: 20, workCenterCode: 'WC-INT', start: t0(39, 6), end: t0(42, 18), frozen: false, status: 'Planned', materialWait: false },
+    { orderCode: 'WO-2026-019', code: 'WO-2026-019/30', sequence: 30, workCenterCode: 'WC-TEST', start: t0(43, 6), end: t0(43, 14), frozen: false, status: 'Planned', materialWait: false },
   ],
   dependencies: [
     { from: 'WO-2026-014/10', to: 'WO-2026-014/20' }, { from: 'WO-2026-014/20', to: 'WO-2026-014/30' }, { from: 'WO-2026-014/30', to: 'WO-2026-014/40' },
@@ -159,10 +159,12 @@ export const planAfter: GanttData = {
   operations: plan.operations.map((op) => {
     switch (op.code) {
       case 'WO-2026-014/30': return { ...op, start: t0(18, 6), end: t0(21, 10), changed: true, shiftDays: 9, materialWait: true };
-      case 'WO-2026-014/40': return { ...op, start: t0(21, 10), end: t0(22, 10), changed: true, shiftDays: 7.2 };
+      case 'WO-2026-014/40': return { ...op, start: t0(22, 6), end: t0(22, 18), changed: true, shiftDays: 8 };
+      case 'WO-2026-015/30': return { ...op, start: t0(22, 6), end: t0(22, 22), changed: true, shiftDays: 1 };
+      case 'WO-2026-015/40': return { ...op, start: t0(23, 6), end: t0(23, 14), changed: true, shiftDays: 1 };
       case 'WO-2026-019/10': return { ...op, start: t0(8, 6), end: t0(9, 14), changed: true, shiftDays: -29 };
       case 'WO-2026-019/20': return { ...op, start: t0(9, 14), end: t0(11, 10), changed: true, shiftDays: -29.7 };
-      case 'WO-2026-019/30': return { ...op, start: t0(14, 6), end: t0(14, 14), changed: true, shiftDays: -27 };
+      case 'WO-2026-019/30': return { ...op, start: t0(14, 18), end: t0(15, 10), changed: true, shiftDays: -28.5 };
       default: return op;
     }
   }),

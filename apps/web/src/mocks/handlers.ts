@@ -1,5 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import * as F from './fixtures';
+import { wave2Handlers, resetWave2, bindCurrentUser } from './wave2';
 import type { EtaChangeRequest, LogisticsEvent, Role, UserContext } from '@/api/types';
 
 const B = '/api/v1';
@@ -11,6 +12,7 @@ let kpis = structuredClone(F.kpis);
 
 export function resetMockState() {
   currentUser = F.presenter;
+  resetWave2();
   po = structuredClone(F.po0007);
   events = structuredClone(F.logisticsEvents);
   notifs = structuredClone(F.notifications);
@@ -22,7 +24,10 @@ function userFor(role: Role, supplierCode?: string | null): UserContext {
   return { ...F.presenter, id: `u-${role}`, username: role.toLowerCase(), displayName: role, role };
 }
 
+bindCurrentUser(() => ({ username: currentUser.username, role: currentUser.role }));
+
 export const handlers = [
+  ...wave2Handlers,
   http.get('/health/live', () => HttpResponse.text('Healthy')),
   http.get(`${B}/demo/status`, () => HttpResponse.json({ demoMode: true, seedVersion: 'mock-1', seededAt: F.t0(0), lastResetMs: 1200 })),
   http.get(`${B}/demo/script`, () => HttpResponse.json(F.demoScript)),

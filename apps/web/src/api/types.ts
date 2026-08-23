@@ -521,3 +521,275 @@ export interface DomainEvent {
   correlationId: string;
   payload: Record<string, unknown>;
 }
+
+// ---------------------------------------------------------------------------
+// Wave 2: planning / traceability / passports / audit / admin
+// ---------------------------------------------------------------------------
+
+export type ScenarioChange =
+  | { type: 'DELAY_INBOUND'; poLineId: string; days: number; poCode?: string; partCode?: string }
+  | { type: 'BLOCK_LOT'; lotNumber: string }
+  | { type: 'PRIORITY'; orderCode: string; priority: number }
+  | { type: 'CAPACITY'; workCenterCode: string; factor: number }
+  | { type: 'DELAY_ORDER'; orderCode: string; days: number };
+export type ScenarioChangeType = ScenarioChange['type'];
+export const SCENARIO_CHANGE_TYPES: ScenarioChangeType[] = ['DELAY_INBOUND', 'BLOCK_LOT', 'PRIORITY', 'CAPACITY', 'DELAY_ORDER'];
+
+export type ScenarioStatus = 'Draft' | 'Running' | 'Completed' | 'Failed' | 'Approved' | 'Rejected' | 'Saved';
+
+export interface ScenarioPreset {
+  key: string;
+  titleKey: string;
+  changes: ScenarioChange[];
+}
+export interface Explanation {
+  reasonCode: string;
+  orderCode: string;
+  params: Record<string, unknown>;
+}
+export interface Consequence {
+  kind: 'info' | 'warn' | 'critical';
+  textKey?: string | null;
+  text?: string | null;
+  params?: Record<string, unknown>;
+}
+export interface PlanningScenario {
+  id: string;
+  name: string;
+  status: ScenarioStatus;
+  createdAt: string;
+  createdBy: string;
+  changes: ScenarioChange[];
+  solver?: string | null;
+  elapsedMs?: number | null;
+  before?: GanttData | null;
+  after?: GanttData | null;
+  kpiBefore?: PlanKpi | null;
+  kpiAfter?: PlanKpi | null;
+  explanations?: Explanation[];
+  consequences?: Consequence[];
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  baselineVersion?: number | null;
+  errorMessage?: string | null;
+}
+export interface PlanningScenarioSummary {
+  id: string;
+  name: string;
+  status: ScenarioStatus;
+  createdAt: string;
+  createdBy: string;
+  solver?: string | null;
+  changeCount: number;
+  kpiAfter?: PlanKpi | null;
+}
+export interface PlanningBaseline {
+  id: string;
+  version: number;
+  approvedAt: string;
+  approvedBy: string;
+  gantt: GanttData;
+  kpi: PlanKpi;
+}
+export interface MovedOperation {
+  operationCode: string;
+  orderCode: string;
+  workCenterCode: string;
+  before: { start: string; end: string };
+  after: { start: string; end: string };
+  shiftDays: number;
+}
+export interface ScenarioCompare {
+  movedOperations: MovedOperation[];
+  kpiDelta: Partial<PlanKpi>;
+}
+export interface CreateScenarioRequest {
+  name: string;
+  changes: ScenarioChange[];
+}
+
+// Traceability
+export type TraceKind = 'Serial' | 'Lot' | 'Heat' | 'PurchaseOrder' | 'Document' | 'Order' | 'Supplier' | 'Shipment' | 'Operation' | 'Inspection' | 'Passport' | 'Consumption';
+export interface TraceSearchHit {
+  kind: TraceKind;
+  code: string;
+  label: string;
+}
+export interface TraceNode {
+  kind: TraceKind | string;
+  code: string;
+  label: string;
+  status?: string | null;
+  children: TraceNode[];
+  meta?: Record<string, unknown> | null;
+}
+export interface TraceComponent {
+  partCode: string;
+  partName?: string | null;
+  lotNumber: string;
+  heatNumber?: string | null;
+  supplierCode: string;
+  supplierName?: string | null;
+  country?: string | null;
+  certSha256?: string | null;
+  documentId?: string | null;
+}
+export interface SerialTrace {
+  serial: string;
+  productCode: string;
+  productName: string;
+  orderCode: string;
+  bomVersion: string;
+  status: string;
+  genealogy: TraceNode;
+  components?: TraceComponent[];
+  passportStatus?: PassportStatus | null;
+}
+export type LotStatus = 'AwaitingInspection' | 'Accepted' | 'ConditionallyReleased' | 'Blocked' | 'Recalled';
+export const LOT_STATUSES: LotStatus[] = ['AwaitingInspection', 'Accepted', 'ConditionallyReleased', 'Blocked', 'Recalled'];
+export type InspectionResult = 'Passed' | 'Failed' | 'Conditional';
+export interface Inspection {
+  id: string;
+  result: InspectionResult;
+  notes?: string | null;
+  inspectedAt: string;
+  inspector?: string | null;
+}
+export interface NonConformance {
+  id: string;
+  code: string;
+  title: string;
+  status: string;
+  raisedAt: string;
+}
+export interface LotSummary {
+  lotNumber: string;
+  heatNumber?: string | null;
+  partCode: string;
+  partName?: string | null;
+  supplierCode: string;
+  supplierName?: string | null;
+  quantity: number;
+  unit: string;
+  status: LotStatus;
+  receivedOn: string;
+}
+export interface Lot extends LotSummary {
+  poLineId?: string | null;
+  poCode?: string | null;
+  producedOn?: string | null;
+  expiresOn?: string | null;
+  documents: DocumentSummary[];
+  inspections: Inspection[];
+  consumedBy: { orderCode: string; serials: string[] }[];
+  reservedBy: string[];
+  nonConformances?: NonConformance[];
+  rowVersion?: string;
+}
+export interface LotForward {
+  lot: LotSummary;
+  orders: { orderCode: string; status: string; relation: 'Consumed' | 'Reserved' }[];
+  serials: { serial: string; orderCode: string; productCode: string }[];
+  passports: { serial: string; status: PassportStatus }[];
+}
+export interface BlockLotRequest {
+  reason: string;
+  ncrTitle: string;
+}
+export interface BlockLotResponse {
+  lot: Lot;
+  affected: { orders: string[]; serials: string[]; passports: string[] };
+}
+export interface InspectionRequest {
+  result: InspectionResult;
+  notes?: string;
+  inspectedAt: string;
+}
+export interface AuditEvent {
+  id: string;
+  occurredAt: string;
+  user: string;
+  action: string;
+  entity: string;
+  entityCode: string;
+  before?: unknown;
+  after?: unknown;
+  correlationId: string;
+  source: string;
+}
+
+// Passports
+export type PassportStatus = 'Draft' | 'PendingReview' | 'Approved' | 'Generated' | 'Invalidated';
+export const PASSPORT_STATUSES: PassportStatus[] = ['Draft', 'PendingReview', 'Approved', 'Generated', 'Invalidated'];
+export interface PassportRequirement {
+  code: string;
+  satisfied: boolean;
+  evidence?: string | null;
+}
+export interface PassportSummary {
+  serial: string;
+  productCode: string;
+  productName?: string | null;
+  orderCode: string;
+  status: PassportStatus;
+  templateCode: string;
+  complete: boolean;
+  missingCount?: number;
+  updatedAt?: string | null;
+  latestVersion?: number | null;
+}
+export interface PassportComponent {
+  partCode: string;
+  partName?: string | null;
+  lotNumber: string;
+  supplierCode: string;
+  supplierName?: string | null;
+  country?: string | null;
+  certSha256?: string | null;
+}
+export interface PassportDeviation {
+  id: string;
+  code?: string | null;
+  title: string;
+  status: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+}
+export interface PassportVersion {
+  version: number;
+  generatedAt: string;
+  generatedBy: string;
+  sha256: string;
+  fileSize: number;
+  status: 'Current' | 'Superseded' | 'Invalidated';
+}
+export interface Passport {
+  serial: string;
+  productCode: string;
+  productName?: string | null;
+  orderCode: string;
+  bomVersion?: string | null;
+  status: PassportStatus;
+  templateCode: string;
+  completeness: { complete: boolean; missing: MissingItem[]; requirements: PassportRequirement[] };
+  components: PassportComponent[];
+  inspections: Inspection[];
+  deviations: PassportDeviation[];
+  versions: PassportVersion[];
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  invalidatedAt?: string | null;
+  invalidationReason?: string | null;
+}
+export interface GeneratePassportResponse {
+  version: number;
+  sha256: string;
+  downloadUrl: string;
+}
+
+// Admin
+export interface AdminSettings {
+  riskWeights: { code: string; weight: number }[];
+  objectiveWeights: { code: string; value: number }[];
+  thresholds: { code: string; value: number; unit?: string | null }[];
+}

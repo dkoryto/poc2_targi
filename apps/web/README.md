@@ -52,3 +52,21 @@ public/geo/europe.geojson   Natural Earth 110m countries clipped to Europe (publ
 ## Docker
 
 `Dockerfile` builds with pnpm and serves `dist/` with nginx (`nginx.conf`: SPA fallback, proxies `/api`, `/health`, `/swagger`, `/hubs` (WebSocket upgrade) to `business-api:5080`, security headers, gzip).
+
+## Wave 2 screens
+
+`/planning` (presets + custom builder → `/planning/scenarios/:id` with Before/After/Compare Gantt, KPI deltas, explanations, approve/reject/save), `/trace` (search, `/trace/serials/:serial` genealogy tree + trace-back + audit, `/trace/lots`, `/trace/lots/:lot` trace-forward + block + inspection), `/passports` + `/passports/:serial` (DQP-01 completeness, versions, QR, generate), `/audit` (diff viewer, CSV), `/admin` (service status, settings, demo state), `/demo/summary` (value screen).
+
+### `data-testid` reference (used by `tests/e2e`)
+
+| Screen | Test ids |
+|---|---|
+| Control room | `kpi-<CODE>`, `kpi-row`, `panel-map/heatmap/plan/quality`, `open-whatif`, `open-blocked-lots` |
+| Planning | `planning-page`, `baseline-meta`, `scenario-tile-<presetKey>` (`ACT40_DELAY`, `MCU_X7_DELAY`, `HTS22_BLOCK`, `WO014_PRIORITY`, `WC_INT_CAPACITY`, `custom`), `btn-custom-scenario`, `btn-add-change`, `btn-create-scenario`, `scenario-list` |
+| Scenario detail | `scenario-detail`, `scenario-status` (raw status text, sr-only), `scenario-running`, `scenario-changes`, `solver-badge`, `kpi-compare`, `kpi-delta-downtime`, `gantt`, `gantt-bar-<opCode>` (`data-changed`), `gantt-ghost`, `gantt-shift`, `explanation-<reasonCode>`, `moved-ops`, `btn-run-scenario`, `btn-approve-plan`, `btn-reject-plan`, `btn-save-scenario`, `confirm-button` |
+| Trace | `trace-page`, `trace-search`, `trace-quick-<code>`, `trace-hit-<code>`, `serial-page`, `genealogy-tree`, `trace-node-<code>`, `trace-toggle-<code>`, `trace-node-panel`, `trace-node-open`, `trace-node-download`, `trace-components`, `audit-export`, `open-passport` |
+| Lots | `lots-page`, `lots-table`, `lot-page`, `trace-forward`, `btn-block-lot`, `block-reason`, `block-ncr`, `block-result`, `btn-add-inspection`, `submit-inspection` |
+| Passports | `passports-page`, `passports-table`, `passport-filter-<Status>`, `passport-page`, `passport-status`, `passport-completeness`, `passport-missing`, `passport-complete`, `passport-req-<CODE>`, `passport-versions`, `passport-pdf-<v>`, `passport-qr`, `passport-invalidated`, `btn-approve-passport`, `btn-generate-passport` |
+| Audit / admin | `audit-page`, `audit-table`, `audit-row-<id>`, `audit-detail`, `json-diff`, `audit-export`, `admin-page`, `service-<name>`, `service-signalr`, `settings-tables`, `summary-page` |
+
+Mocks for all wave-2 endpoints live in `src/mocks/wave2.ts` (stateful: scenarios run → complete after ~0.7 s, lot block invalidates passports, generate bumps versions; `resetMockState()` restores).

@@ -14,9 +14,9 @@ describe('Gantt', () => {
   it('compare mode renders ghost bars and shift labels for moved operations only', () => {
     renderWithProviders(<Gantt data={planAfter} compare={{ before: plan }} today={T0} weeks={8} />);
     const ghosts = screen.getAllByTestId('gantt-ghost');
-    expect(ghosts).toHaveLength(5);
+    expect(ghosts).toHaveLength(7);
     const shifts = screen.getAllByTestId('gantt-shift');
-    expect(shifts.length).toBe(5);
+    expect(shifts.length).toBe(7);
     expect(screen.getByTestId('gantt-bar-WO-2026-014/30')).toHaveAttribute('data-changed', 'true');
     expect(screen.getByTestId('gantt-bar-WO-2026-013/20')).not.toHaveAttribute('data-changed');
   });

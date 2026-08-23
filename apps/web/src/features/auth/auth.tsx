@@ -119,6 +119,7 @@ export const ROUTE_ROLES: Record<string, Role[] | 'all'> = {
   '/audit': ['Auditor', 'Administrator', 'OperationsDirector', 'DemoPresenter'],
   '/admin': ['Administrator', 'DemoPresenter'],
   '/notifications': 'all',
+  '/demo': ['OperationsDirector', 'ProductionPlanner', 'InboundCoordinator', 'QualityInspector', 'Auditor', 'Administrator', 'DemoPresenter'],
 };
 
 export function canAccess(role: Role | undefined, route: string): boolean {

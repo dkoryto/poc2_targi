@@ -10,7 +10,17 @@ import { SupplyListPage } from '@/features/supply/SupplyListPage';
 import { PurchaseOrderPage } from '@/features/supply/PurchaseOrderPage';
 import { InboundPage } from '@/features/inbound/InboundPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
-import { Placeholder } from '@/pages/Placeholder';
+import { PlanningPage } from '@/features/planning/PlanningPage';
+import { ScenarioDetailPage } from '@/features/planning/ScenarioDetailPage';
+import { TracePage } from '@/features/trace/TracePage';
+import { SerialPage } from '@/features/trace/SerialPage';
+import { LotPage } from '@/features/trace/LotPage';
+import { LotsPage } from '@/features/trace/LotsPage';
+import { PassportsPage } from '@/features/passports/PassportsPage';
+import { PassportPage } from '@/features/passports/PassportPage';
+import { AuditPage } from '@/features/audit/AuditPage';
+import { AdminPage } from '@/features/admin/AdminPage';
+import { SummaryPage } from '@/features/demo/SummaryPage';
 import { ApiError } from '@/api/client';
 
 export function createQueryClient() {
@@ -37,11 +47,17 @@ export function AppRoutes() {
           <Route path="/inbound" element={<InboundPage />} />
           <Route path="/inbound/:code" element={<InboundPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/planning/*" element={<Placeholder titleKey="nav.planning" />} />
-          <Route path="/trace/*" element={<Placeholder titleKey="nav.trace" />} />
-          <Route path="/passports/*" element={<Placeholder titleKey="nav.passports" />} />
-          <Route path="/audit/*" element={<Placeholder titleKey="nav.audit" />} />
-          <Route path="/admin/*" element={<Placeholder titleKey="nav.admin" />} />
+          <Route path="/planning" element={<PlanningPage />} />
+          <Route path="/planning/scenarios/:id" element={<ScenarioDetailPage />} />
+          <Route path="/trace" element={<TracePage />} />
+          <Route path="/trace/serials/:serial" element={<SerialPage />} />
+          <Route path="/trace/lots" element={<LotsPage />} />
+          <Route path="/trace/lots/:lot" element={<LotPage />} />
+          <Route path="/passports" element={<PassportsPage />} />
+          <Route path="/passports/:serial" element={<PassportPage />} />
+          <Route path="/audit" element={<AuditPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/demo/summary" element={<SummaryPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>

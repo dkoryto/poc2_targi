@@ -1,0 +1,222 @@
+.baselineBar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.baselineMeta {
+  display: flex;
+  gap: 16px;
+  font-size: var(--fs-sm);
+  color: var(--fg-2);
+}
+.baselineMeta strong {
+  color: var(--fg-0);
+}
+.kpiStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.miniKpi {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.miniKpi dt {
+  font-size: 11px;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.miniKpi dd {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.tile {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  min-height: 92px;
+}
+.tile:hover:not(:disabled) {
+  border-color: var(--info);
+  background: var(--bg-3);
+}
+.tile:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.tileTitle {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tileChanges {
+  font-size: var(--fs-xs);
+  color: var(--fg-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tileCustom {
+  border-style: dashed;
+}
+.changeRow {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+}
+.resultHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.kpiCompare {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.kpiCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kpiCard h4 {
+  font-size: 11px;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+.kpiVals {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.kpiBefore {
+  color: var(--fg-2);
+  text-decoration: line-through;
+}
+.kpiAfter {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+.delta {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.deltaGood {
+  color: var(--ok);
+  background: var(--ok-bg);
+}
+.deltaBad {
+  color: var(--crit);
+  background: var(--crit-bg);
+}
+.deltaNeutral {
+  color: var(--fg-2);
+  background: var(--neutral-bg);
+}
+.explanations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.explanation {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-left: 3px solid var(--info);
+  background: var(--bg-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--fs-sm);
+}
+.explanationWarn {
+  border-left-color: var(--warn);
+}
+.explanationOk {
+  border-left-color: var(--ok);
+}
+.explanationCrit {
+  border-left-color: var(--crit);
+}
+.running {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  padding: 32px;
+  text-align: center;
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--info);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: var(--border-strong);
+  }
+}
+.twoCol {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 12px;
+}
+@media (max-width: 1300px) {
+  .twoCol,
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+  .kpiCompare,
+  .kpiStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
