@@ -17,9 +17,15 @@ public sealed class DemoService(IDemoSeeder seeder, IOptions<DemoOptions> option
 
     private void EnsureEnabled() { if (!Enabled) throw new NotFoundException("Endpoint", "demo"); }
 
+    /// <summary>
+    /// Restores the demonstration data. Deliberately available outside the demo profile: an operator
+    /// running this under a domain still has to be able to put the demonstrator back to a known
+    /// state, e.g. from a nightly job. The endpoint is restricted to the DemoControl policy
+    /// (Administrator, DemoPresenter); the risky parts of the demo surface — auto-login, role
+    /// switching, the scripted walkthrough — stay disabled when Demo:Enabled is false.
+    /// </summary>
     public async Task<DemoResetResultDto> ResetAsync(CancellationToken ct)
     {
-        EnsureEnabled();
         var result = await seeder.ResetAsync(ct);
         audit.Write("Demo.Reset", "Demo", result.SeedVersion, null, null, new { result.DurationMs, result.Counts }, AuditSource.Demo);
         events.Publish(new DemoReset(clock.UtcNow, user.CorrelationId, result.DurationMs, result.SeedVersion));
