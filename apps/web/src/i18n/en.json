@@ -673,7 +673,8 @@
     "noMovedTitle": "Re-planning moved no operations",
     "noMovedDetail": "The plan after the change is already the best available — the solver found no better sequence. The effect of the event itself is visible in the Before / After plan.",
     "changesVsBaseline": "Changes vs the approved baseline: {{count}}",
-    "simulationNote": "A What-If is a simulation — it does not change any lot status or invalidate passports. An actual block is performed on the lot page (Traceability → Block lot)."
+    "simulationNote": "A What-If is a simulation — it does not change any lot status or invalidate passports. An actual block is performed on the lot page (Traceability → Block lot).",
+    "forbiddenRun": "Your role cannot run scenarios. Sign in as the production planner (planner) or the demo presenter."
   },
   "trace": {
     "title": "Traceability and genealogy",

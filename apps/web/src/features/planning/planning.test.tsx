@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { Route, Routes } from 'react-router';
-import { PlanningPage } from './PlanningPage';
+import { CAN_APPROVE, CAN_RUN, PlanningPage } from './PlanningPage';
 import { ScenarioDetailPage } from './ScenarioDetailPage';
 import { renderWithProviders } from '@/test/utils';
 import { server } from '@/mocks/server';
@@ -89,5 +89,17 @@ describe('Planning / What-If', () => {
     await user.click(screen.getByTestId('confirm-button'));
     await waitFor(() => expect(screen.getByTestId('scenario-status')).toHaveTextContent('Approved'));
     expect(screen.getByText(/plan bazowy v2/)).toBeInTheDocument();
+  });
+});
+
+/**
+ * The tiles used to stay enabled for Administrator and OperationsDirector because the
+ * frontend role list was wider than the API policy, so clicking one produced a bare
+ * "Forbidden" from the server. The lists must not drift apart again.
+ */
+describe('who may run a scenario', () => {
+  it('matches the API policy: only the planner and the demo presenter', () => {
+    expect(CAN_RUN).toEqual(['ProductionPlanner', 'DemoPresenter']);
+    expect(CAN_APPROVE).toEqual(['ProductionPlanner', 'DemoPresenter']);
   });
 });

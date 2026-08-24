@@ -679,7 +679,8 @@
     "noMovedTitle": "Przeplanowanie nie przesunęło żadnej operacji",
     "noMovedDetail": "Plan po zmianie jest już najlepszy z możliwych — silnik nie znalazł korzystniejszej kolejności. Skutki samego zdarzenia widać w planie „Przed / Po”.",
     "changesVsBaseline": "Zmiany wobec zatwierdzonego planu bazowego: {{count}}",
-    "simulationNote": "What-If jest symulacją — nie zmienia statusu partii ani nie unieważnia paszportów. Rzeczywistą blokadę wykonuje się na karcie partii (Traceability → Zablokuj partię)."
+    "simulationNote": "What-If jest symulacją — nie zmienia statusu partii ani nie unieważnia paszportów. Rzeczywistą blokadę wykonuje się na karcie partii (Traceability → Zablokuj partię).",
+    "forbiddenRun": "Twoja rola nie może uruchamiać scenariuszy. Zaloguj się jako planista produkcji (planner) lub prezenter demo."
   },
   "trace": {
     "title": "Traceability i genealogia",

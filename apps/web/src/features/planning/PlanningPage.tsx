@@ -1,3 +1,4 @@
+import { ApiError } from '@/api/client';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -14,7 +15,10 @@ import { useSite } from '@/features/sites/sites';
 import { Star } from 'lucide-react';
 import { fmtDateTime, fmtNumber } from '@/lib/format';
 
-export const CAN_RUN = ['ProductionPlanner', 'DemoPresenter', 'Administrator', 'OperationsDirector'];
+// Must mirror the API policy PlanApprove (ProductionPlanner, DemoPresenter). Listing more roles
+// here left the tiles enabled for Administrator and OperationsDirector, who then got a bare
+// "Forbidden" from the server after clicking.
+export const CAN_RUN = ['ProductionPlanner', 'DemoPresenter'];
 export const CAN_APPROVE = ['ProductionPlanner', 'DemoPresenter'];
 
 const STATUS_TONE: Record<ScenarioStatus, 'ok' | 'warn' | 'info' | 'neutral' | 'critical'> = { Draft: 'neutral', Running: 'info', Completed: 'info', Failed: 'critical', Approved: 'ok', Rejected: 'neutral', Saved: 'neutral' };
@@ -64,7 +68,13 @@ export function PlanningPage() {
       setBuilderOpen(false);
       navigate(`/planning/scenarios/${sc.id}`);
     } catch (e) {
-      toast.critical(t('planning.runFailed'), e instanceof Error ? e.message : undefined);
+      // A 403 here means the role is not allowed to plan; say which role is, instead of
+      // showing the bare word the server used.
+      const status = e instanceof ApiError ? e.status : undefined;
+      toast.critical(
+        t('planning.runFailed'),
+        status === 403 ? t('planning.forbiddenRun') : e instanceof Error ? e.message : undefined,
+      );
     } finally {
       setBusyKey(null);
     }
